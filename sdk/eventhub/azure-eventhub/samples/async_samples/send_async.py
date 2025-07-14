@@ -7,6 +7,9 @@
 
 """
 Examples to show sending events with different options to an Event Hub asynchronously.
+
+WARNING: EventHubProducerClient and EventDataBatch are not coroutine-safe.
+Do not share these instances between coroutines without proper coroutine-safe management using mechanisms like asyncio.Lock.
 """
 
 import time
@@ -16,17 +19,16 @@ import os
 from azure.eventhub.aio import EventHubProducerClient
 from azure.eventhub.exceptions import EventHubError
 from azure.eventhub import EventData
-from azure.identity.aio import DefaultAzureCredential
 
-FULLY_QUALIFIED_NAMESPACE = os.environ["EVENT_HUB_HOSTNAME"]
-EVENTHUB_NAME = os.environ['EVENT_HUB_NAME']
+CONNECTION_STR = os.environ["EVENT_HUB_CONN_STR"]
+EVENTHUB_NAME = os.environ["EVENT_HUB_NAME"]
 
 
 async def send_event_data_batch(producer):
     # Without specifying partition_id or partition_key
     # the events will be distributed to available partitions via round-robin.
     event_data_batch = await producer.create_batch()
-    event_data_batch.add(EventData('Single message'))
+    event_data_batch.add(EventData("Single message"))
     await producer.send_batch(event_data_batch)
 
 
@@ -37,7 +39,7 @@ async def send_event_data_batch_with_limited_size(producer):
 
     while True:
         try:
-            event_data_batch_with_limited_size.add(EventData('Message inside EventBatchData'))
+            event_data_batch_with_limited_size.add(EventData("Message inside EventBatchData"))
         except ValueError:
             # EventDataBatch object reaches max_size.
             # New EventDataBatch object can be created here to send more data.
@@ -48,24 +50,26 @@ async def send_event_data_batch_with_limited_size(producer):
 
 async def send_event_data_batch_with_partition_key(producer):
     # Specifying partition_key
-    event_data_batch_with_partition_key = await producer.create_batch(partition_key='pkey')
-    event_data_batch_with_partition_key.add(EventData('Message will be sent to a partition determined by the partition key'))
+    event_data_batch_with_partition_key = await producer.create_batch(partition_key="pkey")
+    event_data_batch_with_partition_key.add(
+        EventData("Message will be sent to a partition determined by the partition key")
+    )
 
     await producer.send_batch(event_data_batch_with_partition_key)
 
 
 async def send_event_data_batch_with_partition_id(producer):
     # Specifying partition_id.
-    event_data_batch_with_partition_id = await producer.create_batch(partition_id='0')
-    event_data_batch_with_partition_id.add(EventData('Message will be sent to target-id partition'))
+    event_data_batch_with_partition_id = await producer.create_batch(partition_id="0")
+    event_data_batch_with_partition_id.add(EventData("Message will be sent to target-id partition"))
 
     await producer.send_batch(event_data_batch_with_partition_id)
 
 
 async def send_event_data_batch_with_properties(producer):
     event_data_batch = await producer.create_batch()
-    event_data = EventData('Message with properties')
-    event_data.properties = {'prop_key': 'prop_value'}
+    event_data = EventData("Message with properties")
+    event_data.properties = {"prop_key": "prop_value"}
     event_data_batch.add(event_data)
     await producer.send_batch(event_data_batch)
 
@@ -77,7 +81,7 @@ async def send_event_data_list(producer):
     # Without specifying partition_id or partition_key
     # the events will be distributed to available partitions via round-robin.
 
-    event_data_list = [EventData('Event Data {}'.format(i)) for i in range(10)]
+    event_data_list = [EventData("Event Data {}".format(i)) for i in range(10)]
     try:
         await producer.send_batch(event_data_list)
     except ValueError:  # Size exceeds limit. This shouldn't happen if you make sure before hand.
@@ -86,12 +90,39 @@ async def send_event_data_list(producer):
         print("Sending error: ", eh_err)
 
 
+
+async def send_concurrent_with_shared_client_and_lock():
+    """
+    Example showing concurrent sending with a shared client using asyncio.Lock.
+    """
+    send_lock = asyncio.Lock()
+    
+    producer = EventHubProducerClient.from_connection_string(
+        conn_str=CONNECTION_STR,
+        eventhub_name=EVENTHUB_NAME,
+    )
+
+    async def send_with_lock(task_id):
+        try:
+            # Use lock to ensure coroutine-safe sending
+            async with send_lock:
+                batch = await producer.create_batch()
+                batch.add(EventData(f"Synchronized message from coroutine {task_id}"))
+                await producer.send_batch(batch)
+                print(f"Coroutine {task_id} sent synchronized message successfully")
+        except Exception as e:
+            print(f"Coroutine {task_id} failed: {e}")
+
+    async with producer:
+        # Use asyncio.gather to run coroutines concurrently with lock synchronization
+        await asyncio.gather(*[send_with_lock(i) for i in range(3)])
+
+
 async def run():
 
-    producer = EventHubProducerClient(
-        fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,
+    producer = EventHubProducerClient.from_connection_string(
+        conn_str=CONNECTION_STR,
         eventhub_name=EVENTHUB_NAME,
-        credential=DefaultAzureCredential()
     )
     async with producer:
         await send_event_data_batch(producer)
@@ -102,6 +133,14 @@ async def run():
         await send_event_data_list(producer)
 
 
-start_time = time.time()
-asyncio.run(run())
-print("Send messages in {} seconds.".format(time.time() - start_time))
+async def main():
+    start_time = time.time()
+    await run()
+    print("Send messages in {} seconds.".format(time.time() - start_time))
+
+
+    print("\nDemonstrating concurrent sending with shared client and locks...")
+    await send_concurrent_with_shared_client_and_lock()
+
+
+asyncio.run(main())

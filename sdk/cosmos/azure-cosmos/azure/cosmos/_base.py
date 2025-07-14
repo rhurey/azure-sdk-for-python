@@ -61,7 +61,10 @@ _COMMON_OPTIONS = {
     'supported_query_features': 'supportedQueryFeatures',
     'query_version': 'queryVersion',
     'priority': 'priorityLevel',
-    'no_response': 'responsePayloadOnWriteDisabled'
+    'no_response': 'responsePayloadOnWriteDisabled',
+    'max_item_count': 'maxItemCount',
+    'throughput_bucket': 'throughputBucket',
+    'excluded_locations': 'excludedLocations'
 }
 
 # Cosmos resource ID validation regex breakdown:
@@ -88,7 +91,8 @@ def _get_match_headers(kwargs: Dict[str, Any]) -> Tuple[Optional[str], Optional[
     elif match_condition == MatchConditions.IfMissing:
         if_none_match = '*'
     elif match_condition is None:
-        if 'etag' in kwargs:
+        etag = kwargs.pop('etag', None)
+        if etag is not None:
             raise ValueError("'etag' specified without 'match_condition'.")
     else:
         raise TypeError("Invalid match condition: {}".format(match_condition))
@@ -115,8 +119,10 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
         path: str,
         resource_id: Optional[str],
         resource_type: str,
+        operation_type: str,
         options: Mapping[str, Any],
         partition_key_range_id: Optional[str] = None,
+        client_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Gets HTTP request headers.
 
@@ -126,14 +132,18 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
     :param str path:
     :param str resource_id:
     :param str resource_type:
+    :param str operation_type:
     :param dict options:
     :param str partition_key_range_id:
+    :param str client_id:
     :return: The HTTP request headers.
     :rtype: dict
     """
     headers = dict(default_headers)
     options = options or {}
 
+    # Generate a new activity ID for each request client side.
+    headers[http_constants.HttpHeaders.ActivityId] = GenerateGuidId()
     if cosmos_client_connection.UseMultipleWriteLocations:
         headers[http_constants.HttpHeaders.AllowTentativeWrites] = "true"
 
@@ -170,6 +180,7 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
     # set consistency level. check if set via options, this will override the default
     if options.get("consistencyLevel"):
         consistency_level = options["consistencyLevel"]
+        # TODO: move this line outside of if-else cause to remove the code duplication
         headers[http_constants.HttpHeaders.ConsistencyLevel] = consistency_level
     elif default_client_consistency_level is not None:
         consistency_level = default_client_consistency_level
@@ -227,8 +238,11 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
         # else serialize using json dumps method which apart from regular values will serialize None into null
         else:
             # single partitioning uses a string and needs to be turned into a list
-            if isinstance(options["partitionKey"], list) and options["partitionKey"]:
-                pk_val = json.dumps(options["partitionKey"], separators=(',', ':'))
+            is_sequence_not_string = (isinstance(options["partitionKey"], Sequence) and
+                                      not isinstance(options["partitionKey"], str))
+
+            if is_sequence_not_string and options["partitionKey"]:
+                pk_val = json.dumps(list(options["partitionKey"]), separators=(',', ':'))
             else:
                 pk_val = json.dumps([options["partitionKey"]])
             headers[http_constants.HttpHeaders.PartitionKey] = pk_val
@@ -273,6 +287,9 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
     if partition_key_range_id is not None:
         headers[http_constants.HttpHeaders.PartitionKeyRangeID] = partition_key_range_id
 
+    if client_id is not None:
+        headers[http_constants.HttpHeaders.ClientId] = client_id
+
     if options.get("enableScriptLogging"):
         headers[http_constants.HttpHeaders.EnableScriptLogging] = options["enableScriptLogging"]
 
@@ -304,6 +321,9 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
     if options.get("correlatedActivityId"):
         headers[http_constants.HttpHeaders.CorrelatedActivityId] = options["correlatedActivityId"]
 
+    if options.get("throughputBucket"):
+        headers[http_constants.HttpHeaders.ThroughputBucket] = options["throughputBucket"]
+
     if resource_type == "docs" and verb != "get":
         if "responsePayloadOnWriteDisabled" in options:
             responsePayloadOnWriteDisabled = options["responsePayloadOnWriteDisabled"]
@@ -318,10 +338,15 @@ def GetHeaders(  # pylint: disable=too-many-statements,too-many-branches
     if resource_type != 'dbs' and options.get("containerRID"):
         headers[http_constants.HttpHeaders.IntendedCollectionRID] = options["containerRID"]
 
+    if resource_type == "":
+        resource_type = http_constants.ResourceType.DatabaseAccount
+    headers[http_constants.HttpHeaders.ThinClientProxyResourceType] = resource_type
+    headers[http_constants.HttpHeaders.ThinClientProxyOperationType] = operation_type
+
     return headers
 
 
-def GetResourceIdOrFullNameFromLink(resource_link: str) -> Optional[str]:
+def GetResourceIdOrFullNameFromLink(resource_link: str) -> str:
     """Gets resource id or full name from resource link.
 
     :param str resource_link:
@@ -354,7 +379,7 @@ def GetResourceIdOrFullNameFromLink(resource_link: str) -> Optional[str]:
         # request in form
         # /[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/.
         return str(path_parts[-2])
-    return None
+    raise ValueError("Failed Parsing ResourceID from link: {0}".format(resource_link))
 
 
 def GenerateGuidId() -> str:
@@ -772,8 +797,8 @@ def _replace_throughput(
                 new_throughput_properties['content']['offerAutopilotSettings']['maxThroughput'] = max_throughput
                 if increment_percent:
                     new_throughput_properties['content']['offerAutopilotSettings']['autoUpgradePolicy']['throughputPolicy']['incrementPercent'] = increment_percent  # pylint: disable=line-too-long
-                if throughput.offer_throughput:
-                    new_throughput_properties["content"]["offerThroughput"] = throughput.offer_throughput
+            if throughput.offer_throughput:
+                new_throughput_properties["content"]["offerThroughput"] = throughput.offer_throughput
         except AttributeError as e:
             raise TypeError("offer_throughput must be int or an instance of ThroughputProperties") from e
 
@@ -854,8 +879,8 @@ def _format_batch_operations(
     return final_operations
 
 
-def _set_properties_cache(properties: Dict[str, Any]) -> Dict[str, Any]:
+def _build_properties_cache(properties: Dict[str, Any], container_link: str) -> Dict[str, Any]:
     return {
         "_self": properties.get("_self", None), "_rid": properties.get("_rid", None),
-        "partitionKey": properties.get("partitionKey", None)
+        "partitionKey": properties.get("partitionKey", None), "container_link": container_link
     }

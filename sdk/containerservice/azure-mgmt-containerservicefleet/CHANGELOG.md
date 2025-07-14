@@ -1,5 +1,38 @@
 # Release History
 
+## 3.1.0 (2025-05-08)
+
+### Features Added
+
+  - Client `ContainerServiceFleetMgmtClient` added operation group `auto_upgrade_profiles`
+  - Client `ContainerServiceFleetMgmtClient` added operation group `auto_upgrade_profile_operations`
+  - Model `APIServerAccessProfile` added property `enable_vnet_integration`
+  - Model `APIServerAccessProfile` added property `subnet_id`
+  - Model `Fleet` added property `status`
+  - Model `FleetMember` added property `status`
+  - Model `NodeImageSelection` added property `custom_node_image_versions`
+  - Enum `NodeImageSelectionType` added member `CUSTOM`
+  - Model `UpdateRun` added property `auto_upgrade_profile_id`
+  - Added enum `AutoUpgradeLastTriggerStatus`
+  - Added model `AutoUpgradeNodeImageSelection`
+  - Added enum `AutoUpgradeNodeImageSelectionType`
+  - Added model `AutoUpgradeProfile`
+  - Added model `AutoUpgradeProfileListResult`
+  - Added enum `AutoUpgradeProfileProvisioningState`
+  - Added model `AutoUpgradeProfileStatus`
+  - Added model `FleetMemberStatus`
+  - Added model `FleetStatus`
+  - Added model `GenerateResponse`
+  - Added enum `UpgradeChannel`
+  - Added operation group `AutoUpgradeProfileOperationsOperations`
+  - Added operation group `AutoUpgradeProfilesOperations`
+
+## 3.0.0 (2024-10-31)
+
+### Breaking Changes
+
+- This package now only targets the latest Api-Version available on Azure and removes APIs of other Api-Version. After this change, the package can have much smaller size. If your application requires a specific and non-latest Api-Version, it's recommended to pin this package to the previous released version; If your application always only use latest Api-Version, please ignore this change.
+
 ## 2.1.0 (2024-10-21)
 
 ### Features Added

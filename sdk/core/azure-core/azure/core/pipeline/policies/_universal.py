@@ -234,6 +234,7 @@ class UserAgentPolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseType]):
 
     def add_user_agent(self, value: str) -> None:
         """Add value to current user agent with a space.
+
         :param str value: value to add to user agent.
         """
         self._user_agent = "{} {}".format(self._user_agent, value)
@@ -441,6 +442,7 @@ class HttpLoggingPolicy(
         self, request: PipelineRequest[HTTPRequestType]
     ) -> None:
         """Logs HTTP method, url and headers.
+
         :param request: The PipelineRequest object.
         :type request: ~azure.core.pipeline.PipelineRequest
         """
@@ -508,14 +510,21 @@ class HttpLoggingPolicy(
             log_string += "\nNo body was attached to the request"
             logger.info(log_string)
 
-        except Exception as err:  # pylint: disable=broad-except
-            logger.warning("Failed to log request: %s", repr(err))
+        except Exception:  # pylint: disable=broad-except
+            logger.warning("Failed to log request.")
 
     def on_response(
         self,
         request: PipelineRequest[HTTPRequestType],
         response: PipelineResponse[HTTPRequestType, HTTPResponseType],
     ) -> None:
+        """Logs HTTP response status and headers.
+
+        :param request: The PipelineRequest object.
+        :type request: ~azure.core.pipeline.PipelineRequest
+        :param response: The PipelineResponse object.
+        :type response: ~azure.core.pipeline.PipelineResponse
+        """
         http_response = response.http_response
 
         # Get logger in my context first (request has been retried)
@@ -543,8 +552,8 @@ class HttpLoggingPolicy(
                 value = self._redact_header(res_header, value)
                 log_string += "\n    '{}': '{}'".format(res_header, value)
             logger.info(log_string)
-        except Exception as err:  # pylint: disable=broad-except
-            logger.warning("Failed to log response: %s", repr(err))
+        except Exception:  # pylint: disable=broad-except
+            logger.warning("Failed to log response.")
 
 
 class ContentDecodePolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseType]):
@@ -681,6 +690,11 @@ class ContentDecodePolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseType]):
         return cls.deserialize_from_text(response.text(encoding), mime_type, response=response)
 
     def on_request(self, request: PipelineRequest[HTTPRequestType]) -> None:
+        """Set the response encoding in the request context.
+
+        :param request: The PipelineRequest object.
+        :type request: ~azure.core.pipeline.PipelineRequest
+        """
         options = request.context.options
         response_encoding = options.pop("response_encoding", self._response_encoding)
         if response_encoding:
@@ -741,6 +755,11 @@ class ProxyPolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseType]):
         self.proxies = proxies
 
     def on_request(self, request: PipelineRequest[HTTPRequestType]) -> None:
+        """Adds the proxy information to the request context.
+
+        :param request: The PipelineRequest object
+        :type request: ~azure.core.pipeline.PipelineRequest
+        """
         ctxt = request.context.options
         if self.proxies and "proxies" not in ctxt:
             ctxt["proxies"] = self.proxies

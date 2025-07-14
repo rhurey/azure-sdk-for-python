@@ -23,6 +23,7 @@ This table shows the relationship between SDK versions and supported API version
 | SDK version | Supported API version of service |
 |-------------|----------------------------------|
 | 1.0.0     | 2024-04-01               |
+| 1.1.0     | 2024-10-01               |
 
 
 ### Authenticate the client
@@ -78,6 +79,9 @@ Once you've initialized a 'RadiologyInsightsClient', you can use it to analyse d
 * Follow-up Recommendation
 * Communication
 * Radiology Procedure
+* Guidance
+* Quality Measure
+* Scoring and Assessment
 
 Radiology Insights currently supports one document from one patient. Please take a look [here][inferences] for more detailed information about the inferences this service produces.
 
@@ -96,6 +100,10 @@ For an example how to create a client, a request and get the result see the exam
 * [Limited Order Discrepancy](#get-limited-order-discrepancy-information)
 * [Radiology Procedure](#get-radiology-procedure-information)
 * [Sex Mismatch](#get-sex-mismatch-information)
+* [Guidance](#get-guidance-information)
+* [Quality Measure](#get-quality-measure-inference-information)
+* [Scoring and Assessment](#get-scoring-and-assessment-inference-information)
+
 
 ### Running the samples
 
@@ -120,56 +128,56 @@ doc_content1 = """CLINICAL HISTORY:
         A new US pelvis within the next 6 months is recommended.
         These results have been discussed with Dr. Jones at 3 PM on November 5 2020."""
 
-        # Create ordered procedure
-        procedure_coding = models.Coding(
-            system="Http://hl7.org/fhir/ValueSet/cpt-all",
-            code="USPELVIS",
-            display="US PELVIS COMPLETE",
-        )
-        procedure_code = models.CodeableConcept(coding=[procedure_coding])
-        ordered_procedure = models.OrderedProcedure(description="US PELVIS COMPLETE", code=procedure_code)
-        # Create encounter
-        start = datetime.datetime(2021, 8, 28, 0, 0, 0, 0)
-        end = datetime.datetime(2021, 8, 28, 0, 0, 0, 0)
-        encounter = models.PatientEncounter(
-            id="encounter2",
-            class_property=models.EncounterClass.IN_PATIENT,
-            period=models.TimePeriod(start=start, end=end),
-        )
-        # Create patient info
-        birth_date = datetime.date(1959, 11, 11)
-        patient_info = models.PatientDetails(sex=models.PatientSex.FEMALE, birth_date=birth_date)
-        # Create author
-        author = models.DocumentAuthor(id="author2", full_name="authorName2")
+# Create ordered procedure
+procedure_coding = models.Coding(
+    system="Http://hl7.org/fhir/ValueSet/cpt-all",
+    code="USPELVIS",
+    display="US PELVIS COMPLETE",
+)
+procedure_code = models.CodeableConcept(coding=[procedure_coding])
+ordered_procedure = models.OrderedProcedure(description="US PELVIS COMPLETE", code=procedure_code)
+# Create encounter
+start = datetime.datetime(2021, 8, 28, 0, 0, 0, 0)
+end = datetime.datetime(2021, 8, 28, 0, 0, 0, 0)
+encounter = models.PatientEncounter(
+    id="encounter2",
+    class_property=models.EncounterClass.IN_PATIENT,
+    period=models.TimePeriod(start=start, end=end),
+)
+# Create patient info
+birth_date = datetime.date(1959, 11, 11)
+patient_info = models.PatientDetails(sex=models.PatientSex.FEMALE, birth_date=birth_date)
+# Create author
+author = models.DocumentAuthor(id="author2", full_name="authorName2")
 
-        create_date_time = datetime.datetime(2024, 2, 19, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)
-        patient_document1 = models.PatientDocument(
-            type=models.DocumentType.NOTE,
-            clinical_type=models.ClinicalDocumentType.RADIOLOGY_REPORT,
-            id="doc2",
-            content=models.DocumentContent(source_type=models.DocumentContentSourceType.INLINE, value=doc_content1),
-            created_at=create_date_time,
-            specialty_type=models.SpecialtyType.RADIOLOGY,
-            administrative_metadata=models.DocumentAdministrativeMetadata(
-                ordered_procedures=[ordered_procedure], encounter_id="encounter2"
-            ),
-            authors=[author],
-            language="en",
-        )
+create_date_time = datetime.datetime(2024, 2, 19, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)
+patient_document1 = models.PatientDocument(
+    type=models.DocumentType.NOTE,
+    clinical_type=models.ClinicalDocumentType.RADIOLOGY_REPORT,
+    id="doc2",
+    content=models.DocumentContent(source_type=models.DocumentContentSourceType.INLINE, value=doc_content1),
+    created_at=create_date_time,
+    specialty_type=models.SpecialtyType.RADIOLOGY,
+    administrative_metadata=models.DocumentAdministrativeMetadata(
+        ordered_procedures=[ordered_procedure], encounter_id="encounter2"
+        ),
+    authors=[author],
+    language="en",
+)
 
-        # Construct patient
-        patient1 = models.PatientRecord(
-            id="patient_id2",
-            details=patient_info,
-            encounters=[encounter],
-            patient_documents=[patient_document1],
-        )
+# Construct patient
+patient1 = models.PatientRecord(
+    id="patient_id2",
+    details=patient_info,
+    encounters=[encounter],
+    patient_documents=[patient_document1],
+)
 
-        # Create a configuration
-        configuration = models.RadiologyInsightsModelConfiguration(verbose=False, include_evidence=True, locale="en-US")
+# Create a configuration
+configuration = models.RadiologyInsightsModelConfiguration(verbose=False, include_evidence=True, locale="en-US")
 
-        # Construct the request with the patient and configuration
-        patient_data = models.RadiologyInsightsJob(job_data=models.RadiologyInsightsData(patients=[patient1], configuration=configuration))
+# Construct the request with the patient and configuration
+patient_data = models.RadiologyInsightsJob(job_data=models.RadiologyInsightsData(patients=[patient1], configuration=configuration))
 ```
 <!-- SNIPPET:sample_age_mismatch_inference_async.create_radiology_insights_request-->
 
@@ -287,6 +295,82 @@ for patient_result in radiology_insights_result.patient_results:
 ```
 <!-- SNIPPET:sample_sex_mismatch_inference_async.display_sex_mismatch-->
 
+### Get Guidance information
+<!-- SNIPPET:sample_guidance_inference_async.display_guidance-->
+```Python
+for patient_result in radiology_insights_result.patient_results:
+    for ri_inference in patient_result.inferences:
+        if ri_inference.kind == models.RadiologyInsightsInferenceType.GUIDANCE:
+            guidance = ri_inference
+            print(f"Guidance Inference found:")
+            if guidance.identifier and guidance.identifier.coding:
+                for code in guidance.identifier.coding:
+                    print(f"Identifier: {code.display}")
+            for info in guidance.missing_guidance_information:
+                print(f"Missing Guidance: {info}")
+            for info in guidance.present_guidance_information:
+                print(f"Present Guidance: {info.present_guidance_item}")
+                for value in info.present_guidance_values:
+                    print(f"Value: {value}")
+            print(f"Ranking: {guidance.ranking.value}")
+```
+<!-- SNIPPET:sample_guidance_inference_async.display_guidance-->
+
+
+### Get Quality Measure Inference information
+<!-- SNIPPET:sample_quality_measure_inference_async.display_quality_measure-->
+ ```Python
+    for patient_result in radiology_insights_result.patient_results:
+        counter = 0
+        for ri_inference in patient_result.inferences:
+            if ri_inference.kind == models.RadiologyInsightsInferenceType.QUALITY_MEASURE:
+                counter += 1
+                print(f"Quality Measure {counter} Inference found")
+
+                # Print Quality Measure Denominator
+                if ri_inference.quality_measure_denominator:
+                    print(f"Quality Measure Denominator: {ri_inference.quality_measure_denominator}")
+
+                # Print Compliance Type
+                if ri_inference.compliance_type:
+                    print(f"Compliance Type: {ri_inference.compliance_type}")
+
+                # Print Quality Criteria
+                if ri_inference.quality_criteria:
+                    for criteria in ri_inference.quality_criteria:
+                        print(f"Quality Criterium: {criteria}")
+```
+<!-- SNIPPET:sample_quality_measure_inference_async.display_quality_measure-->
+
+### Get Scoring and Assessment Inference information
+<!-- SNIPPET:sample_scoring_and_assessment_inference_async.display_scoring_and_assessment-->
+```Python
+    for patient_result in radiology_insights_result.patient_results:
+        counter = 0
+        for ri_inference in patient_result.inferences:
+            if ri_inference.kind == models.RadiologyInsightsInferenceType.SCORING_AND_ASSESSMENT:
+                counter += 1
+                print(f"Scoring and assessment {counter} Inference found")
+
+                # Print Category
+                if ri_inference.category:
+                    print(f"Category : {ri_inference.category}")
+
+                # Print Compliance Type
+                if ri_inference.category_description:
+                    print(f"Category Description: {ri_inference.category_description}")
+
+                # Print Quality Criteria
+                if ri_inference.single_value:
+                    print(f"Single Value: {ri_inference.single_value}")
+
+                # Print Range Value
+                if ri_inference.range_value:
+                    display_range_value(ri_inference.range_value)
+
+```
+<!-- SNIPPET:sample_scoring_and_assessment_inference_async.display_scoring_and_assessment-->
+
 For detailed conceptual information of this and other inferences please read more [here][inferences].
 
 ## Troubleshooting
@@ -328,7 +412,7 @@ additional questions or comments.
 <!-- LINKS -->
 [azure_cli]: https://docs.microsoft.com/cli/azure
 [azure_portal]: https://portal.azure.com
-[azure_core]: https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/latest/azure.core.html#module-azure.core.exceptions
+[azure_core]: https://azuresdkdocs.z19.web.core.windows.net/python/azure-core/latest/azure.core.html#module-azure.core.exceptions
 [health_insights]: https://learn.microsoft.com/azure/azure-health-insights/overview
 [radiology_insights_docs]: https://learn.microsoft.com/azure/azure-health-insights/radiology-insights/
 [azure_sub]: https://azure.microsoft.com/free/

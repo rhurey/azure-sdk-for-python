@@ -25,15 +25,12 @@ from azure.eventhub._client_base import EventHubSASTokenCredential
 
 
 @pytest.mark.liveTest
-def test_send_batch_with_invalid_hostname(invalid_hostname, uamqp_transport):
+def test_send_batch_with_invalid_hostname(invalid_hostname, uamqp_transport, client_args):
     if sys.platform.startswith("darwin"):
         pytest.skip(
-            "Skipping on OSX - it keeps reporting 'Unable to set external certificates' "
-            "and blocking other tests"
+            "Skipping on OSX - it keeps reporting 'Unable to set external certificates' " "and blocking other tests"
         )
-    client = EventHubProducerClient.from_connection_string(
-        invalid_hostname, uamqp_transport=uamqp_transport
-    )
+    client = EventHubProducerClient.from_connection_string(invalid_hostname, uamqp_transport=uamqp_transport, **client_args)
     with client:
         with pytest.raises(ConnectError):
             batch = EventDataBatch()
@@ -48,7 +45,7 @@ def test_send_batch_with_invalid_hostname(invalid_hostname, uamqp_transport):
 
     on_error.err = None
     client = EventHubProducerClient.from_connection_string(
-        invalid_hostname, on_error=on_error, uamqp_transport=uamqp_transport
+        invalid_hostname, on_error=on_error, uamqp_transport=uamqp_transport, **client_args
     )
     with client:
         batch = EventDataBatch()
@@ -58,7 +55,7 @@ def test_send_batch_with_invalid_hostname(invalid_hostname, uamqp_transport):
 
     on_error.err = None
     client = EventHubProducerClient.from_connection_string(
-        invalid_hostname, on_error=on_error, uamqp_transport=uamqp_transport
+        invalid_hostname, on_error=on_error, uamqp_transport=uamqp_transport, **client_args
     )
     with client:
         client.send_event(EventData("test data"))
@@ -66,12 +63,12 @@ def test_send_batch_with_invalid_hostname(invalid_hostname, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_receive_with_invalid_hostname_sync(invalid_hostname, uamqp_transport):
+def test_receive_with_invalid_hostname_sync(invalid_hostname, uamqp_transport, client_args):
     def on_event(partition_context, event):
         pass
 
     client = EventHubConsumerClient.from_connection_string(
-        invalid_hostname, consumer_group="$default", uamqp_transport=uamqp_transport
+        invalid_hostname, consumer_group="$default", uamqp_transport=uamqp_transport, **client_args
     )
     with client:
         thread = threading.Thread(target=client.receive, args=(on_event,))
@@ -82,10 +79,8 @@ def test_receive_with_invalid_hostname_sync(invalid_hostname, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_send_batch_with_invalid_key(invalid_key, uamqp_transport):
-    client = EventHubProducerClient.from_connection_string(
-        invalid_key, uamqp_transport=uamqp_transport
-    )
+def test_send_batch_with_invalid_key(invalid_key, uamqp_transport, client_args):
+    client = EventHubProducerClient.from_connection_string(invalid_key, uamqp_transport=uamqp_transport, **client_args)
     try:
         with pytest.raises(ConnectError):
             batch = EventDataBatch()
@@ -96,7 +91,7 @@ def test_send_batch_with_invalid_key(invalid_key, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_send_batch_to_invalid_partitions(auth_credentials, uamqp_transport):
+def test_send_batch_to_invalid_partitions(auth_credentials, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials
     partitions = ["XYZ", "-1", "1000", "-"]
     for p in partitions:
@@ -105,6 +100,7 @@ def test_send_batch_to_invalid_partitions(auth_credentials, uamqp_transport):
             eventhub_name=eventhub_name,
             credential=credential(),
             uamqp_transport=uamqp_transport,
+            **client_args,
         )
         try:
             with pytest.raises(ConnectError):
@@ -116,7 +112,7 @@ def test_send_batch_to_invalid_partitions(auth_credentials, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_send_batch_too_large_message(auth_credentials, uamqp_transport):
+def test_send_batch_too_large_message(auth_credentials, uamqp_transport, client_args):
     if sys.platform.startswith("darwin"):
         pytest.skip("Skipping on OSX - open issue regarding message size")
     fully_qualified_namespace, eventhub_name, credential = auth_credentials
@@ -125,6 +121,7 @@ def test_send_batch_too_large_message(auth_credentials, uamqp_transport):
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     try:
         data = EventData(b"A" * 1100000)
@@ -136,13 +133,14 @@ def test_send_batch_too_large_message(auth_credentials, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_send_batch_null_body(auth_credentials, uamqp_transport):
+def test_send_batch_null_body(auth_credentials, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     try:
         with pytest.raises(ValueError):
@@ -155,28 +153,26 @@ def test_send_batch_null_body(auth_credentials, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_create_batch_with_invalid_hostname_sync(invalid_hostname, uamqp_transport):
+def test_create_batch_with_invalid_hostname_sync(invalid_hostname, uamqp_transport, client_args):
     if sys.platform.startswith("darwin"):
         pytest.skip(
-            "Skipping on OSX - it keeps reporting 'Unable to set external certificates' "
-            "and blocking other tests"
+            "Skipping on OSX - it keeps reporting 'Unable to set external certificates' " "and blocking other tests"
         )
-    client = EventHubProducerClient.from_connection_string(
-        invalid_hostname, uamqp_transport=uamqp_transport
-    )
+    client = EventHubProducerClient.from_connection_string(invalid_hostname, uamqp_transport=uamqp_transport, **client_args)
     with client:
         with pytest.raises(ConnectError):
             client.create_batch(max_size_in_bytes=300)
 
 
 @pytest.mark.liveTest
-def test_create_batch_with_too_large_size_sync(auth_credentials, uamqp_transport):
+def test_create_batch_with_too_large_size_sync(auth_credentials, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     with client:
         with pytest.raises(ValueError):
@@ -184,7 +180,7 @@ def test_create_batch_with_too_large_size_sync(auth_credentials, uamqp_transport
 
 
 @pytest.mark.liveTest
-def test_invalid_proxy_server(auth_credentials, uamqp_transport):
+def test_invalid_proxy_server(auth_credentials, uamqp_transport, client_args):
     if sys.platform.startswith("darwin") and uamqp_transport:
         pytest.skip("Skipping on OSX - running forever and blocking other tests")
     fully_qualified_namespace, eventhub_name, credential = auth_credentials
@@ -199,6 +195,7 @@ def test_invalid_proxy_server(auth_credentials, uamqp_transport):
         credential=credential(),
         http_proxy=HTTP_PROXY,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     with client:
         with pytest.raises(EventHubError):
@@ -206,7 +203,7 @@ def test_invalid_proxy_server(auth_credentials, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_client_send_timeout(auth_credential_receivers, uamqp_transport):
+def test_client_send_timeout(auth_credential_receivers, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
 
     def on_success(events, pid):
@@ -219,7 +216,8 @@ def test_client_send_timeout(auth_credential_receivers, uamqp_transport):
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args,
     )
 
     with producer:
@@ -237,6 +235,7 @@ def test_client_send_timeout(auth_credential_receivers, uamqp_transport):
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
 
     with producer:
@@ -248,7 +247,9 @@ def test_client_send_timeout(auth_credential_receivers, uamqp_transport):
 
 
 @pytest.mark.liveTest
-def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transport):
+# Not recording since proxy requires a specific ssl_context, which causes the test to fail when connection_verify is passed
+@pytest.mark.no_amqpproxy
+def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transport, client_args):
 
     def on_event(partition_context, event):
         pass
@@ -268,6 +269,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
             retry_mode="exponential",
             retry_backoff=0.02,
             uamqp_transport=uamqp_transport,
+            **client_args,
         )
         consumer_client = EventHubConsumerClient(
             fully_qualified_namespace="fakeeventhub.servicebus.windows.net",
@@ -279,6 +281,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
             retry_mode="exponential",
             retry_backoff=0.02,
             uamqp_transport=uamqp_transport,
+            **client_args,
         )
         with producer_client:
             with pytest.raises(ConnectError):
@@ -302,6 +305,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         eventhub_name="fakehub",
         credential=azure_credential,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
 
     consumer_client = EventHubConsumerClient(
@@ -311,6 +315,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         consumer_group="$Default",
         retry_total=0,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
 
     with producer_client:
@@ -330,18 +335,15 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
     thread.join()
     assert isinstance(on_error.err, AuthenticationError)
 
-    credential = EventHubSharedKeyCredential(
-        live_eventhub["key_name"], live_eventhub["access_key"]
-    )
-    auth_uri = "sb://{}/{}".format(
-        live_eventhub["hostname"], live_eventhub["event_hub"]
-    )
+    credential = EventHubSharedKeyCredential(live_eventhub["key_name"], live_eventhub["access_key"])
+    auth_uri = "sb://{}/{}".format(live_eventhub["hostname"], live_eventhub["event_hub"])
     token = credential.get_token(auth_uri).token
     producer_client = EventHubProducerClient(
         fully_qualified_namespace=live_eventhub["hostname"],
         eventhub_name=live_eventhub["event_hub"],
         credential=EventHubSASTokenCredential(token, time.time() + 5),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     time.sleep(10)
     # expired credential
@@ -356,6 +358,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         consumer_group="$Default",
         retry_total=0,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     on_error.err = None
     with consumer_client:
@@ -377,6 +380,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         eventhub_name=live_eventhub["event_hub"],
         credential=credential,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     with producer_client:
         with pytest.raises(AuthenticationError):
@@ -389,6 +393,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         consumer_group="$Default",
         retry_total=0,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     on_error.err = None
     with consumer_client:
@@ -409,6 +414,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         eventhub_name=live_eventhub["event_hub"],
         credential=credential,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
 
     with producer_client:
@@ -426,6 +432,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
         consumer_group="$Default",
         retry_total=0,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     on_error.err = None
     with consumer_client:
@@ -484,6 +491,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
             credential=azure_credential,
             custom_endpoint_address="fakeaddr",
             uamqp_transport=uamqp_transport,
+            **client_args,
         )
 
         with producer_client:
@@ -498,6 +506,7 @@ def test_client_invalid_credential(live_eventhub, get_credential, uamqp_transpor
             retry_total=0,
             custom_endpoint_address="fakeaddr",
             uamqp_transport=uamqp_transport,
+            **client_args,
         )
         with consumer_client:
             thread = threading.Thread(

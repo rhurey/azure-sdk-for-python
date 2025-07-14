@@ -72,7 +72,7 @@ class OnlineEndpointOperations(_ScopeDependentOperations):
         **kwargs: Dict,
     ):
         super(OnlineEndpointOperations, self).__init__(operation_scope, operation_config)
-        ops_logger.update_info(kwargs)
+        ops_logger.update_filter()
         self._online_operation = service_client_02_2022_preview.online_endpoints
         self._online_deployment_operation = service_client_02_2022_preview.online_deployments
         self._all_operations = all_operations
@@ -288,7 +288,6 @@ class OnlineEndpointOperations(_ScopeDependentOperations):
 
         if endpoint.properties.auth_mode.lower() == "key":
             return self._regenerate_online_keys(name=name, key_type=key_type)
-
         raise ValidationException(
             message=f"Endpoint '{name}' does not use keys for authentication.",
             target=ErrorTarget.ONLINE_ENDPOINT,
@@ -309,7 +308,6 @@ class OnlineEndpointOperations(_ScopeDependentOperations):
         input_data: Optional[Union[str, Data]] = None,
         params_override: Any = None,
         local: bool = False,
-        # pylint: disable=unused-argument
         **kwargs: Any,
     ) -> str:
         """Invokes the endpoint with the provided payload.
@@ -335,9 +333,6 @@ class OnlineEndpointOperations(_ScopeDependentOperations):
         :rtype: str
         """
         params_override = params_override or []
-        # Until this bug is resolved https://msdata.visualstudio.com/Vienna/_workitems/edit/1446538
-        if deployment_name:
-            self._validate_deployment_name(endpoint_name, deployment_name)
 
         with open(request_file, "rb") as f:  # type: ignore[arg-type]
             data = json.loads(f.read())
@@ -345,6 +340,9 @@ class OnlineEndpointOperations(_ScopeDependentOperations):
             return self._local_endpoint_helper.invoke(
                 endpoint_name=endpoint_name, data=data, deployment_name=deployment_name
             )
+        # Until this bug is resolved https://msdata.visualstudio.com/Vienna/_workitems/edit/1446538
+        if deployment_name:
+            self._validate_deployment_name(endpoint_name, deployment_name)
         endpoint = self._online_operation.get(
             resource_group_name=self._resource_group_name,
             workspace_name=self._workspace_name,

@@ -60,6 +60,8 @@ class TestSearchClient(AzureRecordedTestCase):
             "@search.reranker_score",
             "@search.highlights",
             "@search.captions",
+            "@search.document_debug_info",
+            "@search.reranker_boosted_score",
         }
         assert all(set(x) == expected for x in results)
         assert all(x["category"] == "Budget" for x in results)
@@ -83,6 +85,8 @@ class TestSearchClient(AzureRecordedTestCase):
             "@search.reranker_score",
             "@search.highlights",
             "@search.captions",
+            "@search.document_debug_info",
+            "@search.reranker_boosted_score",
         }
         assert all(set(x) == expected for x in results)
         assert all(x["category"] == "Budget" for x in results)

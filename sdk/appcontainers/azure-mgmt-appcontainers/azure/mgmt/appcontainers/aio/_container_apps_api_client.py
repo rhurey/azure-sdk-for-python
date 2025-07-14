@@ -32,8 +32,10 @@ from .operations import (
     ContainerAppsOperations,
     ContainerAppsRevisionReplicasOperations,
     ContainerAppsRevisionsOperations,
+    ContainerAppsSessionPoolsOperations,
     ContainerAppsSourceControlsOperations,
     DaprComponentsOperations,
+    JavaComponentsOperations,
     JobsExecutionsOperations,
     JobsOperations,
     ManagedCertificatesOperations,
@@ -48,13 +50,10 @@ from .operations import (
 )
 
 if TYPE_CHECKING:
-    # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials_async import AsyncTokenCredential
 
 
-class ContainerAppsAPIClient(
-    ContainerAppsAPIClientOperationsMixin
-):  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
+class ContainerAppsAPIClient(ContainerAppsAPIClientOperationsMixin):  # pylint: disable=too-many-instance-attributes
     """ContainerAppsAPIClient.
 
     :ivar container_apps_auth_configs: ContainerAppsAuthConfigsOperations operations
@@ -100,6 +99,8 @@ class ContainerAppsAPIClient(
     :vartype jobs: azure.mgmt.appcontainers.aio.operations.JobsOperations
     :ivar operations: Operations operations
     :vartype operations: azure.mgmt.appcontainers.aio.operations.Operations
+    :ivar java_components: JavaComponentsOperations operations
+    :vartype java_components: azure.mgmt.appcontainers.aio.operations.JavaComponentsOperations
     :ivar jobs_executions: JobsExecutionsOperations operations
     :vartype jobs_executions: azure.mgmt.appcontainers.aio.operations.JobsExecutionsOperations
     :ivar managed_environments: ManagedEnvironmentsOperations operations
@@ -117,6 +118,9 @@ class ContainerAppsAPIClient(
     :ivar managed_environments_storages: ManagedEnvironmentsStoragesOperations operations
     :vartype managed_environments_storages:
      azure.mgmt.appcontainers.aio.operations.ManagedEnvironmentsStoragesOperations
+    :ivar container_apps_session_pools: ContainerAppsSessionPoolsOperations operations
+    :vartype container_apps_session_pools:
+     azure.mgmt.appcontainers.aio.operations.ContainerAppsSessionPoolsOperations
     :ivar container_apps_source_controls: ContainerAppsSourceControlsOperations operations
     :vartype container_apps_source_controls:
      azure.mgmt.appcontainers.aio.operations.ContainerAppsSourceControlsOperations
@@ -131,7 +135,7 @@ class ContainerAppsAPIClient(
     :type subscription_id: str
     :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
-    :keyword api_version: Api Version. Default value is "2024-03-01". Note that overriding this
+    :keyword api_version: Api Version. Default value is "2025-01-01". Note that overriding this
      default value may result in unsupported behavior.
     :paramtype api_version: str
     :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
@@ -209,6 +213,7 @@ class ContainerAppsAPIClient(
         )
         self.jobs = JobsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
+        self.java_components = JavaComponentsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.jobs_executions = JobsExecutionsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.managed_environments = ManagedEnvironmentsOperations(
             self._client, self._config, self._serialize, self._deserialize
@@ -220,6 +225,9 @@ class ContainerAppsAPIClient(
         self.namespaces = NamespacesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.dapr_components = DaprComponentsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.managed_environments_storages = ManagedEnvironmentsStoragesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.container_apps_session_pools = ContainerAppsSessionPoolsOperations(
             self._client, self._config, self._serialize, self._deserialize
         )
         self.container_apps_source_controls = ContainerAppsSourceControlsOperations(

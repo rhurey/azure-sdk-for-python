@@ -1,5 +1,5 @@
+# pylint: disable=line-too-long,useless-suppression
 # coding=utf-8
-# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -10,10 +10,9 @@
 import datetime
 from typing import Any, Optional, TYPE_CHECKING, Union
 
-from ... import _serialization
+from .._utils import serialization as _serialization
 
 if TYPE_CHECKING:
-    # pylint: disable=unused-import,ungrouped-imports
     from .. import models as _models
 
 
@@ -23,7 +22,7 @@ class Resource(_serialization.Model):
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
-     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".  # pylint: disable=line-too-long
+     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
     :vartype id: str
     :ivar name: The name of the resource.
     :vartype name: str
@@ -52,10 +51,10 @@ class Resource(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.id = None
-        self.name = None
-        self.type = None
-        self.system_data = None
+        self.id: Optional[str] = None
+        self.name: Optional[str] = None
+        self.type: Optional[str] = None
+        self.system_data: Optional["_models.SystemData"] = None
 
 
 class ProxyResource(Resource):
@@ -65,7 +64,7 @@ class ProxyResource(Resource):
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
-     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".  # pylint: disable=line-too-long
+     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
     :vartype id: str
     :ivar name: The name of the resource.
     :vartype name: str
@@ -84,7 +83,7 @@ class DataBoundaryDefinition(ProxyResource):
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
-     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".  # pylint: disable=line-too-long
+     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
     :vartype id: str
     :ivar name: The name of the resource.
     :vartype name: str
@@ -157,7 +156,7 @@ class DataBoundaryProperties(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.data_boundary = data_boundary
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.ProvisioningState"]] = None
 
 
 class ErrorAdditionalInfo(_serialization.Model):
@@ -184,8 +183,8 @@ class ErrorAdditionalInfo(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.type = None
-        self.info = None
+        self.type: Optional[str] = None
+        self.info: Optional[JSON] = None
 
 
 class ErrorDetail(_serialization.Model):
@@ -225,11 +224,11 @@ class ErrorDetail(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.code = None
-        self.message = None
-        self.target = None
-        self.details = None
-        self.additional_info = None
+        self.code: Optional[str] = None
+        self.message: Optional[str] = None
+        self.target: Optional[str] = None
+        self.details: Optional[List["_models.ErrorDetail"]] = None
+        self.additional_info: Optional[List["_models.ErrorAdditionalInfo"]] = None
 
 
 class ErrorResponse(_serialization.Model):
@@ -251,127 +250,6 @@ class ErrorResponse(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.error = error
-
-
-class Operation(_serialization.Model):
-    """Details of a REST API operation, returned from the Resource Provider Operations API.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar name: The name of the operation, as per Resource-Based Access Control (RBAC). Examples:
-     "Microsoft.Compute/virtualMachines/write", "Microsoft.Compute/virtualMachines/capture/action".
-    :vartype name: str
-    :ivar is_data_action: Whether the operation applies to data-plane. This is "true" for
-     data-plane operations and "false" for ARM/control-plane operations.
-    :vartype is_data_action: bool
-    :ivar display: Localized display information for this particular operation.
-    :vartype display: ~azure.mgmt.resource.databoundaries.v2024_08_01.models.OperationDisplay
-    :ivar origin: The intended executor of the operation; as in Resource Based Access Control
-     (RBAC) and audit logs UX. Default value is "user,system". Known values are: "user", "system",
-     and "user,system".
-    :vartype origin: str or ~azure.mgmt.resource.databoundaries.v2024_08_01.models.Origin
-    :ivar action_type: Enum. Indicates the action type. "Internal" refers to actions that are for
-     internal only APIs. "Internal"
-    :vartype action_type: str or ~azure.mgmt.resource.databoundaries.v2024_08_01.models.ActionType
-    """
-
-    _validation = {
-        "name": {"readonly": True},
-        "is_data_action": {"readonly": True},
-        "origin": {"readonly": True},
-        "action_type": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "name": {"key": "name", "type": "str"},
-        "is_data_action": {"key": "isDataAction", "type": "bool"},
-        "display": {"key": "display", "type": "OperationDisplay"},
-        "origin": {"key": "origin", "type": "str"},
-        "action_type": {"key": "actionType", "type": "str"},
-    }
-
-    def __init__(self, *, display: Optional["_models.OperationDisplay"] = None, **kwargs: Any) -> None:
-        """
-        :keyword display: Localized display information for this particular operation.
-        :paramtype display: ~azure.mgmt.resource.databoundaries.v2024_08_01.models.OperationDisplay
-        """
-        super().__init__(**kwargs)
-        self.name = None
-        self.is_data_action = None
-        self.display = display
-        self.origin = None
-        self.action_type = None
-
-
-class OperationDisplay(_serialization.Model):
-    """Localized display information for this particular operation.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar provider: The localized friendly form of the resource provider name, e.g. "Microsoft
-     Monitoring Insights" or "Microsoft Compute".
-    :vartype provider: str
-    :ivar resource: The localized friendly name of the resource type related to this operation.
-     E.g. "Virtual Machines" or "Job Schedule Collections".
-    :vartype resource: str
-    :ivar operation: The concise, localized friendly name for the operation; suitable for
-     dropdowns. E.g. "Create or Update Virtual Machine", "Restart Virtual Machine".
-    :vartype operation: str
-    :ivar description: The short, localized friendly description of the operation; suitable for
-     tool tips and detailed views.
-    :vartype description: str
-    """
-
-    _validation = {
-        "provider": {"readonly": True},
-        "resource": {"readonly": True},
-        "operation": {"readonly": True},
-        "description": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "provider": {"key": "provider", "type": "str"},
-        "resource": {"key": "resource", "type": "str"},
-        "operation": {"key": "operation", "type": "str"},
-        "description": {"key": "description", "type": "str"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.provider = None
-        self.resource = None
-        self.operation = None
-        self.description = None
-
-
-class OperationListResult(_serialization.Model):
-    """A list of REST API operations supported by an Azure Resource Provider. It contains an URL link
-    to get the next set of results.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar value: List of operations supported by the resource provider.
-    :vartype value: list[~azure.mgmt.resource.databoundaries.v2024_08_01.models.Operation]
-    :ivar next_link: URL to get the next set of operation list results (if there are any).
-    :vartype next_link: str
-    """
-
-    _validation = {
-        "value": {"readonly": True},
-        "next_link": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "value": {"key": "value", "type": "[Operation]"},
-        "next_link": {"key": "nextLink", "type": "str"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.value = None
-        self.next_link = None
 
 
 class SystemData(_serialization.Model):

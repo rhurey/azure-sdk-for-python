@@ -14,9 +14,12 @@ RUN_BREAKING_CHANGES_PACKAGES = ["azure-mgmt-*", "azure-ai-contentsafety", "azur
 
 IGNORE_BREAKING_CHANGES = {
     "azure-mgmt-": [
+        # Rules that mgmt packages want to ignore
+        ("AddedMethodOverload", "*"),
         # Changes due to latest dpg design + need to support overloads in this tool
         ("ChangedParameterOrdering", "*", "*", "__init__"),
         # Changes due to latest dpg design
+        ("RemovedOrRenamedInstanceAttribute", "*", "*", "additional_properties"),
         ("RemovedOrRenamedClass", "*", RegexSuppression(".*ListResult$")),
         ("ChangedParameterKind", "*", "*", "*", "top"),
         ("ChangedParameterKind", "*", "*", "*", "filter"),
@@ -52,5 +55,7 @@ IGNORE_BREAKING_CHANGES = {
         ("AddedClassMethod", "*", "*", "values"),
         ("AddedClassMethodParameter", "*", "*", "args", "__init__"),
         ("AddedClassMethodParameter", "*", "*", "exclude_readonly", "as_dict"),
+        # Suppress breaking change check for multi-cloud support as it is not considered a breaking change
+        ("ChangedParameterDefaultValue", "*", "*", "*", "base_url"),
     ]
 }

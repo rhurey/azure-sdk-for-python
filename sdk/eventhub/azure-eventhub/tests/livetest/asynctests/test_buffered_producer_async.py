@@ -42,7 +42,7 @@ async def random_pkey_generation(partitions):
 
 @pytest.mark.liveTest()
 @pytest.mark.asyncio
-async def test_producer_client_constructor(auth_credentials_async, uamqp_transport):
+async def test_producer_client_constructor(auth_credentials_async, uamqp_transport, client_args):
     async def on_success(events, pid):
         pass
 
@@ -57,6 +57,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
             credential=credential(),
             buffered_mode=True,
             uamqp_transport=uamqp_transport,
+            **client_args
         )
     with pytest.raises(TypeError):
         EventHubProducerClient(
@@ -66,6 +67,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
             buffered_mode=True,
             on_success=on_success,
             uamqp_transport=uamqp_transport,
+            **client_args
         )
     with pytest.raises(TypeError):
         EventHubProducerClient(
@@ -75,6 +77,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
             buffered_mode=True,
             on_error=on_error,
             uamqp_transport=uamqp_transport,
+            **client_args
         )
     with pytest.raises(ValueError):
         EventHubProducerClient(
@@ -86,6 +89,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
             on_error=on_error,
             max_wait_time=0,
             uamqp_transport=uamqp_transport,
+            **client_args
         )
     with pytest.raises(ValueError):
         EventHubProducerClient(
@@ -97,6 +101,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
             on_error=on_error,
             max_buffer_length=0,
             uamqp_transport=uamqp_transport,
+            **client_args
         )
 
     def on_success_missing_params(events):
@@ -114,6 +119,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
         on_success=on_success_missing_params,
         on_error=on_error_missing_params,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     on_success_missing_params.events = None
@@ -134,7 +140,7 @@ async def test_producer_client_constructor(auth_credentials_async, uamqp_transpo
     [(False, False), (True, False), (False, True)],
 )
 async def test_basic_send_single_events_round_robin(
-    auth_credentials_async, flush_after_sending, close_after_sending, uamqp_transport
+    auth_credentials_async, flush_after_sending, close_after_sending, uamqp_transport, client_args
 ):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     received_events = defaultdict(list)
@@ -147,7 +153,8 @@ async def test_basic_send_single_events_round_robin(
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args
     )
     receive_thread = asyncio.ensure_future(consumer.receive(on_event=on_event))
 
@@ -172,6 +179,7 @@ async def test_basic_send_single_events_round_robin(
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     async with producer:
@@ -199,20 +207,14 @@ async def test_basic_send_single_events_round_robin(
             # ensure it's buffered sending
             for pid in partitions:
                 assert len(sent_events[pid]) < total_single_event_cnt // partitions_cnt
-            assert (
-                sum([len(sent_events[pid]) for pid in partitions])
-                < total_single_event_cnt
-            )
+            assert sum([len(sent_events[pid]) for pid in partitions]) < total_single_event_cnt
         else:
             if flush_after_sending:
                 await producer.flush()
             if close_after_sending:
                 await producer.close()
             # ensure all events are sent after calling flush
-            assert (
-                sum([len(sent_events[pid]) for pid in partitions])
-                == total_single_event_cnt
-            )
+            assert sum([len(sent_events[pid]) for pid in partitions]) == total_single_event_cnt
 
         # give some time for producer to complete sending and consumer to complete receiving
         await asyncio.sleep(10)
@@ -253,7 +255,7 @@ async def test_basic_send_single_events_round_robin(
     [(True, False), (False, True), (False, False)],
 )
 async def test_basic_send_batch_events_round_robin(
-    auth_credentials_async, flush_after_sending, close_after_sending, uamqp_transport
+    auth_credentials_async, flush_after_sending, close_after_sending, uamqp_transport, client_args
 ):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     received_events = defaultdict(list)
@@ -266,7 +268,8 @@ async def test_basic_send_batch_events_round_robin(
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args
     )
     receive_thread = asyncio.ensure_future(consumer.receive(on_event=on_event))
 
@@ -288,6 +291,7 @@ async def test_basic_send_batch_events_round_robin(
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     async with producer:
@@ -342,9 +346,7 @@ async def test_basic_send_batch_events_round_robin(
             if close_after_sending:
                 await producer.close()
             # ensure all events are sent
-            assert (
-                sum([len(sent_events[pid]) for pid in partitions]) == total_events_cnt
-            )
+            assert sum([len(sent_events[pid]) for pid in partitions]) == total_events_cnt
 
         await asyncio.sleep(10)
         assert len(sent_events) == len(received_events) == partitions_cnt
@@ -373,7 +375,7 @@ async def test_basic_send_batch_events_round_robin(
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uamqp_transport):
+async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     received_events = defaultdict(list)
 
@@ -385,7 +387,8 @@ async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uam
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args
     )
     receive_thread = asyncio.ensure_future(consumer.receive(on_event=on_event))
 
@@ -406,6 +409,7 @@ async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uam
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     async with producer:
@@ -417,9 +421,7 @@ async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uam
         # 1. send by partition_key, each partition 2 events, two single + one batch containing two
         for pid in partitions:
             pkey = pid_to_pkey[pid]
-            await producer.send_event(
-                EventData("{}".format(event_idx)), partition_key=pkey
-            )
+            await producer.send_event(EventData("{}".format(event_idx)), partition_key=pkey)
             batch = await producer.create_batch(partition_key=pkey)
             batch.add(EventData("{}".format(event_idx + 1)))
             await producer.send_batch(batch)
@@ -429,9 +431,7 @@ async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uam
 
         # 2. send by partition_id, each partition 2 events, two single + one batch containing two
         for pid in partitions:
-            await producer.send_event(
-                EventData("{}".format(event_idx)), partition_id=pid
-            )
+            await producer.send_event(EventData("{}".format(event_idx)), partition_id=pid)
             batch = await producer.create_batch(partition_id=pid)
             batch.add(EventData("{}".format(event_idx + 1)))
             await producer.send_batch(batch)
@@ -458,17 +458,11 @@ async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uam
 
             for sent_event in sent_events[pid]:
                 if int(sent_event.body_as_str()) in expected_event_idx_to_partition:
-                    assert (
-                        expected_event_idx_to_partition[int(sent_event.body_as_str())]
-                        == pid
-                    )
+                    assert expected_event_idx_to_partition[int(sent_event.body_as_str())] == pid
 
             for recv_event in received_events[pid]:
                 if int(sent_event.body_as_str()) in expected_event_idx_to_partition:
-                    assert (
-                        expected_event_idx_to_partition[int(sent_event.body_as_str())]
-                        == pid
-                    )
+                    assert expected_event_idx_to_partition[int(sent_event.body_as_str())] == pid
 
                 assert recv_event.body_as_str() not in visited
                 visited.add(recv_event.body_as_str())
@@ -482,7 +476,7 @@ async def test_send_with_hybrid_partition_assignment(auth_credentials_async, uam
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_send_with_timing_configuration(auth_credentials_async, uamqp_transport):
+async def test_send_with_timing_configuration(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     received_events = defaultdict(list)
 
@@ -494,7 +488,8 @@ async def test_send_with_timing_configuration(auth_credentials_async, uamqp_tran
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args
     )
     receive_thread = asyncio.ensure_future(consumer.receive(on_event=on_event))
 
@@ -518,6 +513,7 @@ async def test_send_with_timing_configuration(auth_credentials_async, uamqp_tran
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     async with producer:
@@ -542,6 +538,7 @@ async def test_send_with_timing_configuration(auth_credentials_async, uamqp_tran
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     sent_events.clear()
@@ -554,9 +551,7 @@ async def test_send_with_timing_configuration(auth_credentials_async, uamqp_tran
         batch = await producer.create_batch(partition_id="0")
         for i in range(9):
             batch.add(EventData("9"))
-        await producer.send_batch(
-            batch
-        )  # will flush 7 events and put the batch in buffer
+        await producer.send_batch(batch)  # will flush 7 events and put the batch in buffer
         assert sum([len(sent_events[pid]) for pid in partitions]) == 7
         for i in range(5):
             await producer.send_event(
@@ -575,7 +570,7 @@ async def test_send_with_timing_configuration(auth_credentials_async, uamqp_tran
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_long_sleep(auth_credentials_async, uamqp_transport):
+async def test_long_sleep(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     received_events = defaultdict(list)
 
@@ -587,7 +582,8 @@ async def test_long_sleep(auth_credentials_async, uamqp_transport):
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     receive_thread = asyncio.ensure_future(consumer.receive(on_event=on_event))
@@ -609,6 +605,7 @@ async def test_long_sleep(auth_credentials_async, uamqp_transport):
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     async with producer:
@@ -628,7 +625,7 @@ async def test_long_sleep(auth_credentials_async, uamqp_transport):
 @pytest.mark.skip("not testing correctly + flaky, fix during MQ")
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_long_wait_small_buffer(auth_credentials_async, uamqp_transport):
+async def test_long_wait_small_buffer(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     received_events = defaultdict(list)
 
@@ -639,7 +636,9 @@ async def test_long_wait_small_buffer(auth_credentials_async, uamqp_transport):
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
-        consumer_group="$default", uamqp_transport=uamqp_transport
+        consumer_group="$default",
+        uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     receive_thread = asyncio.ensure_future(consumer.receive(on_event=on_event))
@@ -667,6 +666,7 @@ async def test_long_wait_small_buffer(auth_credentials_async, uamqp_transport):
         max_wait_time=10,
         max_buffer_length=100,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     async with producer:

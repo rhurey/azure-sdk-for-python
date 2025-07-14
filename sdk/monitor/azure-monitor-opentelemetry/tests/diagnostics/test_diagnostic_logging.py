@@ -33,7 +33,7 @@ def clear_file(file_path):
 def check_file_for_messages(file_path, level, messages):
     with open(file_path, "r") as f:
         f.seek(0)
-        for (message, message_id) in messages:
+        for message, message_id in messages:
             json = loads(f.readline())
             assert json["time"]
             assert json["level"] == level
@@ -92,8 +92,8 @@ def set_up(
         TEST_VERSION,
     ).start()
     patch(
-        "azure.monitor.opentelemetry._diagnostics.diagnostic_logging._IS_DIAGNOSTICS_ENABLED",
-        is_diagnostics_enabled,
+        "azure.monitor.opentelemetry._diagnostics.diagnostic_logging._is_diagnostics_enabled",
+        return_value=is_diagnostics_enabled,
     ).start()
 
 

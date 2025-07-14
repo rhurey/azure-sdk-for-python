@@ -10,6 +10,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from azure.monitor.opentelemetry import _utils
+from azure.monitor.opentelemetry.exporter._constants import _AKS_ARM_NAMESPACE_ID
 
 TEST_VALUE = "TEST_VALUE"
 TEST_IKEY = "1234abcd-ab12-34cd-ab12-a23456abcdef"
@@ -35,40 +36,99 @@ class TestUtils(TestCase):
         reload(_utils)
         self.assertEqual(_utils._EXTENSION_VERSION, "disabled")
 
-    @patch.dict(
-        "os.environ", {"APPLICATIONINSIGHTS_CONNECTION_STRING": TEST_CONN_STR}
-    )
+    @patch.dict("os.environ", {"APPLICATIONINSIGHTS_CONNECTION_STRING": TEST_CONN_STR})
     def test_ikey(self):
         reload(_utils)
-        self.assertEqual(
-            _utils._get_customer_ikey_from_env_var(), TEST_IKEY
-        )
+        self.assertEqual(_utils._get_customer_ikey_from_env_var(), TEST_IKEY)
 
     def test_ikey_defaults(self):
         clear_env_var("APPLICATIONINSIGHTS_CONNECTION_STRING")
         reload(_utils)
-        self.assertEqual(
-            _utils._get_customer_ikey_from_env_var(), "unknown"
-        )
+        self.assertEqual(_utils._get_customer_ikey_from_env_var(), "unknown")
 
-    @patch.dict("os.environ", {"WEBSITE_SITE_NAME": TEST_VALUE})
-    def test_diagnostics_enabled(self):
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_attach_enabled",
+        return_value=True,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_app_service",
+        return_value=True,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_aks",
+        return_value=False,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_functions",
+        return_value=False,
+    )
+    def test_diagnostics_app_service_attach(
+        self, attach_mock, app_service_mock, aks_mock, functions_mock
+    ):
         reload(_utils)
-        self.assertTrue(_utils._IS_DIAGNOSTICS_ENABLED)
+        self.assertTrue(_utils._is_diagnostics_enabled())
 
-    def test_diagnostics_disabled(self):
-        clear_env_var("WEBSITE_SITE_NAME")
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_attach_enabled",
+        return_value=True,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_app_service",
+        return_value=False,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_aks",
+        return_value=True,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_functions",
+        return_value=False,
+    )
+    def test_diagnostics_aks_attach(
+        self, attach_mock, app_service_mock, aks_mock, functions_mock
+    ):
         reload(_utils)
-        self.assertFalse(_utils._IS_DIAGNOSTICS_ENABLED)
+        self.assertTrue(_utils._is_diagnostics_enabled())
+
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_attach_enabled",
+        return_value=True,
+    )
+    # Functions have the WEBSITE_SITE_NAME environment variable.
+    # This causes them to appear as App Service resources
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_app_service",
+        return_value=True,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_aks",
+        return_value=False,
+    )
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_on_functions",
+        return_value=True,
+    )
+    def test_diagnostics_functions_attach(
+        self, attach_mock, app_service_mock, aks_mock, functions_mock
+    ):
+        reload(_utils)
+        # Functions attach does not currently enable diagnostics
+        self.assertFalse(_utils._is_diagnostics_enabled())
+
+    @patch(
+        "azure.monitor.opentelemetry.exporter._utils._is_attach_enabled",
+        return_value=False,
+    )
+    def test_diagnostics_disabled(self, attach_mock):
+        reload(_utils)
+        self.assertFalse(_utils._is_diagnostics_enabled())
 
     @patch(
         "azure.monitor.opentelemetry._utils.platform.system",
         return_value="Linux",
     )
     def test_log_path_linux(self, mock_system):
-        self.assertEqual(
-            _utils._get_log_path(), "/var/log/applicationinsights"
-        )
+        self.assertEqual(_utils._get_log_path(), "/var/log/applicationinsights")
 
     @patch(
         "azure.monitor.opentelemetry._utils.platform.system",
@@ -126,6 +186,4 @@ class TestUtils(TestCase):
 
     @patch.dict("os.environ", {})
     def test_env_var_or_default_empty_with_defaults(self):
-        self.assertEqual(
-            _utils._env_var_or_default("key", default_val="value"), "value"
-        )
+        self.assertEqual(_utils._env_var_or_default("key", default_val="value"), "value")

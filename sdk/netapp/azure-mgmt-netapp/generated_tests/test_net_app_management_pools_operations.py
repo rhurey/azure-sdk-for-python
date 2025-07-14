@@ -20,11 +20,11 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_list(self, resource_group):
+    def test_pools_list(self, resource_group):
         response = self.client.pools.list(
             resource_group_name=resource_group.name,
             account_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         )
         result = [r for r in response]
         # please add some check logic here by yourself
@@ -32,12 +32,12 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get(self, resource_group):
+    def test_pools_get(self, resource_group):
         response = self.client.pools.get(
             resource_group_name=resource_group.name,
             account_name="str",
             pool_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         )
 
         # please add some check logic here by yourself
@@ -45,7 +45,7 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_create_or_update(self, resource_group):
+    def test_pools_begin_create_or_update(self, resource_group):
         response = self.client.pools.begin_create_or_update(
             resource_group_name=resource_group.name,
             account_name="str",
@@ -55,6 +55,7 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
                 "serviceLevel": "Premium",
                 "size": 4398046511104,
                 "coolAccess": False,
+                "customThroughputMibps": 0.0,
                 "encryptionType": "Single",
                 "etag": "str",
                 "id": "str",
@@ -75,7 +76,7 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
                 "type": "str",
                 "utilizedThroughputMibps": 0.0,
             },
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -83,13 +84,14 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_update(self, resource_group):
+    def test_pools_begin_update(self, resource_group):
         response = self.client.pools.begin_update(
             resource_group_name=resource_group.name,
             account_name="str",
             pool_name="str",
             body={
                 "coolAccess": bool,
+                "customThroughputMibps": 0.0,
                 "id": "str",
                 "location": "str",
                 "name": "str",
@@ -98,7 +100,7 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
                 "tags": {"str": "str"},
                 "type": "str",
             },
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -106,12 +108,12 @@ class TestNetAppManagementPoolsOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_delete(self, resource_group):
+    def test_pools_begin_delete(self, resource_group):
         response = self.client.pools.begin_delete(
             resource_group_name=resource_group.name,
             account_name="str",
             pool_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself

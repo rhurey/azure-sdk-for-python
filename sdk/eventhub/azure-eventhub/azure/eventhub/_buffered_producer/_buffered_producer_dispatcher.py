@@ -34,7 +34,7 @@ class BufferedProducerDispatcher:
         amqp_transport: AmqpTransport,
         max_buffer_length: int = 1500,
         max_wait_time: float = 1,
-        executor: Optional[Union[ThreadPoolExecutor, int]] = None
+        executor: Optional[Union[ThreadPoolExecutor, int]] = None,
     ):
         self._buffered_producers: Dict[str, BufferedProducer] = {}
         self._partition_ids: List[str] = partitions
@@ -51,7 +51,9 @@ class BufferedProducerDispatcher:
         self._amqp_transport = amqp_transport
 
         if not executor:
-            self._executor = ThreadPoolExecutor()
+            # set max workers to the number of partitions & one for the close operation.
+            max_workers: int = len(self._partition_ids) + 1
+            self._executor = ThreadPoolExecutor(max_workers=max_workers)
         elif isinstance(executor, ThreadPoolExecutor):
             self._existing_executor = True
             self._executor = executor
@@ -62,20 +64,14 @@ class BufferedProducerDispatcher:
         if partition_id:
             if partition_id not in self._partition_ids:
                 raise ConnectError(
-                    "Invalid partition {} for the event hub {}".format(
-                        partition_id, self._eventhub_name
-                    )
+                    "Invalid partition {} for the event hub {}".format(partition_id, self._eventhub_name)
                 )
             return partition_id
         if isinstance(partition_key, str):
-            return self._partition_resolver.get_partition_id_by_partition_key(
-                partition_key
-            )
+            return self._partition_resolver.get_partition_id_by_partition_key(partition_key)
         return self._partition_resolver.get_next_partition_id()
 
-    def enqueue_events(
-        self, events, *, partition_id=None, partition_key=None, timeout_time=None
-    ):
+    def enqueue_events(self, events, *, partition_id=None, partition_key=None, timeout_time=None):
         pid = self._get_partition_id(partition_id, partition_key)
         with self._lock:
             try:
@@ -90,7 +86,7 @@ class BufferedProducerDispatcher:
                     executor=self._executor,
                     max_wait_time=self._max_wait_time,
                     max_buffer_length=self._max_buffer_length,
-                    amqp_transport = self._amqp_transport,
+                    amqp_transport=self._amqp_transport,
                 )
                 buffered_producer.start()
                 self._buffered_producers[pid] = buffered_producer
@@ -105,9 +101,7 @@ class BufferedProducerDispatcher:
                 futures.append(
                     (
                         pid,
-                        self._executor.submit(
-                            producer.flush, timeout_time=timeout_time
-                        ),
+                        self._executor.submit(producer.flush, timeout_time=timeout_time),
                     )
                 )
 
@@ -123,9 +117,7 @@ class BufferedProducerDispatcher:
                 _LOGGER.info("Flushing all partitions succeeded")
                 return
 
-            _LOGGER.warning(
-                "Flushing all partitions partially failed with result %r.", exc_results
-            )
+            _LOGGER.warning("Flushing all partitions partially failed with result %r.", exc_results)
             raise EventDataSendError(
                 message="Flushing all partitions partially failed, failed partitions are {!r}"
                 " Exception details are {!r}".format(exc_results.keys(), exc_results)
@@ -166,9 +158,7 @@ class BufferedProducerDispatcher:
                 if raise_error:
                     raise EventHubError(
                         message="Stopping all partitions partially failed, failed partitions are {!r}"
-                        " Exception details are {!r}".format(
-                            exc_results.keys(), exc_results
-                        )
+                        " Exception details are {!r}".format(exc_results.keys(), exc_results)
                     )
 
             if not self._existing_executor:
@@ -182,6 +172,4 @@ class BufferedProducerDispatcher:
 
     @property
     def total_buffered_event_count(self):
-        return sum(
-            (self.get_buffered_event_count(pid) for pid in self._buffered_producers)
-        )
+        return sum((self.get_buffered_event_count(pid) for pid in self._buffered_producers))

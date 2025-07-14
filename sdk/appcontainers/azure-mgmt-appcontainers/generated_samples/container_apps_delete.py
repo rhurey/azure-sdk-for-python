@@ -36,6 +36,6 @@ def main():
     ).result()
 
 
-# x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2024-03-01/examples/ContainerApps_Delete.json
+# x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2025-01-01/examples/ContainerApps_Delete.json
 if __name__ == "__main__":
     main()

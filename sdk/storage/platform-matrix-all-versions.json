@@ -6,11 +6,10 @@
     },
     "matrix": {
         "Agent": {
-          "Ubuntu-20.04": { "OSVmImage": "env:LINUXVMIMAGE", "Pool": "env:LINUXPOOL" },
-          "windows-2022": { "OSVmImage": "env:WINDOWSVMIMAGE", "Pool": "env:WINDOWSPOOL" },
-          "macos-latest": { "OSVmImage": "env:MACVMIMAGE", "Pool": "env:MACPOOL" }
+          "Ubuntu-24.04": { "OSVmImage": "env:LINUXVMIMAGE", "Pool": "env:LINUXPOOL" },
+          "windows-2022": { "OSVmImage": "env:WINDOWSVMIMAGE", "Pool": "env:WINDOWSPOOL" }
         },
-        "PythonVersion": [ "3.8", "3.9", "3.10", "3.11" ],
+        "PythonVersion": [ "3.9", "3.10"],
         "CoverageArg": "--disablecov",
         "TestSamples": "false",
         "AZURE_LIVE_TEST_SERVICE_VERSION": [
@@ -25,8 +24,19 @@
     },
     "include": [
       {
+        "MacTestConfig": {
+          "macos311": {
+            "OSVmImage": "env:LINUXVMIMAGE",
+            "Pool": "env:LINUXPOOL",
+            "PythonVersion": "3.11",
+            "CoverageArg": "--disablecov",
+            "TestSamples": "false"
+          }
+        }
+      },
+      {
         "CoverageConfig": {
-          "ubuntu2004_pypy39": {
+          "ubuntu2404_pypy39": {
             "OSVmImage": "env:LINUXVMIMAGE",
             "Pool": "env:LINUXPOOL",
             "PythonVersion": "pypy3.9",

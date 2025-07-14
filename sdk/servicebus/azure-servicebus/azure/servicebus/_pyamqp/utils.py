@@ -1,59 +1,35 @@
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
-#--------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 import datetime
 from base64 import b64encode
 from hashlib import sha256
 from hmac import HMAC
 from urllib.parse import urlencode, quote_plus
 import time
-
+from datetime import timezone
 from .types import TYPE, VALUE, AMQPTypes
 from ._encode import encode_payload
 
+TZ_UTC: timezone = timezone.utc
+# Number of seconds between the Unix epoch (1/1/1970) and year 1 CE.
+# This is the lowest value that can be represented by an AMQP timestamp.
+CE_ZERO_SECONDS: int = -62_135_596_800
 
-class UTC(datetime.tzinfo):
-    """Time Zone info for handling UTC"""
-
-    def utcoffset(self, dt):
-        """UTF offset for UTC is 0.
-
-        :param datetime.datetime dt: Ignored.
-        :return: The UTC offset of UTC
-        :rtype: datetime.timedelta
-        """
-        return datetime.timedelta(0)
-
-    def tzname(self, dt):
-        """Timestamp representation.
-
-        :param datetime.datetime dt: Ignored.
-        :return: The timestamp representation of UTC
-        :rtype: str
-        """
-        return "Z"
-
-    def dst(self, dt):
-        """No daylight saving for UTC.
-
-        :param datetime.datetime dt: Ignored.
-        :return: The daylight saving time of UTC
-        :rtype: datetime.timedelta
-        """
-        return datetime.timedelta(hours=1)
-
-
-try:
-    from datetime import timezone  # pylint: disable=ungrouped-imports
-
-    TZ_UTC = timezone.utc  # type: ignore
-except ImportError:
-    TZ_UTC = UTC()  # type: ignore
-
-
-def utc_from_timestamp(timestamp):
+def utc_from_timestamp(timestamp: float) -> datetime.datetime:
+    """
+    :param float timestamp: Timestamp in seconds to be converted to datetime.
+    :rtype: datetime.datetime
+    :returns: A datetime object representing the timestamp in UTC.
+    """
+    # The AMQP timestamp is the number of seconds since the Unix epoch.
+    # AMQP brokers represent the lowest value as -62_135_596_800 (the
+    # number of seconds between the Unix epoch (1/1/1970) and year 1 CE) as
+    # a sentinel for a time which is not set.
+    if timestamp == CE_ZERO_SECONDS:
+        return datetime.datetime.min.replace(tzinfo=TZ_UTC)
     return datetime.datetime.fromtimestamp(timestamp, tz=TZ_UTC)
 
 
@@ -61,7 +37,7 @@ def utc_now():
     return datetime.datetime.now(tz=TZ_UTC)
 
 
-def encode(value, encoding='UTF-8'):
+def encode(value, encoding="UTF-8"):
     return value.encode(encoding) if isinstance(value, str) else value
 
 
@@ -84,16 +60,12 @@ def generate_sas_token(audience, policy, key, expiry=None):
     encoded_key = key.encode("utf-8")
 
     ttl = int(expiry)
-    sign_key = '%s\n%d' % (encoded_uri, ttl)
-    signature = b64encode(HMAC(encoded_key, sign_key.encode('utf-8'), sha256).digest())
-    result = {
-        'sr': audience,
-        'sig': signature,
-        'se': str(ttl)
-    }
+    sign_key = "%s\n%d" % (encoded_uri, ttl)
+    signature = b64encode(HMAC(encoded_key, sign_key.encode("utf-8"), sha256).digest())
+    result = {"sr": audience, "sig": signature, "se": str(ttl)}
     if policy:
-        result['skn'] = encoded_policy
-    return 'SharedAccessSignature ' + urlencode(result)
+        result["skn"] = encoded_policy
+    return "SharedAccessSignature " + urlencode(result)
 
 
 def add_batch(batch, message):
@@ -103,7 +75,7 @@ def add_batch(batch, message):
     batch[5].append(output)
 
 
-def encode_str(data, encoding='utf-8'):
+def encode_str(data, encoding="utf-8"):
     try:
         return data.encode(encoding)
     except AttributeError:
@@ -118,7 +90,7 @@ def normalized_data_body(data, **kwargs):
     return [encode_str(data, encoding)]
 
 
-def normalized_sequence_body(sequence): # pylint:disable=inconsistent-return-statements
+def normalized_sequence_body(sequence):  # pylint:disable=inconsistent-return-statements
     # A helper method to normalize input into AMQP Sequence Body format
     if isinstance(sequence, list) and all((isinstance(b, list) for b in sequence)):
         return sequence
@@ -149,6 +121,7 @@ def amqp_string_value(value):
 
 def amqp_symbol_value(value):
     return {TYPE: AMQPTypes.symbol, VALUE: value}
+
 
 def amqp_array_value(value):
     return {TYPE: AMQPTypes.array, VALUE: value}

@@ -1,5 +1,5 @@
+# pylint: disable=line-too-long,useless-suppression,too-many-lines
 # coding=utf-8
-# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,21 +7,334 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
+from collections.abc import MutableMapping
 import datetime
-import sys
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
-from .. import _serialization
-
-if sys.version_info >= (3, 9):
-    from collections.abc import MutableMapping
-else:
-    from typing import MutableMapping  # type: ignore  # pylint: disable=ungrouped-imports
+from .._utils import serialization as _serialization
 
 if TYPE_CHECKING:
-    # pylint: disable=unused-import,ungrouped-imports
     from .. import models as _models
-JSON = MutableMapping[str, Any]  # pylint: disable=unsubscriptable-object
+JSON = MutableMapping[str, Any]
+
+
+class ConnectionPropertiesV2(_serialization.Model):
+    """Connection property base schema.
+
+    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
+    AADAuthTypeConnectionProperties, AccessKeyAuthTypeConnectionProperties,
+    AccountKeyAuthTypeConnectionProperties, ApiKeyAuthConnectionProperties,
+    CustomKeysConnectionProperties, ManagedIdentityAuthTypeConnectionProperties,
+    NoneAuthTypeConnectionProperties, OAuth2AuthTypeConnectionProperties,
+    PATAuthTypeConnectionProperties, SASAuthTypeConnectionProperties,
+    ServicePrincipalAuthTypeConnectionProperties, UsernamePasswordAuthTypeConnectionProperties
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+    }
+
+    _subtype_map = {
+        "auth_type": {
+            "AAD": "AADAuthTypeConnectionProperties",
+            "AccessKey": "AccessKeyAuthTypeConnectionProperties",
+            "AccountKey": "AccountKeyAuthTypeConnectionProperties",
+            "ApiKey": "ApiKeyAuthConnectionProperties",
+            "CustomKeys": "CustomKeysConnectionProperties",
+            "ManagedIdentity": "ManagedIdentityAuthTypeConnectionProperties",
+            "None": "NoneAuthTypeConnectionProperties",
+            "OAuth2": "OAuth2AuthTypeConnectionProperties",
+            "PAT": "PATAuthTypeConnectionProperties",
+            "SAS": "SASAuthTypeConnectionProperties",
+            "ServicePrincipal": "ServicePrincipalAuthTypeConnectionProperties",
+            "UsernamePassword": "UsernamePasswordAuthTypeConnectionProperties",
+        }
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        """
+        super().__init__(**kwargs)
+        self.auth_type: Optional[str] = None
+        self.category = category
+        self.created_by_workspace_arm_id: Optional[str] = None
+        self.error = error
+        self.expiry_time = expiry_time
+        self.group: Optional[Union[str, "_models.ConnectionGroup"]] = None
+        self.is_shared_to_all = is_shared_to_all
+        self.metadata = metadata
+        self.pe_requirement = pe_requirement
+        self.pe_status = pe_status
+        self.shared_user_list = shared_user_list
+        self.target = target
+        self.use_workspace_managed_identity = use_workspace_managed_identity
+
+
+class AADAuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """This connection type covers the AAD auth for any applicable Azure service.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "AAD"
 
 
 class AbusePenalty(_serialization.Model):
@@ -63,6 +376,160 @@ class AbusePenalty(_serialization.Model):
         self.expiration = expiration
 
 
+class AccessKeyAuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """AccessKeyAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials:
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionAccessKey
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionAccessKey"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionAccessKey"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials:
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionAccessKey
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "AccessKey"
+        self.credentials = credentials
+
+
 class Resource(_serialization.Model):
     """Common fields that are returned in the response for all Azure Resource Manager resources.
 
@@ -93,9 +560,9 @@ class Resource(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.id = None
-        self.name = None
-        self.type = None
+        self.id: Optional[str] = None
+        self.name: Optional[str] = None
+        self.type: Optional[str] = None
 
 
 class AzureEntityResource(Resource):
@@ -132,10 +599,10 @@ class AzureEntityResource(Resource):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.etag = None
+        self.etag: Optional[str] = None
 
 
-class Account(AzureEntityResource):  # pylint: disable=too-many-instance-attributes
+class Account(AzureEntityResource):
     """Cognitive Services account is an Azure resource representing the provisioned account, it's
     type, location and SKU.
 
@@ -218,10 +685,164 @@ class Account(AzureEntityResource):  # pylint: disable=too-many-instance-attribu
         self.kind = kind
         self.sku = sku
         self.identity = identity
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
         self.tags = tags
         self.location = location
         self.properties = properties
+
+
+class AccountKeyAuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """This connection type covers the account key connection for Azure storage.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials: Account key object for connection credential.
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionAccountKey
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionAccountKey"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionAccountKey"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials: Account key object for connection credential.
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionAccountKey
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "AccountKey"
+        self.credentials = credentials
 
 
 class AccountListResult(_serialization.Model):
@@ -251,7 +872,7 @@ class AccountListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.next_link = next_link
-        self.value = None
+        self.value: Optional[List["_models.Account"]] = None
 
 
 class DeploymentModel(_serialization.Model):
@@ -259,6 +880,8 @@ class DeploymentModel(_serialization.Model):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
+    :ivar publisher: Deployment model publisher.
+    :vartype publisher: str
     :ivar format: Deployment model format.
     :vartype format: str
     :ivar name: Deployment model name.
@@ -270,6 +893,9 @@ class DeploymentModel(_serialization.Model):
     :vartype version: str
     :ivar source: Optional. Deployment model source ARM resource ID.
     :vartype source: str
+    :ivar source_account: Optional. Source of the model, another Microsoft.CognitiveServices
+     accounts ARM resource ID.
+    :vartype source_account: str
     :ivar call_rate_limit: The call rate limit Cognitive Services account.
     :vartype call_rate_limit: ~azure.mgmt.cognitiveservices.models.CallRateLimit
     """
@@ -279,23 +905,29 @@ class DeploymentModel(_serialization.Model):
     }
 
     _attribute_map = {
+        "publisher": {"key": "publisher", "type": "str"},
         "format": {"key": "format", "type": "str"},
         "name": {"key": "name", "type": "str"},
         "version": {"key": "version", "type": "str"},
         "source": {"key": "source", "type": "str"},
+        "source_account": {"key": "sourceAccount", "type": "str"},
         "call_rate_limit": {"key": "callRateLimit", "type": "CallRateLimit"},
     }
 
     def __init__(
         self,
         *,
+        publisher: Optional[str] = None,
         format: Optional[str] = None,
         name: Optional[str] = None,
         version: Optional[str] = None,
         source: Optional[str] = None,
+        source_account: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """
+        :keyword publisher: Deployment model publisher.
+        :paramtype publisher: str
         :keyword format: Deployment model format.
         :paramtype format: str
         :keyword name: Deployment model name.
@@ -307,20 +939,27 @@ class DeploymentModel(_serialization.Model):
         :paramtype version: str
         :keyword source: Optional. Deployment model source ARM resource ID.
         :paramtype source: str
+        :keyword source_account: Optional. Source of the model, another Microsoft.CognitiveServices
+         accounts ARM resource ID.
+        :paramtype source_account: str
         """
         super().__init__(**kwargs)
+        self.publisher = publisher
         self.format = format
         self.name = name
         self.version = version
         self.source = source
-        self.call_rate_limit = None
+        self.source_account = source_account
+        self.call_rate_limit: Optional["_models.CallRateLimit"] = None
 
 
-class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attributes
+class AccountModel(DeploymentModel):
     """Cognitive Services account Model.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
+    :ivar publisher: Deployment model publisher.
+    :vartype publisher: str
     :ivar format: Deployment model format.
     :vartype format: str
     :ivar name: Deployment model name.
@@ -332,9 +971,12 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
     :vartype version: str
     :ivar source: Optional. Deployment model source ARM resource ID.
     :vartype source: str
+    :ivar source_account: Optional. Source of the model, another Microsoft.CognitiveServices
+     accounts ARM resource ID.
+    :vartype source_account: str
     :ivar call_rate_limit: The call rate limit Cognitive Services account.
     :vartype call_rate_limit: ~azure.mgmt.cognitiveservices.models.CallRateLimit
-    :ivar base_model: Base Model Identifier.
+    :ivar base_model: Properties of Cognitive Services account deployment model.
     :vartype base_model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
     :ivar is_default_version: If the model is default version.
     :vartype is_default_version: bool
@@ -348,8 +990,8 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
     :vartype finetune_capabilities: dict[str, str]
     :ivar deprecation: Cognitive Services account ModelDeprecationInfo.
     :vartype deprecation: ~azure.mgmt.cognitiveservices.models.ModelDeprecationInfo
-    :ivar lifecycle_status: Model lifecycle status. Known values are: "GenerallyAvailable" and
-     "Preview".
+    :ivar lifecycle_status: Model lifecycle status. Known values are: "Stable", "Preview",
+     "GenerallyAvailable", "Deprecating", and "Deprecated".
     :vartype lifecycle_status: str or ~azure.mgmt.cognitiveservices.models.ModelLifecycleStatus
     :ivar system_data: Metadata pertaining to creation and last modification of the resource.
     :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
@@ -361,10 +1003,12 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
     }
 
     _attribute_map = {
+        "publisher": {"key": "publisher", "type": "str"},
         "format": {"key": "format", "type": "str"},
         "name": {"key": "name", "type": "str"},
         "version": {"key": "version", "type": "str"},
         "source": {"key": "source", "type": "str"},
+        "source_account": {"key": "sourceAccount", "type": "str"},
         "call_rate_limit": {"key": "callRateLimit", "type": "CallRateLimit"},
         "base_model": {"key": "baseModel", "type": "DeploymentModel"},
         "is_default_version": {"key": "isDefaultVersion", "type": "bool"},
@@ -380,10 +1024,12 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
     def __init__(
         self,
         *,
+        publisher: Optional[str] = None,
         format: Optional[str] = None,
         name: Optional[str] = None,
         version: Optional[str] = None,
         source: Optional[str] = None,
+        source_account: Optional[str] = None,
         base_model: Optional["_models.DeploymentModel"] = None,
         is_default_version: Optional[bool] = None,
         skus: Optional[List["_models.ModelSku"]] = None,
@@ -395,6 +1041,8 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
         **kwargs: Any
     ) -> None:
         """
+        :keyword publisher: Deployment model publisher.
+        :paramtype publisher: str
         :keyword format: Deployment model format.
         :paramtype format: str
         :keyword name: Deployment model name.
@@ -406,7 +1054,10 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
         :paramtype version: str
         :keyword source: Optional. Deployment model source ARM resource ID.
         :paramtype source: str
-        :keyword base_model: Base Model Identifier.
+        :keyword source_account: Optional. Source of the model, another Microsoft.CognitiveServices
+         accounts ARM resource ID.
+        :paramtype source_account: str
+        :keyword base_model: Properties of Cognitive Services account deployment model.
         :paramtype base_model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
         :keyword is_default_version: If the model is default version.
         :paramtype is_default_version: bool
@@ -420,11 +1071,19 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
         :paramtype finetune_capabilities: dict[str, str]
         :keyword deprecation: Cognitive Services account ModelDeprecationInfo.
         :paramtype deprecation: ~azure.mgmt.cognitiveservices.models.ModelDeprecationInfo
-        :keyword lifecycle_status: Model lifecycle status. Known values are: "GenerallyAvailable" and
-         "Preview".
+        :keyword lifecycle_status: Model lifecycle status. Known values are: "Stable", "Preview",
+         "GenerallyAvailable", "Deprecating", and "Deprecated".
         :paramtype lifecycle_status: str or ~azure.mgmt.cognitiveservices.models.ModelLifecycleStatus
         """
-        super().__init__(format=format, name=name, version=version, source=source, **kwargs)
+        super().__init__(
+            publisher=publisher,
+            format=format,
+            name=name,
+            version=version,
+            source=source,
+            source_account=source_account,
+            **kwargs
+        )
         self.base_model = base_model
         self.is_default_version = is_default_version
         self.skus = skus
@@ -433,7 +1092,7 @@ class AccountModel(DeploymentModel):  # pylint: disable=too-many-instance-attrib
         self.finetune_capabilities = finetune_capabilities
         self.deprecation = deprecation
         self.lifecycle_status = lifecycle_status
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
 
 
 class AccountModelListResult(_serialization.Model):
@@ -464,14 +1123,14 @@ class AccountModelListResult(_serialization.Model):
         self.value = value
 
 
-class AccountProperties(_serialization.Model):  # pylint: disable=too-many-instance-attributes
+class AccountProperties(_serialization.Model):
     """Properties of Cognitive Services account.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar provisioning_state: Gets the status of the cognitive services account at the time the
      operation was called. Known values are: "Accepted", "Creating", "Deleting", "Moving", "Failed",
-     "Succeeded", and "ResolvingDNS".
+     "Succeeded", "ResolvingDNS", and "Canceled".
     :vartype provisioning_state: str or ~azure.mgmt.cognitiveservices.models.ProvisioningState
     :ivar endpoint: Endpoint of the created account.
     :vartype endpoint: str
@@ -496,6 +1155,8 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
     :vartype encryption: ~azure.mgmt.cognitiveservices.models.Encryption
     :ivar user_owned_storage: The storage accounts for this resource.
     :vartype user_owned_storage: list[~azure.mgmt.cognitiveservices.models.UserOwnedStorage]
+    :ivar aml_workspace: The user owned AML account properties.
+    :vartype aml_workspace: ~azure.mgmt.cognitiveservices.models.UserOwnedAmlWorkspace
     :ivar private_endpoint_connections: The private endpoint connection associated with the
      Cognitive Services account.
     :vartype private_endpoint_connections:
@@ -535,6 +1196,21 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
      list[~azure.mgmt.cognitiveservices.models.CommitmentPlanAssociation]
     :ivar abuse_penalty: The abuse penalty.
     :vartype abuse_penalty: ~azure.mgmt.cognitiveservices.models.AbusePenalty
+    :ivar rai_monitor_config: Cognitive Services Rai Monitor Config.
+    :vartype rai_monitor_config: ~azure.mgmt.cognitiveservices.models.RaiMonitorConfig
+    :ivar network_injections: Specifies in AI Foundry where virtual network injection occurs to
+     secure scenarios like Agents entirely within the user's private network, eliminating public
+     internet exposure while maintaining control over network configurations and resources.
+    :vartype network_injections: ~azure.mgmt.cognitiveservices.models.NetworkInjections
+    :ivar allow_project_management: Specifies whether this resource support project management as
+     child resources, used as containers for access management, data isolation and cost in AI
+     Foundry.
+    :vartype allow_project_management: bool
+    :ivar default_project: Specifies the project that is targeted when data plane endpoints are
+     called without a project parameter.
+    :vartype default_project: str
+    :ivar associated_projects: Specifies the projects that are associated with this resource.
+    :vartype associated_projects: list[str]
     """
 
     _validation = {
@@ -567,6 +1243,7 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
         "network_acls": {"key": "networkAcls", "type": "NetworkRuleSet"},
         "encryption": {"key": "encryption", "type": "Encryption"},
         "user_owned_storage": {"key": "userOwnedStorage", "type": "[UserOwnedStorage]"},
+        "aml_workspace": {"key": "amlWorkspace", "type": "UserOwnedAmlWorkspace"},
         "private_endpoint_connections": {"key": "privateEndpointConnections", "type": "[PrivateEndpointConnection]"},
         "public_network_access": {"key": "publicNetworkAccess", "type": "str"},
         "api_properties": {"key": "apiProperties", "type": "ApiProperties"},
@@ -584,6 +1261,11 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
         "locations": {"key": "locations", "type": "MultiRegionSettings"},
         "commitment_plan_associations": {"key": "commitmentPlanAssociations", "type": "[CommitmentPlanAssociation]"},
         "abuse_penalty": {"key": "abusePenalty", "type": "AbusePenalty"},
+        "rai_monitor_config": {"key": "raiMonitorConfig", "type": "RaiMonitorConfig"},
+        "network_injections": {"key": "networkInjections", "type": "NetworkInjections"},
+        "allow_project_management": {"key": "allowProjectManagement", "type": "bool"},
+        "default_project": {"key": "defaultProject", "type": "str"},
+        "associated_projects": {"key": "associatedProjects", "type": "[str]"},
     }
 
     def __init__(  # pylint: disable=too-many-locals
@@ -594,6 +1276,7 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
         network_acls: Optional["_models.NetworkRuleSet"] = None,
         encryption: Optional["_models.Encryption"] = None,
         user_owned_storage: Optional[List["_models.UserOwnedStorage"]] = None,
+        aml_workspace: Optional["_models.UserOwnedAmlWorkspace"] = None,
         public_network_access: Optional[Union[str, "_models.PublicNetworkAccess"]] = None,
         api_properties: Optional["_models.ApiProperties"] = None,
         dynamic_throttling_enabled: Optional[bool] = None,
@@ -602,6 +1285,11 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
         disable_local_auth: Optional[bool] = None,
         restore: Optional[bool] = None,
         locations: Optional["_models.MultiRegionSettings"] = None,
+        rai_monitor_config: Optional["_models.RaiMonitorConfig"] = None,
+        network_injections: Optional["_models.NetworkInjections"] = None,
+        allow_project_management: Optional[bool] = None,
+        default_project: Optional[str] = None,
+        associated_projects: Optional[List[str]] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -616,6 +1304,8 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
         :paramtype encryption: ~azure.mgmt.cognitiveservices.models.Encryption
         :keyword user_owned_storage: The storage accounts for this resource.
         :paramtype user_owned_storage: list[~azure.mgmt.cognitiveservices.models.UserOwnedStorage]
+        :keyword aml_workspace: The user owned AML account properties.
+        :paramtype aml_workspace: ~azure.mgmt.cognitiveservices.models.UserOwnedAmlWorkspace
         :keyword public_network_access: Whether or not public endpoint access is allowed for this
          account. Known values are: "Enabled" and "Disabled".
         :paramtype public_network_access: str or
@@ -634,36 +1324,57 @@ class AccountProperties(_serialization.Model):  # pylint: disable=too-many-insta
         :paramtype restore: bool
         :keyword locations: The multiregion settings of Cognitive Services account.
         :paramtype locations: ~azure.mgmt.cognitiveservices.models.MultiRegionSettings
+        :keyword rai_monitor_config: Cognitive Services Rai Monitor Config.
+        :paramtype rai_monitor_config: ~azure.mgmt.cognitiveservices.models.RaiMonitorConfig
+        :keyword network_injections: Specifies in AI Foundry where virtual network injection occurs to
+         secure scenarios like Agents entirely within the user's private network, eliminating public
+         internet exposure while maintaining control over network configurations and resources.
+        :paramtype network_injections: ~azure.mgmt.cognitiveservices.models.NetworkInjections
+        :keyword allow_project_management: Specifies whether this resource support project management
+         as child resources, used as containers for access management, data isolation and cost in AI
+         Foundry.
+        :paramtype allow_project_management: bool
+        :keyword default_project: Specifies the project that is targeted when data plane endpoints are
+         called without a project parameter.
+        :paramtype default_project: str
+        :keyword associated_projects: Specifies the projects that are associated with this resource.
+        :paramtype associated_projects: list[str]
         """
         super().__init__(**kwargs)
-        self.provisioning_state = None
-        self.endpoint = None
-        self.internal_id = None
-        self.capabilities = None
-        self.is_migrated = None
+        self.provisioning_state: Optional[Union[str, "_models.ProvisioningState"]] = None
+        self.endpoint: Optional[str] = None
+        self.internal_id: Optional[str] = None
+        self.capabilities: Optional[List["_models.SkuCapability"]] = None
+        self.is_migrated: Optional[bool] = None
         self.migration_token = migration_token
-        self.sku_change_info = None
+        self.sku_change_info: Optional["_models.SkuChangeInfo"] = None
         self.custom_sub_domain_name = custom_sub_domain_name
         self.network_acls = network_acls
         self.encryption = encryption
         self.user_owned_storage = user_owned_storage
-        self.private_endpoint_connections = None
+        self.aml_workspace = aml_workspace
+        self.private_endpoint_connections: Optional[List["_models.PrivateEndpointConnection"]] = None
         self.public_network_access = public_network_access
         self.api_properties = api_properties
-        self.date_created = None
-        self.call_rate_limit = None
+        self.date_created: Optional[str] = None
+        self.call_rate_limit: Optional["_models.CallRateLimit"] = None
         self.dynamic_throttling_enabled = dynamic_throttling_enabled
-        self.quota_limit = None
+        self.quota_limit: Optional["_models.QuotaLimit"] = None
         self.restrict_outbound_network_access = restrict_outbound_network_access
         self.allowed_fqdn_list = allowed_fqdn_list
         self.disable_local_auth = disable_local_auth
-        self.endpoints = None
+        self.endpoints: Optional[Dict[str, str]] = None
         self.restore = restore
-        self.deletion_date = None
-        self.scheduled_purge_date = None
+        self.deletion_date: Optional[str] = None
+        self.scheduled_purge_date: Optional[str] = None
         self.locations = locations
-        self.commitment_plan_associations = None
-        self.abuse_penalty = None
+        self.commitment_plan_associations: Optional[List["_models.CommitmentPlanAssociation"]] = None
+        self.abuse_penalty: Optional["_models.AbusePenalty"] = None
+        self.rai_monitor_config = rai_monitor_config
+        self.network_injections = network_injections
+        self.allow_project_management = allow_project_management
+        self.default_project = default_project
+        self.associated_projects = associated_projects
 
 
 class AccountSku(_serialization.Model):
@@ -714,6 +1425,179 @@ class AccountSkuListResult(_serialization.Model):
         self.value = value
 
 
+class ApiKeyAuthConnectionProperties(ConnectionPropertiesV2):
+    """This connection type covers the generic ApiKey auth connection categories, for examples:
+    AzureOpenAI:
+        Category:= AzureOpenAI
+        AuthType:= ApiKey (as type discriminator)
+        Credentials:= {ApiKey} as .ApiKey
+        Target:= {ApiBase}
+
+    CognitiveService:
+        Category:= CognitiveService
+        AuthType:= ApiKey (as type discriminator)
+        Credentials:= {SubscriptionKey} as ApiKey
+        Target:= ServiceRegion={serviceRegion}
+
+    CognitiveSearch:
+        Category:= CognitiveSearch
+        AuthType:= ApiKey (as type discriminator)
+        Credentials:= {Key} as ApiKey
+        Target:= {Endpoint}
+
+    Use Metadata property bag for ApiType, ApiVersion, Kind and other metadata fields.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials: Api key object for connection credential.
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionApiKey
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionApiKey"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionApiKey"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials: Api key object for connection credential.
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionApiKey
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "ApiKey"
+        self.credentials = credentials
+
+
 class ApiKeys(_serialization.Model):
     """The access keys for the cognitive services account.
 
@@ -740,7 +1624,7 @@ class ApiKeys(_serialization.Model):
         self.key2 = key2
 
 
-class ApiProperties(_serialization.Model):  # pylint: disable=too-many-instance-attributes
+class ApiProperties(_serialization.Model):
     """The api properties for special APIs.
 
     :ivar additional_properties: Unmatched properties from the message are deserialized to this
@@ -858,6 +1742,147 @@ class ApiProperties(_serialization.Model):  # pylint: disable=too-many-instance-
         self.website_name = website_name
 
 
+class BillingMeterInfo(_serialization.Model):
+    """BillingMeterInfo.
+
+    :ivar name:
+    :vartype name: str
+    :ivar meter_id:
+    :vartype meter_id: str
+    :ivar unit:
+    :vartype unit: str
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "meter_id": {"key": "meterId", "type": "str"},
+        "unit": {"key": "unit", "type": "str"},
+    }
+
+    def __init__(
+        self, *, name: Optional[str] = None, meter_id: Optional[str] = None, unit: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword name:
+        :paramtype name: str
+        :keyword meter_id:
+        :paramtype meter_id: str
+        :keyword unit:
+        :paramtype unit: str
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.meter_id = meter_id
+        self.unit = unit
+
+
+class CalculateModelCapacityParameter(_serialization.Model):
+    """Calculate Model Capacity parameter.
+
+    :ivar model: Properties of Cognitive Services account deployment model.
+    :vartype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
+    :ivar sku_name: The name of SKU.
+    :vartype sku_name: str
+    :ivar workloads: List of Model Capacity Calculator Workload.
+    :vartype workloads: list[~azure.mgmt.cognitiveservices.models.ModelCapacityCalculatorWorkload]
+    """
+
+    _attribute_map = {
+        "model": {"key": "model", "type": "DeploymentModel"},
+        "sku_name": {"key": "skuName", "type": "str"},
+        "workloads": {"key": "workloads", "type": "[ModelCapacityCalculatorWorkload]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        model: Optional["_models.DeploymentModel"] = None,
+        sku_name: Optional[str] = None,
+        workloads: Optional[List["_models.ModelCapacityCalculatorWorkload"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword model: Properties of Cognitive Services account deployment model.
+        :paramtype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
+        :keyword sku_name: The name of SKU.
+        :paramtype sku_name: str
+        :keyword workloads: List of Model Capacity Calculator Workload.
+        :paramtype workloads:
+         list[~azure.mgmt.cognitiveservices.models.ModelCapacityCalculatorWorkload]
+        """
+        super().__init__(**kwargs)
+        self.model = model
+        self.sku_name = sku_name
+        self.workloads = workloads
+
+
+class CalculateModelCapacityResult(_serialization.Model):
+    """Calculate Model Capacity result.
+
+    :ivar model: Properties of Cognitive Services account deployment model.
+    :vartype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
+    :ivar sku_name:
+    :vartype sku_name: str
+    :ivar estimated_capacity: Model Estimated Capacity.
+    :vartype estimated_capacity:
+     ~azure.mgmt.cognitiveservices.models.CalculateModelCapacityResultEstimatedCapacity
+    """
+
+    _attribute_map = {
+        "model": {"key": "model", "type": "DeploymentModel"},
+        "sku_name": {"key": "skuName", "type": "str"},
+        "estimated_capacity": {"key": "estimatedCapacity", "type": "CalculateModelCapacityResultEstimatedCapacity"},
+    }
+
+    def __init__(
+        self,
+        *,
+        model: Optional["_models.DeploymentModel"] = None,
+        sku_name: Optional[str] = None,
+        estimated_capacity: Optional["_models.CalculateModelCapacityResultEstimatedCapacity"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword model: Properties of Cognitive Services account deployment model.
+        :paramtype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
+        :keyword sku_name:
+        :paramtype sku_name: str
+        :keyword estimated_capacity: Model Estimated Capacity.
+        :paramtype estimated_capacity:
+         ~azure.mgmt.cognitiveservices.models.CalculateModelCapacityResultEstimatedCapacity
+        """
+        super().__init__(**kwargs)
+        self.model = model
+        self.sku_name = sku_name
+        self.estimated_capacity = estimated_capacity
+
+
+class CalculateModelCapacityResultEstimatedCapacity(_serialization.Model):  # pylint: disable=name-too-long
+    """Model Estimated Capacity.
+
+    :ivar value:
+    :vartype value: int
+    :ivar deployable_value:
+    :vartype deployable_value: int
+    """
+
+    _attribute_map = {
+        "value": {"key": "value", "type": "int"},
+        "deployable_value": {"key": "deployableValue", "type": "int"},
+    }
+
+    def __init__(self, *, value: Optional[int] = None, deployable_value: Optional[int] = None, **kwargs: Any) -> None:
+        """
+        :keyword value:
+        :paramtype value: int
+        :keyword deployable_value:
+        :paramtype deployable_value: int
+        """
+        super().__init__(**kwargs)
+        self.value = value
+        self.deployable_value = deployable_value
+
+
 class CallRateLimit(_serialization.Model):
     """The call rate limit Cognitive Services account.
 
@@ -897,6 +1922,177 @@ class CallRateLimit(_serialization.Model):
         self.rules = rules
 
 
+class ProxyResource(Resource):
+    """The resource model definition for a Azure Resource Manager proxy resource. It will not have
+    tags and a location.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    """
+
+
+class CapabilityHost(ProxyResource):
+    """Azure Resource Manager resource envelope.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar properties: [Required] Additional attributes of the entity. Required.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.CapabilityHostProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "properties": {"required": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "properties": {"key": "properties", "type": "CapabilityHostProperties"},
+    }
+
+    def __init__(self, *, properties: "_models.CapabilityHostProperties", **kwargs: Any) -> None:
+        """
+        :keyword properties: [Required] Additional attributes of the entity. Required.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.CapabilityHostProperties
+        """
+        super().__init__(**kwargs)
+        self.properties = properties
+
+
+class ResourceBase(_serialization.Model):
+    """ResourceBase.
+
+    :ivar description: The asset description text.
+    :vartype description: str
+    :ivar tags: Tag dictionary. Tags can be added, removed, and updated.
+    :vartype tags: dict[str, str]
+    """
+
+    _attribute_map = {
+        "description": {"key": "description", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+    }
+
+    def __init__(
+        self, *, description: Optional[str] = None, tags: Optional[Dict[str, str]] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword description: The asset description text.
+        :paramtype description: str
+        :keyword tags: Tag dictionary. Tags can be added, removed, and updated.
+        :paramtype tags: dict[str, str]
+        """
+        super().__init__(**kwargs)
+        self.description = description
+        self.tags = tags
+
+
+class CapabilityHostProperties(ResourceBase):
+    """CapabilityHostProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar description: The asset description text.
+    :vartype description: str
+    :ivar tags: Tag dictionary. Tags can be added, removed, and updated.
+    :vartype tags: dict[str, str]
+    :ivar ai_services_connections: List of AI services connections.
+    :vartype ai_services_connections: list[str]
+    :ivar capability_host_kind: Kind of this capability host. "Agents"
+    :vartype capability_host_kind: str or ~azure.mgmt.cognitiveservices.models.CapabilityHostKind
+    :ivar customer_subnet: Customer subnet info to help set up this capability host.
+    :vartype customer_subnet: str
+    :ivar provisioning_state: Provisioning state for the CapabilityHost. Known values are:
+     "Succeeded", "Failed", "Canceled", "Creating", "Updating", and "Deleting".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.cognitiveservices.models.CapabilityHostProvisioningState
+    :ivar storage_connections: List of Storage connections.
+    :vartype storage_connections: list[str]
+    :ivar thread_storage_connections: List of Thread storage connections.
+    :vartype thread_storage_connections: list[str]
+    :ivar vector_store_connections: List of VectorStore connections.
+    :vartype vector_store_connections: list[str]
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "description": {"key": "description", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "ai_services_connections": {"key": "aiServicesConnections", "type": "[str]"},
+        "capability_host_kind": {"key": "capabilityHostKind", "type": "str"},
+        "customer_subnet": {"key": "customerSubnet", "type": "str"},
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "storage_connections": {"key": "storageConnections", "type": "[str]"},
+        "thread_storage_connections": {"key": "threadStorageConnections", "type": "[str]"},
+        "vector_store_connections": {"key": "vectorStoreConnections", "type": "[str]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        description: Optional[str] = None,
+        tags: Optional[Dict[str, str]] = None,
+        ai_services_connections: Optional[List[str]] = None,
+        capability_host_kind: Optional[Union[str, "_models.CapabilityHostKind"]] = None,
+        customer_subnet: Optional[str] = None,
+        storage_connections: Optional[List[str]] = None,
+        thread_storage_connections: Optional[List[str]] = None,
+        vector_store_connections: Optional[List[str]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword description: The asset description text.
+        :paramtype description: str
+        :keyword tags: Tag dictionary. Tags can be added, removed, and updated.
+        :paramtype tags: dict[str, str]
+        :keyword ai_services_connections: List of AI services connections.
+        :paramtype ai_services_connections: list[str]
+        :keyword capability_host_kind: Kind of this capability host. "Agents"
+        :paramtype capability_host_kind: str or ~azure.mgmt.cognitiveservices.models.CapabilityHostKind
+        :keyword customer_subnet: Customer subnet info to help set up this capability host.
+        :paramtype customer_subnet: str
+        :keyword storage_connections: List of Storage connections.
+        :paramtype storage_connections: list[str]
+        :keyword thread_storage_connections: List of Thread storage connections.
+        :paramtype thread_storage_connections: list[str]
+        :keyword vector_store_connections: List of VectorStore connections.
+        :paramtype vector_store_connections: list[str]
+        """
+        super().__init__(description=description, tags=tags, **kwargs)
+        self.ai_services_connections = ai_services_connections
+        self.capability_host_kind = capability_host_kind
+        self.customer_subnet = customer_subnet
+        self.provisioning_state: Optional[Union[str, "_models.CapabilityHostProvisioningState"]] = None
+        self.storage_connections = storage_connections
+        self.thread_storage_connections = thread_storage_connections
+        self.vector_store_connections = vector_store_connections
+
+
 class CapacityConfig(_serialization.Model):
     """The capacity configuration.
 
@@ -908,6 +2104,8 @@ class CapacityConfig(_serialization.Model):
     :vartype step: int
     :ivar default: The default capacity.
     :vartype default: int
+    :ivar allowed_values: The array of allowed values for capacity.
+    :vartype allowed_values: list[int]
     """
 
     _attribute_map = {
@@ -915,6 +2113,7 @@ class CapacityConfig(_serialization.Model):
         "maximum": {"key": "maximum", "type": "int"},
         "step": {"key": "step", "type": "int"},
         "default": {"key": "default", "type": "int"},
+        "allowed_values": {"key": "allowedValues", "type": "[int]"},
     }
 
     def __init__(
@@ -924,6 +2123,7 @@ class CapacityConfig(_serialization.Model):
         maximum: Optional[int] = None,
         step: Optional[int] = None,
         default: Optional[int] = None,
+        allowed_values: Optional[List[int]] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -935,18 +2135,21 @@ class CapacityConfig(_serialization.Model):
         :paramtype step: int
         :keyword default: The default capacity.
         :paramtype default: int
+        :keyword allowed_values: The array of allowed values for capacity.
+        :paramtype allowed_values: list[int]
         """
         super().__init__(**kwargs)
         self.minimum = minimum
         self.maximum = maximum
         self.step = step
         self.default = default
+        self.allowed_values = allowed_values
 
 
 class CheckDomainAvailabilityParameter(_serialization.Model):
     """Check Domain availability parameter.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar subdomain_name: The subdomain name to use. Required.
     :vartype subdomain_name: str
@@ -985,11 +2188,11 @@ class CheckDomainAvailabilityParameter(_serialization.Model):
 class CheckSkuAvailabilityParameter(_serialization.Model):
     """Check SKU availability parameter.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar skus: The SKU of the resource. Required.
     :vartype skus: list[str]
-    :ivar kind: The Kind of the resource. Required.
+    :ivar kind: The kind (type) of cognitive service account. Required.
     :vartype kind: str
     :ivar type: The Type of the resource. Required.
     :vartype type: str
@@ -1011,7 +2214,7 @@ class CheckSkuAvailabilityParameter(_serialization.Model):
         """
         :keyword skus: The SKU of the resource. Required.
         :paramtype skus: list[str]
-        :keyword kind: The Kind of the resource. Required.
+        :keyword kind: The kind (type) of cognitive service account. Required.
         :paramtype kind: str
         :keyword type: The Type of the resource. Required.
         :paramtype type: str
@@ -1091,42 +2294,9 @@ class CommitmentPeriod(_serialization.Model):
         super().__init__(**kwargs)
         self.tier = tier
         self.count = count
-        self.quota = None
-        self.start_date = None
-        self.end_date = None
-
-
-class ProxyResource(Resource):
-    """The resource model definition for a Azure Resource Manager proxy resource. It will not have
-    tags and a location.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    """
-
-    _validation = {
-        "id": {"readonly": True},
-        "name": {"readonly": True},
-        "type": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "type": {"key": "type", "type": "str"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
+        self.quota: Optional["_models.CommitmentQuota"] = None
+        self.start_date: Optional[str] = None
+        self.end_date: Optional[str] = None
 
 
 class CommitmentPlan(ProxyResource):
@@ -1202,8 +2372,8 @@ class CommitmentPlan(ProxyResource):
         :paramtype properties: ~azure.mgmt.cognitiveservices.models.CommitmentPlanProperties
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.etag = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
         self.kind = kind
         self.sku = sku
         self.tags = tags
@@ -1228,6 +2398,8 @@ class CommitmentPlanAccountAssociation(ProxyResource):
     :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
     :ivar etag: Resource Etag.
     :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
     :ivar account_id: The Azure resource id of the account.
     :vartype account_id: str
     """
@@ -1246,21 +2418,27 @@ class CommitmentPlanAccountAssociation(ProxyResource):
         "type": {"key": "type", "type": "str"},
         "system_data": {"key": "systemData", "type": "SystemData"},
         "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
         "account_id": {"key": "properties.accountId", "type": "str"},
     }
 
-    def __init__(self, *, account_id: Optional[str] = None, **kwargs: Any) -> None:
+    def __init__(
+        self, *, tags: Optional[Dict[str, str]] = None, account_id: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
         :keyword account_id: The Azure resource id of the account.
         :paramtype account_id: str
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.etag = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
         self.account_id = account_id
 
 
-class CommitmentPlanAccountAssociationListResult(_serialization.Model):
+class CommitmentPlanAccountAssociationListResult(_serialization.Model):  # pylint: disable=name-too-long
     """The list of cognitive services Commitment Plan Account Association operation response.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1288,7 +2466,7 @@ class CommitmentPlanAccountAssociationListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.next_link = next_link
-        self.value = None
+        self.value: Optional[List["_models.CommitmentPlanAccountAssociation"]] = None
 
 
 class CommitmentPlanAssociation(_serialization.Model):
@@ -1346,7 +2524,7 @@ class CommitmentPlanListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.next_link = next_link
-        self.value = None
+        self.value: Optional[List["_models.CommitmentPlan"]] = None
 
 
 class CommitmentPlanProperties(_serialization.Model):
@@ -1423,15 +2601,15 @@ class CommitmentPlanProperties(_serialization.Model):
         :paramtype next: ~azure.mgmt.cognitiveservices.models.CommitmentPeriod
         """
         super().__init__(**kwargs)
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.CommitmentPlanProvisioningState"]] = None
         self.commitment_plan_guid = commitment_plan_guid
         self.hosting_model = hosting_model
         self.plan_type = plan_type
         self.current = current
         self.auto_renew = auto_renew
         self.next = next
-        self.last = None
-        self.provisioning_issues = None
+        self.last: Optional["_models.CommitmentPeriod"] = None
+        self.provisioning_issues: Optional[List[str]] = None
 
 
 class CommitmentQuota(_serialization.Model):
@@ -1563,7 +2741,736 @@ class CommitmentTierListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.next_link = next_link
-        self.value = None
+        self.value: Optional[List["_models.CommitmentTier"]] = None
+
+
+class ConnectionAccessKey(_serialization.Model):
+    """ConnectionAccessKey.
+
+    :ivar access_key_id:
+    :vartype access_key_id: str
+    :ivar secret_access_key:
+    :vartype secret_access_key: str
+    """
+
+    _attribute_map = {
+        "access_key_id": {"key": "accessKeyId", "type": "str"},
+        "secret_access_key": {"key": "secretAccessKey", "type": "str"},
+    }
+
+    def __init__(
+        self, *, access_key_id: Optional[str] = None, secret_access_key: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword access_key_id:
+        :paramtype access_key_id: str
+        :keyword secret_access_key:
+        :paramtype secret_access_key: str
+        """
+        super().__init__(**kwargs)
+        self.access_key_id = access_key_id
+        self.secret_access_key = secret_access_key
+
+
+class ConnectionAccountKey(_serialization.Model):
+    """Account key object for connection credential.
+
+    :ivar key:
+    :vartype key: str
+    """
+
+    _attribute_map = {
+        "key": {"key": "key", "type": "str"},
+    }
+
+    def __init__(self, *, key: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword key:
+        :paramtype key: str
+        """
+        super().__init__(**kwargs)
+        self.key = key
+
+
+class ConnectionApiKey(_serialization.Model):
+    """Api key object for connection credential.
+
+    :ivar key:
+    :vartype key: str
+    """
+
+    _attribute_map = {
+        "key": {"key": "key", "type": "str"},
+    }
+
+    def __init__(self, *, key: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword key:
+        :paramtype key: str
+        """
+        super().__init__(**kwargs)
+        self.key = key
+
+
+class ConnectionManagedIdentity(_serialization.Model):
+    """ConnectionManagedIdentity.
+
+    :ivar client_id:
+    :vartype client_id: str
+    :ivar resource_id:
+    :vartype resource_id: str
+    """
+
+    _attribute_map = {
+        "client_id": {"key": "clientId", "type": "str"},
+        "resource_id": {"key": "resourceId", "type": "str"},
+    }
+
+    def __init__(self, *, client_id: Optional[str] = None, resource_id: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword client_id:
+        :paramtype client_id: str
+        :keyword resource_id:
+        :paramtype resource_id: str
+        """
+        super().__init__(**kwargs)
+        self.client_id = client_id
+        self.resource_id = resource_id
+
+
+class ConnectionOAuth2(_serialization.Model):
+    """ClientId and ClientSecret are required. Other properties are optional
+    depending on each OAuth2 provider's implementation.
+
+    :ivar auth_url: Required by Concur connection category.
+    :vartype auth_url: str
+    :ivar client_id: Client id in the format of UUID.
+    :vartype client_id: str
+    :ivar client_secret:
+    :vartype client_secret: str
+    :ivar developer_token: Required by GoogleAdWords connection category.
+    :vartype developer_token: str
+    :ivar password:
+    :vartype password: str
+    :ivar refresh_token: Required by GoogleBigQuery, GoogleAdWords, Hubspot, QuickBooks, Square,
+     Xero, Zoho
+     where user needs to get RefreshToken offline.
+    :vartype refresh_token: str
+    :ivar tenant_id: Required by QuickBooks and Xero connection categories.
+    :vartype tenant_id: str
+    :ivar username: Concur, ServiceNow auth server AccessToken grant type is 'Password'
+     which requires UsernamePassword.
+    :vartype username: str
+    """
+
+    _attribute_map = {
+        "auth_url": {"key": "authUrl", "type": "str"},
+        "client_id": {"key": "clientId", "type": "str"},
+        "client_secret": {"key": "clientSecret", "type": "str"},
+        "developer_token": {"key": "developerToken", "type": "str"},
+        "password": {"key": "password", "type": "str"},
+        "refresh_token": {"key": "refreshToken", "type": "str"},
+        "tenant_id": {"key": "tenantId", "type": "str"},
+        "username": {"key": "username", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        auth_url: Optional[str] = None,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        developer_token: Optional[str] = None,
+        password: Optional[str] = None,
+        refresh_token: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        username: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword auth_url: Required by Concur connection category.
+        :paramtype auth_url: str
+        :keyword client_id: Client id in the format of UUID.
+        :paramtype client_id: str
+        :keyword client_secret:
+        :paramtype client_secret: str
+        :keyword developer_token: Required by GoogleAdWords connection category.
+        :paramtype developer_token: str
+        :keyword password:
+        :paramtype password: str
+        :keyword refresh_token: Required by GoogleBigQuery, GoogleAdWords, Hubspot, QuickBooks, Square,
+         Xero, Zoho
+         where user needs to get RefreshToken offline.
+        :paramtype refresh_token: str
+        :keyword tenant_id: Required by QuickBooks and Xero connection categories.
+        :paramtype tenant_id: str
+        :keyword username: Concur, ServiceNow auth server AccessToken grant type is 'Password'
+         which requires UsernamePassword.
+        :paramtype username: str
+        """
+        super().__init__(**kwargs)
+        self.auth_url = auth_url
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.developer_token = developer_token
+        self.password = password
+        self.refresh_token = refresh_token
+        self.tenant_id = tenant_id
+        self.username = username
+
+
+class ConnectionPersonalAccessToken(_serialization.Model):
+    """ConnectionPersonalAccessToken.
+
+    :ivar pat:
+    :vartype pat: str
+    """
+
+    _attribute_map = {
+        "pat": {"key": "pat", "type": "str"},
+    }
+
+    def __init__(self, *, pat: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword pat:
+        :paramtype pat: str
+        """
+        super().__init__(**kwargs)
+        self.pat = pat
+
+
+class ConnectionPropertiesV2BasicResource(Resource):
+    """Connection base resource schema.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar properties: Connection property base schema. Required.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.ConnectionPropertiesV2
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "properties": {"required": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "properties": {"key": "properties", "type": "ConnectionPropertiesV2"},
+    }
+
+    def __init__(self, *, properties: "_models.ConnectionPropertiesV2", **kwargs: Any) -> None:
+        """
+        :keyword properties: Connection property base schema. Required.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.ConnectionPropertiesV2
+        """
+        super().__init__(**kwargs)
+        self.properties = properties
+
+
+class ConnectionPropertiesV2BasicResourceArmPaginatedResult(_serialization.Model):  # pylint: disable=name-too-long
+    """ConnectionPropertiesV2BasicResourceArmPaginatedResult.
+
+    :ivar next_link:
+    :vartype next_link: str
+    :ivar value:
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.ConnectionPropertiesV2BasicResource]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[ConnectionPropertiesV2BasicResource]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        next_link: Optional[str] = None,
+        value: Optional[List["_models.ConnectionPropertiesV2BasicResource"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link:
+        :paramtype next_link: str
+        :keyword value:
+        :paramtype value:
+         list[~azure.mgmt.cognitiveservices.models.ConnectionPropertiesV2BasicResource]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class ConnectionServicePrincipal(_serialization.Model):
+    """ConnectionServicePrincipal.
+
+    :ivar client_id:
+    :vartype client_id: str
+    :ivar client_secret:
+    :vartype client_secret: str
+    :ivar tenant_id:
+    :vartype tenant_id: str
+    """
+
+    _attribute_map = {
+        "client_id": {"key": "clientId", "type": "str"},
+        "client_secret": {"key": "clientSecret", "type": "str"},
+        "tenant_id": {"key": "tenantId", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword client_id:
+        :paramtype client_id: str
+        :keyword client_secret:
+        :paramtype client_secret: str
+        :keyword tenant_id:
+        :paramtype tenant_id: str
+        """
+        super().__init__(**kwargs)
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.tenant_id = tenant_id
+
+
+class ConnectionSharedAccessSignature(_serialization.Model):
+    """ConnectionSharedAccessSignature.
+
+    :ivar sas:
+    :vartype sas: str
+    """
+
+    _attribute_map = {
+        "sas": {"key": "sas", "type": "str"},
+    }
+
+    def __init__(self, *, sas: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword sas:
+        :paramtype sas: str
+        """
+        super().__init__(**kwargs)
+        self.sas = sas
+
+
+class ConnectionUpdateContent(_serialization.Model):
+    """The properties that the Cognitive services connection will be updated with.
+
+    :ivar properties: The properties that the Cognitive services connection will be updated with.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.ConnectionPropertiesV2
+    """
+
+    _attribute_map = {
+        "properties": {"key": "properties", "type": "ConnectionPropertiesV2"},
+    }
+
+    def __init__(self, *, properties: Optional["_models.ConnectionPropertiesV2"] = None, **kwargs: Any) -> None:
+        """
+        :keyword properties: The properties that the Cognitive services connection will be updated
+         with.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.ConnectionPropertiesV2
+        """
+        super().__init__(**kwargs)
+        self.properties = properties
+
+
+class ConnectionUsernamePassword(_serialization.Model):
+    """ConnectionUsernamePassword.
+
+    :ivar password:
+    :vartype password: str
+    :ivar security_token: Optional, required by connections like SalesForce for extra security in
+     addition to UsernamePassword.
+    :vartype security_token: str
+    :ivar username:
+    :vartype username: str
+    """
+
+    _attribute_map = {
+        "password": {"key": "password", "type": "str"},
+        "security_token": {"key": "securityToken", "type": "str"},
+        "username": {"key": "username", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        password: Optional[str] = None,
+        security_token: Optional[str] = None,
+        username: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword password:
+        :paramtype password: str
+        :keyword security_token: Optional, required by connections like SalesForce for extra security
+         in addition to UsernamePassword.
+        :paramtype security_token: str
+        :keyword username:
+        :paramtype username: str
+        """
+        super().__init__(**kwargs)
+        self.password = password
+        self.security_token = security_token
+        self.username = username
+
+
+class RaiBlocklistConfig(_serialization.Model):
+    """Azure OpenAI blocklist config.
+
+    :ivar blocklist_name: Name of ContentFilter.
+    :vartype blocklist_name: str
+    :ivar blocking: If blocking would occur.
+    :vartype blocking: bool
+    """
+
+    _attribute_map = {
+        "blocklist_name": {"key": "blocklistName", "type": "str"},
+        "blocking": {"key": "blocking", "type": "bool"},
+    }
+
+    def __init__(self, *, blocklist_name: Optional[str] = None, blocking: Optional[bool] = None, **kwargs: Any) -> None:
+        """
+        :keyword blocklist_name: Name of ContentFilter.
+        :paramtype blocklist_name: str
+        :keyword blocking: If blocking would occur.
+        :paramtype blocking: bool
+        """
+        super().__init__(**kwargs)
+        self.blocklist_name = blocklist_name
+        self.blocking = blocking
+
+
+class CustomBlocklistConfig(RaiBlocklistConfig):
+    """Gets or sets the source to which filter applies.
+
+    :ivar blocklist_name: Name of ContentFilter.
+    :vartype blocklist_name: str
+    :ivar blocking: If blocking would occur.
+    :vartype blocking: bool
+    :ivar source: Content source to apply the Content Filters. Known values are: "Prompt" and
+     "Completion".
+    :vartype source: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyContentSource
+    """
+
+    _attribute_map = {
+        "blocklist_name": {"key": "blocklistName", "type": "str"},
+        "blocking": {"key": "blocking", "type": "bool"},
+        "source": {"key": "source", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        blocklist_name: Optional[str] = None,
+        blocking: Optional[bool] = None,
+        source: Optional[Union[str, "_models.RaiPolicyContentSource"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword blocklist_name: Name of ContentFilter.
+        :paramtype blocklist_name: str
+        :keyword blocking: If blocking would occur.
+        :paramtype blocking: bool
+        :keyword source: Content source to apply the Content Filters. Known values are: "Prompt" and
+         "Completion".
+        :paramtype source: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyContentSource
+        """
+        super().__init__(blocklist_name=blocklist_name, blocking=blocking, **kwargs)
+        self.source = source
+
+
+class CustomKeys(_serialization.Model):
+    """Custom Keys credential object.
+
+    :ivar keys: Dictionary of :code:`<string>`.
+    :vartype keys: dict[str, str]
+    """
+
+    _attribute_map = {
+        "keys": {"key": "keys", "type": "{str}"},
+    }
+
+    def __init__(self, *, keys: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+        """
+        :keyword keys: Dictionary of :code:`<string>`.
+        :paramtype keys: dict[str, str]
+        """
+        super().__init__(**kwargs)
+        self.keys = keys
+
+
+class CustomKeysConnectionProperties(ConnectionPropertiesV2):
+    """Category:= CustomKeys
+    AuthType:= CustomKeys (as type discriminator)
+    Credentials:= {CustomKeys} as CustomKeys
+    Target:= {any value}
+    Use Metadata property bag for ApiVersion and other metadata fields.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials: Custom Keys credential object.
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.CustomKeys
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "CustomKeys"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.CustomKeys"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials: Custom Keys credential object.
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.CustomKeys
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "CustomKeys"
+        self.credentials = credentials
+
+
+class DefenderForAISetting(ProxyResource):
+    """The Defender for AI resource.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
+    :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
+    :ivar etag: Resource Etag.
+    :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar state: Defender for AI state on the AI resource. Known values are: "Disabled" and
+     "Enabled".
+    :vartype state: str or ~azure.mgmt.cognitiveservices.models.DefenderForAISettingState
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "etag": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "state": {"key": "properties.state", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        tags: Optional[Dict[str, str]] = None,
+        state: Optional[Union[str, "_models.DefenderForAISettingState"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword state: Defender for AI state on the AI resource. Known values are: "Disabled" and
+         "Enabled".
+        :paramtype state: str or ~azure.mgmt.cognitiveservices.models.DefenderForAISettingState
+        """
+        super().__init__(**kwargs)
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
+        self.state = state
+
+
+class DefenderForAISettingResult(_serialization.Model):
+    """The list of cognitive services Defender for AI Settings.
+
+    :ivar next_link: The link used to get the next page of Defender for AI Settings.
+    :vartype next_link: str
+    :ivar value: The list of Defender for AI Settings.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.DefenderForAISetting]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[DefenderForAISetting]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        next_link: Optional[str] = None,
+        value: Optional[List["_models.DefenderForAISetting"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of Defender for AI Settings.
+        :paramtype next_link: str
+        :keyword value: The list of Defender for AI Settings.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.DefenderForAISetting]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
 
 
 class Deployment(ProxyResource):
@@ -1585,6 +3492,8 @@ class Deployment(ProxyResource):
     :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
     :ivar etag: Resource Etag.
     :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
     :ivar properties: Properties of Cognitive Services account deployment.
     :vartype properties: ~azure.mgmt.cognitiveservices.models.DeploymentProperties
     """
@@ -1604,6 +3513,7 @@ class Deployment(ProxyResource):
         "sku": {"key": "sku", "type": "Sku"},
         "system_data": {"key": "systemData", "type": "SystemData"},
         "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
         "properties": {"key": "properties", "type": "DeploymentProperties"},
     }
 
@@ -1611,20 +3521,57 @@ class Deployment(ProxyResource):
         self,
         *,
         sku: Optional["_models.Sku"] = None,
+        tags: Optional[Dict[str, str]] = None,
         properties: Optional["_models.DeploymentProperties"] = None,
         **kwargs: Any
     ) -> None:
         """
         :keyword sku: The resource model definition representing SKU.
         :paramtype sku: ~azure.mgmt.cognitiveservices.models.Sku
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
         :keyword properties: Properties of Cognitive Services account deployment.
         :paramtype properties: ~azure.mgmt.cognitiveservices.models.DeploymentProperties
         """
         super().__init__(**kwargs)
         self.sku = sku
-        self.system_data = None
-        self.etag = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
         self.properties = properties
+
+
+class DeploymentCapacitySettings(_serialization.Model):
+    """Internal use only.
+
+    :ivar designated_capacity: The designated capacity.
+    :vartype designated_capacity: int
+    :ivar priority: The priority of this capacity setting.
+    :vartype priority: int
+    """
+
+    _validation = {
+        "designated_capacity": {"minimum": 0},
+        "priority": {"minimum": 0},
+    }
+
+    _attribute_map = {
+        "designated_capacity": {"key": "designatedCapacity", "type": "int"},
+        "priority": {"key": "priority", "type": "int"},
+    }
+
+    def __init__(
+        self, *, designated_capacity: Optional[int] = None, priority: Optional[int] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword designated_capacity: The designated capacity.
+        :paramtype designated_capacity: int
+        :keyword priority: The priority of this capacity setting.
+        :paramtype priority: int
+        """
+        super().__init__(**kwargs)
+        self.designated_capacity = designated_capacity
+        self.priority = priority
 
 
 class DeploymentListResult(_serialization.Model):
@@ -1654,7 +3601,7 @@ class DeploymentListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.next_link = next_link
-        self.value = None
+        self.value: Optional[List["_models.Deployment"]] = None
 
 
 class DeploymentProperties(_serialization.Model):
@@ -1669,7 +3616,8 @@ class DeploymentProperties(_serialization.Model):
      ~azure.mgmt.cognitiveservices.models.DeploymentProvisioningState
     :ivar model: Properties of Cognitive Services account deployment model.
     :vartype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
-    :ivar scale_settings: Properties of Cognitive Services account deployment model.
+    :ivar scale_settings: Properties of Cognitive Services account deployment model. (Deprecated,
+     please use Deployment.sku instead.).
     :vartype scale_settings: ~azure.mgmt.cognitiveservices.models.DeploymentScaleSettings
     :ivar capabilities: The capabilities.
     :vartype capabilities: dict[str, str]
@@ -1683,6 +3631,18 @@ class DeploymentProperties(_serialization.Model):
      "OnceNewDefaultVersionAvailable", "OnceCurrentVersionExpired", and "NoAutoUpgrade".
     :vartype version_upgrade_option: str or
      ~azure.mgmt.cognitiveservices.models.DeploymentModelVersionUpgradeOption
+    :ivar dynamic_throttling_enabled: If the dynamic throttling is enabled.
+    :vartype dynamic_throttling_enabled: bool
+    :ivar current_capacity: The current capacity.
+    :vartype current_capacity: int
+    :ivar capacity_settings: Internal use only.
+    :vartype capacity_settings: ~azure.mgmt.cognitiveservices.models.DeploymentCapacitySettings
+    :ivar parent_deployment_name: The name of parent deployment.
+    :vartype parent_deployment_name: str
+    :ivar spillover_deployment_name: Specifies the deployment name that should serve requests when
+     the request would have otherwise been throttled due to reaching current deployment throughput
+     limit.
+    :vartype spillover_deployment_name: str
     """
 
     _validation = {
@@ -1690,6 +3650,7 @@ class DeploymentProperties(_serialization.Model):
         "capabilities": {"readonly": True},
         "call_rate_limit": {"readonly": True},
         "rate_limits": {"readonly": True},
+        "dynamic_throttling_enabled": {"readonly": True},
     }
 
     _attribute_map = {
@@ -1701,6 +3662,11 @@ class DeploymentProperties(_serialization.Model):
         "call_rate_limit": {"key": "callRateLimit", "type": "CallRateLimit"},
         "rate_limits": {"key": "rateLimits", "type": "[ThrottlingRule]"},
         "version_upgrade_option": {"key": "versionUpgradeOption", "type": "str"},
+        "dynamic_throttling_enabled": {"key": "dynamicThrottlingEnabled", "type": "bool"},
+        "current_capacity": {"key": "currentCapacity", "type": "int"},
+        "capacity_settings": {"key": "capacitySettings", "type": "DeploymentCapacitySettings"},
+        "parent_deployment_name": {"key": "parentDeploymentName", "type": "str"},
+        "spillover_deployment_name": {"key": "spilloverDeploymentName", "type": "str"},
     }
 
     def __init__(
@@ -1710,12 +3676,17 @@ class DeploymentProperties(_serialization.Model):
         scale_settings: Optional["_models.DeploymentScaleSettings"] = None,
         rai_policy_name: Optional[str] = None,
         version_upgrade_option: Optional[Union[str, "_models.DeploymentModelVersionUpgradeOption"]] = None,
+        current_capacity: Optional[int] = None,
+        capacity_settings: Optional["_models.DeploymentCapacitySettings"] = None,
+        parent_deployment_name: Optional[str] = None,
+        spillover_deployment_name: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """
         :keyword model: Properties of Cognitive Services account deployment model.
         :paramtype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
         :keyword scale_settings: Properties of Cognitive Services account deployment model.
+         (Deprecated, please use Deployment.sku instead.).
         :paramtype scale_settings: ~azure.mgmt.cognitiveservices.models.DeploymentScaleSettings
         :keyword rai_policy_name: The name of RAI policy.
         :paramtype rai_policy_name: str
@@ -1723,20 +3694,36 @@ class DeploymentProperties(_serialization.Model):
          "OnceNewDefaultVersionAvailable", "OnceCurrentVersionExpired", and "NoAutoUpgrade".
         :paramtype version_upgrade_option: str or
          ~azure.mgmt.cognitiveservices.models.DeploymentModelVersionUpgradeOption
+        :keyword current_capacity: The current capacity.
+        :paramtype current_capacity: int
+        :keyword capacity_settings: Internal use only.
+        :paramtype capacity_settings: ~azure.mgmt.cognitiveservices.models.DeploymentCapacitySettings
+        :keyword parent_deployment_name: The name of parent deployment.
+        :paramtype parent_deployment_name: str
+        :keyword spillover_deployment_name: Specifies the deployment name that should serve requests
+         when the request would have otherwise been throttled due to reaching current deployment
+         throughput limit.
+        :paramtype spillover_deployment_name: str
         """
         super().__init__(**kwargs)
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.DeploymentProvisioningState"]] = None
         self.model = model
         self.scale_settings = scale_settings
-        self.capabilities = None
+        self.capabilities: Optional[Dict[str, str]] = None
         self.rai_policy_name = rai_policy_name
-        self.call_rate_limit = None
-        self.rate_limits = None
+        self.call_rate_limit: Optional["_models.CallRateLimit"] = None
+        self.rate_limits: Optional[List["_models.ThrottlingRule"]] = None
         self.version_upgrade_option = version_upgrade_option
+        self.dynamic_throttling_enabled: Optional[bool] = None
+        self.current_capacity = current_capacity
+        self.capacity_settings = capacity_settings
+        self.parent_deployment_name = parent_deployment_name
+        self.spillover_deployment_name = spillover_deployment_name
 
 
 class DeploymentScaleSettings(_serialization.Model):
-    """Properties of Cognitive Services account deployment model.
+    """Properties of Cognitive Services account deployment model. (Deprecated, please use
+    Deployment.sku instead.).
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
@@ -1775,7 +3762,37 @@ class DeploymentScaleSettings(_serialization.Model):
         super().__init__(**kwargs)
         self.scale_type = scale_type
         self.capacity = capacity
-        self.active_capacity = None
+        self.active_capacity: Optional[int] = None
+
+
+class DeploymentSkuListResult(_serialization.Model):
+    """The list of cognitive services accounts operation response.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar next_link: The link used to get the next page of deployment skus.
+    :vartype next_link: str
+    :ivar value: Gets the list of Cognitive Services accounts deployment skus.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.SkuResource]
+    """
+
+    _validation = {
+        "value": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[SkuResource]"},
+    }
+
+    def __init__(self, *, next_link: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword next_link: The link used to get the next page of deployment skus.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value: Optional[List["_models.SkuResource"]] = None
 
 
 class DomainAvailability(_serialization.Model):
@@ -1865,6 +3882,147 @@ class Encryption(_serialization.Model):
         self.key_source = key_source
 
 
+class EncryptionScope(ProxyResource):
+    """Cognitive Services EncryptionScope.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
+    :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
+    :ivar etag: Resource Etag.
+    :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar properties: Properties of Cognitive Services EncryptionScope.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.EncryptionScopeProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "etag": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "properties": {"key": "properties", "type": "EncryptionScopeProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        tags: Optional[Dict[str, str]] = None,
+        properties: Optional["_models.EncryptionScopeProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword properties: Properties of Cognitive Services EncryptionScope.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.EncryptionScopeProperties
+        """
+        super().__init__(**kwargs)
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
+        self.properties = properties
+
+
+class EncryptionScopeListResult(_serialization.Model):
+    """The list of cognitive services EncryptionScopes.
+
+    :ivar next_link: The link used to get the next page of EncryptionScope.
+    :vartype next_link: str
+    :ivar value: The list of EncryptionScope.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.EncryptionScope]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[EncryptionScope]"},
+    }
+
+    def __init__(
+        self, *, next_link: Optional[str] = None, value: Optional[List["_models.EncryptionScope"]] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of EncryptionScope.
+        :paramtype next_link: str
+        :keyword value: The list of EncryptionScope.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.EncryptionScope]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class EncryptionScopeProperties(Encryption):
+    """Properties to EncryptionScope.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar key_vault_properties: Properties of KeyVault.
+    :vartype key_vault_properties: ~azure.mgmt.cognitiveservices.models.KeyVaultProperties
+    :ivar key_source: Enumerates the possible value of keySource for Encryption. Known values are:
+     "Microsoft.CognitiveServices" and "Microsoft.KeyVault".
+    :vartype key_source: str or ~azure.mgmt.cognitiveservices.models.KeySource
+    :ivar provisioning_state: Gets the status of the resource at the time the operation was called.
+     Known values are: "Accepted", "Creating", "Deleting", "Moving", "Failed", "Succeeded", and
+     "Canceled".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.cognitiveservices.models.EncryptionScopeProvisioningState
+    :ivar state: The encryptionScope state. Known values are: "Disabled" and "Enabled".
+    :vartype state: str or ~azure.mgmt.cognitiveservices.models.EncryptionScopeState
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "key_vault_properties": {"key": "keyVaultProperties", "type": "KeyVaultProperties"},
+        "key_source": {"key": "keySource", "type": "str"},
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "state": {"key": "state", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        key_vault_properties: Optional["_models.KeyVaultProperties"] = None,
+        key_source: Union[str, "_models.KeySource"] = "Microsoft.KeyVault",
+        state: Optional[Union[str, "_models.EncryptionScopeState"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword key_vault_properties: Properties of KeyVault.
+        :paramtype key_vault_properties: ~azure.mgmt.cognitiveservices.models.KeyVaultProperties
+        :keyword key_source: Enumerates the possible value of keySource for Encryption. Known values
+         are: "Microsoft.CognitiveServices" and "Microsoft.KeyVault".
+        :paramtype key_source: str or ~azure.mgmt.cognitiveservices.models.KeySource
+        :keyword state: The encryptionScope state. Known values are: "Disabled" and "Enabled".
+        :paramtype state: str or ~azure.mgmt.cognitiveservices.models.EncryptionScopeState
+        """
+        super().__init__(key_vault_properties=key_vault_properties, key_source=key_source, **kwargs)
+        self.provisioning_state: Optional[Union[str, "_models.EncryptionScopeProvisioningState"]] = None
+        self.state = state
+
+
 class ErrorAdditionalInfo(_serialization.Model):
     """The resource management error additional info.
 
@@ -1889,8 +4047,8 @@ class ErrorAdditionalInfo(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.type = None
-        self.info = None
+        self.type: Optional[str] = None
+        self.info: Optional[JSON] = None
 
 
 class ErrorDetail(_serialization.Model):
@@ -1929,11 +4087,11 @@ class ErrorDetail(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.code = None
-        self.message = None
-        self.target = None
-        self.details = None
-        self.additional_info = None
+        self.code: Optional[str] = None
+        self.message: Optional[str] = None
+        self.target: Optional[str] = None
+        self.details: Optional[List["_models.ErrorDetail"]] = None
+        self.additional_info: Optional[List["_models.ErrorAdditionalInfo"]] = None
 
 
 class ErrorResponse(_serialization.Model):
@@ -2007,15 +4165,15 @@ class Identity(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.type = type
-        self.tenant_id = None
-        self.principal_id = None
+        self.tenant_id: Optional[str] = None
+        self.principal_id: Optional[str] = None
         self.user_assigned_identities = user_assigned_identities
 
 
 class IpRule(_serialization.Model):
     """A rule governing the accessibility from a specific ip address or ip range.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar value: An IPv4 address range in CIDR notation, such as '124.56.78.91' (simple IP address)
      or '124.56.78.0/24' (all addresses that start with 124.56.78). Required.
@@ -2086,6 +4244,160 @@ class KeyVaultProperties(_serialization.Model):
         self.identity_client_id = identity_client_id
 
 
+class ManagedIdentityAuthTypeConnectionProperties(ConnectionPropertiesV2):  # pylint: disable=name-too-long
+    """ManagedIdentityAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials:
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionManagedIdentity
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionManagedIdentity"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionManagedIdentity"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials:
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionManagedIdentity
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "ManagedIdentity"
+        self.credentials = credentials
+
+
 class MetricName(_serialization.Model):
     """A metric name.
 
@@ -2115,18 +4427,21 @@ class MetricName(_serialization.Model):
 class Model(_serialization.Model):
     """Cognitive Services Model.
 
-    :ivar model: Model Metadata.
+    :ivar model: Cognitive Services account Model.
     :vartype model: ~azure.mgmt.cognitiveservices.models.AccountModel
-    :ivar kind: The Kind of the Model.
+    :ivar kind: The kind (type) of cognitive service account.
     :vartype kind: str
-    :ivar sku_name: The SKU of the Model.
+    :ivar sku_name: The name of SKU.
     :vartype sku_name: str
+    :ivar description: The description of the model.
+    :vartype description: str
     """
 
     _attribute_map = {
         "model": {"key": "model", "type": "AccountModel"},
         "kind": {"key": "kind", "type": "str"},
         "sku_name": {"key": "skuName", "type": "str"},
+        "description": {"key": "description", "type": "str"},
     }
 
     def __init__(
@@ -2135,20 +4450,169 @@ class Model(_serialization.Model):
         model: Optional["_models.AccountModel"] = None,
         kind: Optional[str] = None,
         sku_name: Optional[str] = None,
+        description: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """
-        :keyword model: Model Metadata.
+        :keyword model: Cognitive Services account Model.
         :paramtype model: ~azure.mgmt.cognitiveservices.models.AccountModel
-        :keyword kind: The Kind of the Model.
+        :keyword kind: The kind (type) of cognitive service account.
         :paramtype kind: str
-        :keyword sku_name: The SKU of the Model.
+        :keyword sku_name: The name of SKU.
         :paramtype sku_name: str
+        :keyword description: The description of the model.
+        :paramtype description: str
         """
         super().__init__(**kwargs)
         self.model = model
         self.kind = kind
         self.sku_name = sku_name
+        self.description = description
+
+
+class ModelCapacityCalculatorWorkload(_serialization.Model):
+    """Model Capacity Calculator Workload.
+
+    :ivar request_per_minute: Request per minute.
+    :vartype request_per_minute: int
+    :ivar request_parameters: Dictionary, Model Capacity Calculator Workload Parameters.
+    :vartype request_parameters:
+     ~azure.mgmt.cognitiveservices.models.ModelCapacityCalculatorWorkloadRequestParam
+    """
+
+    _attribute_map = {
+        "request_per_minute": {"key": "requestPerMinute", "type": "int"},
+        "request_parameters": {"key": "requestParameters", "type": "ModelCapacityCalculatorWorkloadRequestParam"},
+    }
+
+    def __init__(
+        self,
+        *,
+        request_per_minute: Optional[int] = None,
+        request_parameters: Optional["_models.ModelCapacityCalculatorWorkloadRequestParam"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword request_per_minute: Request per minute.
+        :paramtype request_per_minute: int
+        :keyword request_parameters: Dictionary, Model Capacity Calculator Workload Parameters.
+        :paramtype request_parameters:
+         ~azure.mgmt.cognitiveservices.models.ModelCapacityCalculatorWorkloadRequestParam
+        """
+        super().__init__(**kwargs)
+        self.request_per_minute = request_per_minute
+        self.request_parameters = request_parameters
+
+
+class ModelCapacityCalculatorWorkloadRequestParam(_serialization.Model):  # pylint: disable=name-too-long
+    """Dictionary, Model Capacity Calculator Workload Parameters.
+
+    :ivar avg_prompt_tokens: Average prompt tokens.
+    :vartype avg_prompt_tokens: int
+    :ivar avg_generated_tokens: Average generated tokens.
+    :vartype avg_generated_tokens: int
+    """
+
+    _attribute_map = {
+        "avg_prompt_tokens": {"key": "avgPromptTokens", "type": "int"},
+        "avg_generated_tokens": {"key": "avgGeneratedTokens", "type": "int"},
+    }
+
+    def __init__(
+        self, *, avg_prompt_tokens: Optional[int] = None, avg_generated_tokens: Optional[int] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword avg_prompt_tokens: Average prompt tokens.
+        :paramtype avg_prompt_tokens: int
+        :keyword avg_generated_tokens: Average generated tokens.
+        :paramtype avg_generated_tokens: int
+        """
+        super().__init__(**kwargs)
+        self.avg_prompt_tokens = avg_prompt_tokens
+        self.avg_generated_tokens = avg_generated_tokens
+
+
+class ModelCapacityListResult(_serialization.Model):
+    """The list of cognitive services accounts operation response.
+
+    :ivar next_link: The link used to get the next page of ModelSkuCapacity.
+    :vartype next_link: str
+    :ivar value: Gets the list of Cognitive Services accounts ModelSkuCapacity.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.ModelCapacityListResultValueItem]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[ModelCapacityListResultValueItem]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        next_link: Optional[str] = None,
+        value: Optional[List["_models.ModelCapacityListResultValueItem"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of ModelSkuCapacity.
+        :paramtype next_link: str
+        :keyword value: Gets the list of Cognitive Services accounts ModelSkuCapacity.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.ModelCapacityListResultValueItem]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class ModelCapacityListResultValueItem(ProxyResource):
+    """ModelCapacityListResultValueItem.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar location: The location of the Model Sku Capacity.
+    :vartype location: str
+    :ivar properties: Cognitive Services account ModelSkuCapacity.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.ModelSkuCapacityProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "properties": {"key": "properties", "type": "ModelSkuCapacityProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        location: Optional[str] = None,
+        properties: Optional["_models.ModelSkuCapacityProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword location: The location of the Model Sku Capacity.
+        :paramtype location: str
+        :keyword properties: Cognitive Services account ModelSkuCapacity.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.ModelSkuCapacityProperties
+        """
+        super().__init__(**kwargs)
+        self.location = location
+        self.properties = properties
 
 
 class ModelDeprecationInfo(_serialization.Model):
@@ -2218,6 +4682,8 @@ class ModelSku(_serialization.Model):
     :vartype capacity: ~azure.mgmt.cognitiveservices.models.CapacityConfig
     :ivar rate_limits: The list of rateLimit.
     :vartype rate_limits: list[~azure.mgmt.cognitiveservices.models.CallRateLimit]
+    :ivar cost: The list of billing meter info.
+    :vartype cost: list[~azure.mgmt.cognitiveservices.models.BillingMeterInfo]
     """
 
     _attribute_map = {
@@ -2226,6 +4692,7 @@ class ModelSku(_serialization.Model):
         "deprecation_date": {"key": "deprecationDate", "type": "iso-8601"},
         "capacity": {"key": "capacity", "type": "CapacityConfig"},
         "rate_limits": {"key": "rateLimits", "type": "[CallRateLimit]"},
+        "cost": {"key": "cost", "type": "[BillingMeterInfo]"},
     }
 
     def __init__(
@@ -2236,6 +4703,7 @@ class ModelSku(_serialization.Model):
         deprecation_date: Optional[datetime.datetime] = None,
         capacity: Optional["_models.CapacityConfig"] = None,
         rate_limits: Optional[List["_models.CallRateLimit"]] = None,
+        cost: Optional[List["_models.BillingMeterInfo"]] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -2249,6 +4717,8 @@ class ModelSku(_serialization.Model):
         :paramtype capacity: ~azure.mgmt.cognitiveservices.models.CapacityConfig
         :keyword rate_limits: The list of rateLimit.
         :paramtype rate_limits: list[~azure.mgmt.cognitiveservices.models.CallRateLimit]
+        :keyword cost: The list of billing meter info.
+        :paramtype cost: list[~azure.mgmt.cognitiveservices.models.BillingMeterInfo]
         """
         super().__init__(**kwargs)
         self.name = name
@@ -2256,6 +4726,55 @@ class ModelSku(_serialization.Model):
         self.deprecation_date = deprecation_date
         self.capacity = capacity
         self.rate_limits = rate_limits
+        self.cost = cost
+
+
+class ModelSkuCapacityProperties(_serialization.Model):
+    """Cognitive Services account ModelSkuCapacity.
+
+    :ivar model: Properties of Cognitive Services account deployment model.
+    :vartype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
+    :ivar sku_name:
+    :vartype sku_name: str
+    :ivar available_capacity: The available capacity for deployment with this model and sku.
+    :vartype available_capacity: float
+    :ivar available_finetune_capacity: The available capacity for deployment with a fine-tune
+     version of this model and sku.
+    :vartype available_finetune_capacity: float
+    """
+
+    _attribute_map = {
+        "model": {"key": "model", "type": "DeploymentModel"},
+        "sku_name": {"key": "skuName", "type": "str"},
+        "available_capacity": {"key": "availableCapacity", "type": "float"},
+        "available_finetune_capacity": {"key": "availableFinetuneCapacity", "type": "float"},
+    }
+
+    def __init__(
+        self,
+        *,
+        model: Optional["_models.DeploymentModel"] = None,
+        sku_name: Optional[str] = None,
+        available_capacity: Optional[float] = None,
+        available_finetune_capacity: Optional[float] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword model: Properties of Cognitive Services account deployment model.
+        :paramtype model: ~azure.mgmt.cognitiveservices.models.DeploymentModel
+        :keyword sku_name:
+        :paramtype sku_name: str
+        :keyword available_capacity: The available capacity for deployment with this model and sku.
+        :paramtype available_capacity: float
+        :keyword available_finetune_capacity: The available capacity for deployment with a fine-tune
+         version of this model and sku.
+        :paramtype available_finetune_capacity: float
+        """
+        super().__init__(**kwargs)
+        self.model = model
+        self.sku_name = sku_name
+        self.available_capacity = available_capacity
+        self.available_finetune_capacity = available_finetune_capacity
 
 
 class MultiRegionSettings(_serialization.Model):
@@ -2292,6 +4811,53 @@ class MultiRegionSettings(_serialization.Model):
         self.regions = regions
 
 
+class NetworkInjections(_serialization.Model):
+    """Specifies in AI Foundry where virtual network injection occurs to secure scenarios like Agents
+    entirely within the user's private network, eliminating public internet exposure while
+    maintaining control over network configurations and resources.
+
+    :ivar scenario: Specifies what features in AI Foundry network injection applies to. Currently
+     only supports 'agent' for agent scenarios. 'none' means no network injection. Known values are:
+     "none" and "agent".
+    :vartype scenario: str or ~azure.mgmt.cognitiveservices.models.ScenarioType
+    :ivar subnet_arm_id: Specify the subnet for which your Agent Client is injected into.
+    :vartype subnet_arm_id: str
+    :ivar use_microsoft_managed_network: Boolean to enable Microsoft Managed Network for subnet
+     delegation.
+    :vartype use_microsoft_managed_network: bool
+    """
+
+    _attribute_map = {
+        "scenario": {"key": "scenario", "type": "str"},
+        "subnet_arm_id": {"key": "subnetArmId", "type": "str"},
+        "use_microsoft_managed_network": {"key": "useMicrosoftManagedNetwork", "type": "bool"},
+    }
+
+    def __init__(
+        self,
+        *,
+        scenario: Optional[Union[str, "_models.ScenarioType"]] = None,
+        subnet_arm_id: Optional[str] = None,
+        use_microsoft_managed_network: Optional[bool] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword scenario: Specifies what features in AI Foundry network injection applies to.
+         Currently only supports 'agent' for agent scenarios. 'none' means no network injection. Known
+         values are: "none" and "agent".
+        :paramtype scenario: str or ~azure.mgmt.cognitiveservices.models.ScenarioType
+        :keyword subnet_arm_id: Specify the subnet for which your Agent Client is injected into.
+        :paramtype subnet_arm_id: str
+        :keyword use_microsoft_managed_network: Boolean to enable Microsoft Managed Network for subnet
+         delegation.
+        :paramtype use_microsoft_managed_network: bool
+        """
+        super().__init__(**kwargs)
+        self.scenario = scenario
+        self.subnet_arm_id = subnet_arm_id
+        self.use_microsoft_managed_network = use_microsoft_managed_network
+
+
 class NetworkRuleSet(_serialization.Model):
     """A set of rules governing the network accessibility.
 
@@ -2299,6 +4865,8 @@ class NetworkRuleSet(_serialization.Model):
      match. This is only used after the bypass property has been evaluated. Known values are:
      "Allow" and "Deny".
     :vartype default_action: str or ~azure.mgmt.cognitiveservices.models.NetworkRuleAction
+    :ivar bypass: Setting for trusted services. Known values are: "None" and "AzureServices".
+    :vartype bypass: str or ~azure.mgmt.cognitiveservices.models.ByPassSelection
     :ivar ip_rules: The list of IP address rules.
     :vartype ip_rules: list[~azure.mgmt.cognitiveservices.models.IpRule]
     :ivar virtual_network_rules: The list of virtual network rules.
@@ -2307,6 +4875,7 @@ class NetworkRuleSet(_serialization.Model):
 
     _attribute_map = {
         "default_action": {"key": "defaultAction", "type": "str"},
+        "bypass": {"key": "bypass", "type": "str"},
         "ip_rules": {"key": "ipRules", "type": "[IpRule]"},
         "virtual_network_rules": {"key": "virtualNetworkRules", "type": "[VirtualNetworkRule]"},
     }
@@ -2315,6 +4884,7 @@ class NetworkRuleSet(_serialization.Model):
         self,
         *,
         default_action: Optional[Union[str, "_models.NetworkRuleAction"]] = None,
+        bypass: Optional[Union[str, "_models.ByPassSelection"]] = None,
         ip_rules: Optional[List["_models.IpRule"]] = None,
         virtual_network_rules: Optional[List["_models.VirtualNetworkRule"]] = None,
         **kwargs: Any
@@ -2324,6 +4894,8 @@ class NetworkRuleSet(_serialization.Model):
          virtualNetworkRules match. This is only used after the bypass property has been evaluated.
          Known values are: "Allow" and "Deny".
         :paramtype default_action: str or ~azure.mgmt.cognitiveservices.models.NetworkRuleAction
+        :keyword bypass: Setting for trusted services. Known values are: "None" and "AzureServices".
+        :paramtype bypass: str or ~azure.mgmt.cognitiveservices.models.ByPassSelection
         :keyword ip_rules: The list of IP address rules.
         :paramtype ip_rules: list[~azure.mgmt.cognitiveservices.models.IpRule]
         :keyword virtual_network_rules: The list of virtual network rules.
@@ -2331,8 +4903,689 @@ class NetworkRuleSet(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.default_action = default_action
+        self.bypass = bypass
         self.ip_rules = ip_rules
         self.virtual_network_rules = virtual_network_rules
+
+
+class NetworkSecurityPerimeter(_serialization.Model):
+    """Information about a linked Network Security Perimeter.
+
+    :ivar id: Fully qualified identifier of the resource.
+    :vartype id: str
+    :ivar perimeter_guid: Guid of the resource.
+    :vartype perimeter_guid: str
+    :ivar location: Location of the resource.
+    :vartype location: str
+    """
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "perimeter_guid": {"key": "perimeterGuid", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        id: Optional[str] = None,  # pylint: disable=redefined-builtin
+        perimeter_guid: Optional[str] = None,
+        location: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword id: Fully qualified identifier of the resource.
+        :paramtype id: str
+        :keyword perimeter_guid: Guid of the resource.
+        :paramtype perimeter_guid: str
+        :keyword location: Location of the resource.
+        :paramtype location: str
+        """
+        super().__init__(**kwargs)
+        self.id = id
+        self.perimeter_guid = perimeter_guid
+        self.location = location
+
+
+class NetworkSecurityPerimeterAccessRule(_serialization.Model):
+    """Network Security Perimeter Access Rule.
+
+    :ivar name: Network Security Perimeter Access Rule Name.
+    :vartype name: str
+    :ivar properties: Properties of Network Security Perimeter Access Rule.
+    :vartype properties:
+     ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRuleProperties
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "NetworkSecurityPerimeterAccessRuleProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: Optional[str] = None,
+        properties: Optional["_models.NetworkSecurityPerimeterAccessRuleProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Network Security Perimeter Access Rule Name.
+        :paramtype name: str
+        :keyword properties: Properties of Network Security Perimeter Access Rule.
+        :paramtype properties:
+         ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRuleProperties
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.properties = properties
+
+
+class NetworkSecurityPerimeterAccessRuleProperties(_serialization.Model):  # pylint: disable=name-too-long
+    """The Properties of Network Security Perimeter Rule.
+
+    :ivar direction: Direction of Access Rule. Known values are: "Inbound" and "Outbound".
+    :vartype direction: str or ~azure.mgmt.cognitiveservices.models.NspAccessRuleDirection
+    :ivar address_prefixes: Address prefixes for inbound rules.
+    :vartype address_prefixes: list[str]
+    :ivar subscriptions: Subscriptions for inbound rules.
+    :vartype subscriptions:
+     list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRulePropertiesSubscriptionsItem]
+    :ivar network_security_perimeters: NetworkSecurityPerimeters for inbound rules.
+    :vartype network_security_perimeters:
+     list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeter]
+    :ivar fully_qualified_domain_names: Fully qualified domain name for outbound rules.
+    :vartype fully_qualified_domain_names: list[str]
+    """
+
+    _attribute_map = {
+        "direction": {"key": "direction", "type": "str"},
+        "address_prefixes": {"key": "addressPrefixes", "type": "[str]"},
+        "subscriptions": {
+            "key": "subscriptions",
+            "type": "[NetworkSecurityPerimeterAccessRulePropertiesSubscriptionsItem]",
+        },
+        "network_security_perimeters": {"key": "networkSecurityPerimeters", "type": "[NetworkSecurityPerimeter]"},
+        "fully_qualified_domain_names": {"key": "fullyQualifiedDomainNames", "type": "[str]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        direction: Optional[Union[str, "_models.NspAccessRuleDirection"]] = None,
+        address_prefixes: Optional[List[str]] = None,
+        subscriptions: Optional[List["_models.NetworkSecurityPerimeterAccessRulePropertiesSubscriptionsItem"]] = None,
+        network_security_perimeters: Optional[List["_models.NetworkSecurityPerimeter"]] = None,
+        fully_qualified_domain_names: Optional[List[str]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword direction: Direction of Access Rule. Known values are: "Inbound" and "Outbound".
+        :paramtype direction: str or ~azure.mgmt.cognitiveservices.models.NspAccessRuleDirection
+        :keyword address_prefixes: Address prefixes for inbound rules.
+        :paramtype address_prefixes: list[str]
+        :keyword subscriptions: Subscriptions for inbound rules.
+        :paramtype subscriptions:
+         list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRulePropertiesSubscriptionsItem]
+        :keyword network_security_perimeters: NetworkSecurityPerimeters for inbound rules.
+        :paramtype network_security_perimeters:
+         list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeter]
+        :keyword fully_qualified_domain_names: Fully qualified domain name for outbound rules.
+        :paramtype fully_qualified_domain_names: list[str]
+        """
+        super().__init__(**kwargs)
+        self.direction = direction
+        self.address_prefixes = address_prefixes
+        self.subscriptions = subscriptions
+        self.network_security_perimeters = network_security_perimeters
+        self.fully_qualified_domain_names = fully_qualified_domain_names
+
+
+class NetworkSecurityPerimeterAccessRulePropertiesSubscriptionsItem(
+    _serialization.Model
+):  # pylint: disable=name-too-long
+    """Subscription for inbound rule.
+
+    :ivar id: Fully qualified identifier of subscription.
+    :vartype id: str
+    """
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Fully qualified identifier of subscription.
+        :paramtype id: str
+        """
+        super().__init__(**kwargs)
+        self.id = id
+
+
+class NetworkSecurityPerimeterConfiguration(ProxyResource):
+    """NSP Configuration for an Cognitive Services account.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar properties: NSP Configuration properties.
+    :vartype properties:
+     ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterConfigurationProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "properties": {"key": "properties", "type": "NetworkSecurityPerimeterConfigurationProperties"},
+    }
+
+    def __init__(
+        self, *, properties: Optional["_models.NetworkSecurityPerimeterConfigurationProperties"] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword properties: NSP Configuration properties.
+        :paramtype properties:
+         ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterConfigurationProperties
+        """
+        super().__init__(**kwargs)
+        self.properties = properties
+
+
+class NetworkSecurityPerimeterConfigurationAssociationInfo(_serialization.Model):  # pylint: disable=name-too-long
+    """Network Security Perimeter Configuration Association Information.
+
+    :ivar name: Name of the resource association.
+    :vartype name: str
+    :ivar access_mode: Access Mode of the resource association.
+    :vartype access_mode: str
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "access_mode": {"key": "accessMode", "type": "str"},
+    }
+
+    def __init__(self, *, name: Optional[str] = None, access_mode: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword name: Name of the resource association.
+        :paramtype name: str
+        :keyword access_mode: Access Mode of the resource association.
+        :paramtype access_mode: str
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.access_mode = access_mode
+
+
+class NetworkSecurityPerimeterConfigurationList(_serialization.Model):  # pylint: disable=name-too-long
+    """A list of NSP configurations for an Cognitive Services account.
+
+    :ivar value: Array of NSP configurations List Result for an Cognitive Services account.
+    :vartype value:
+     list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterConfiguration]
+    :ivar next_link: Link to retrieve next page of results.
+    :vartype next_link: str
+    """
+
+    _attribute_map = {
+        "value": {"key": "value", "type": "[NetworkSecurityPerimeterConfiguration]"},
+        "next_link": {"key": "nextLink", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        value: Optional[List["_models.NetworkSecurityPerimeterConfiguration"]] = None,
+        next_link: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword value: Array of NSP configurations List Result for an Cognitive Services account.
+        :paramtype value:
+         list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterConfiguration]
+        :keyword next_link: Link to retrieve next page of results.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
+        self.value = value
+        self.next_link = next_link
+
+
+class NetworkSecurityPerimeterConfigurationProperties(_serialization.Model):  # pylint: disable=name-too-long
+    """The properties of an NSP Configuration.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar provisioning_state: Provisioning state of NetworkSecurityPerimeter configuration.
+    :vartype provisioning_state: str
+    :ivar provisioning_issues: List of Provisioning Issues.
+    :vartype provisioning_issues: list[~azure.mgmt.cognitiveservices.models.ProvisioningIssue]
+    :ivar network_security_perimeter: Information about a linked Network Security Perimeter.
+    :vartype network_security_perimeter:
+     ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeter
+    :ivar resource_association: Network Security Perimeter Configuration Association Information.
+    :vartype resource_association:
+     ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterConfigurationAssociationInfo
+    :ivar profile: Network Security Perimeter Profile Information.
+    :vartype profile: ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterProfileInfo
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "provisioning_issues": {"key": "provisioningIssues", "type": "[ProvisioningIssue]"},
+        "network_security_perimeter": {"key": "networkSecurityPerimeter", "type": "NetworkSecurityPerimeter"},
+        "resource_association": {
+            "key": "resourceAssociation",
+            "type": "NetworkSecurityPerimeterConfigurationAssociationInfo",
+        },
+        "profile": {"key": "profile", "type": "NetworkSecurityPerimeterProfileInfo"},
+    }
+
+    def __init__(
+        self,
+        *,
+        provisioning_issues: Optional[List["_models.ProvisioningIssue"]] = None,
+        network_security_perimeter: Optional["_models.NetworkSecurityPerimeter"] = None,
+        resource_association: Optional["_models.NetworkSecurityPerimeterConfigurationAssociationInfo"] = None,
+        profile: Optional["_models.NetworkSecurityPerimeterProfileInfo"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword provisioning_issues: List of Provisioning Issues.
+        :paramtype provisioning_issues: list[~azure.mgmt.cognitiveservices.models.ProvisioningIssue]
+        :keyword network_security_perimeter: Information about a linked Network Security Perimeter.
+        :paramtype network_security_perimeter:
+         ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeter
+        :keyword resource_association: Network Security Perimeter Configuration Association
+         Information.
+        :paramtype resource_association:
+         ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterConfigurationAssociationInfo
+        :keyword profile: Network Security Perimeter Profile Information.
+        :paramtype profile: ~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterProfileInfo
+        """
+        super().__init__(**kwargs)
+        self.provisioning_state: Optional[str] = None
+        self.provisioning_issues = provisioning_issues
+        self.network_security_perimeter = network_security_perimeter
+        self.resource_association = resource_association
+        self.profile = profile
+
+
+class NetworkSecurityPerimeterProfileInfo(_serialization.Model):
+    """Network Security Perimeter Profile Information.
+
+    :ivar name: Name of the resource profile.
+    :vartype name: str
+    :ivar access_rules_version: Access rules version of the resource profile.
+    :vartype access_rules_version: int
+    :ivar access_rules:
+    :vartype access_rules:
+     list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRule]
+    :ivar diagnostic_settings_version: Current diagnostic settings version.
+    :vartype diagnostic_settings_version: int
+    :ivar enabled_log_categories: List of enabled log categories.
+    :vartype enabled_log_categories: list[str]
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "access_rules_version": {"key": "accessRulesVersion", "type": "int"},
+        "access_rules": {"key": "accessRules", "type": "[NetworkSecurityPerimeterAccessRule]"},
+        "diagnostic_settings_version": {"key": "diagnosticSettingsVersion", "type": "int"},
+        "enabled_log_categories": {"key": "enabledLogCategories", "type": "[str]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: Optional[str] = None,
+        access_rules_version: Optional[int] = None,
+        access_rules: Optional[List["_models.NetworkSecurityPerimeterAccessRule"]] = None,
+        diagnostic_settings_version: Optional[int] = None,
+        enabled_log_categories: Optional[List[str]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Name of the resource profile.
+        :paramtype name: str
+        :keyword access_rules_version: Access rules version of the resource profile.
+        :paramtype access_rules_version: int
+        :keyword access_rules:
+        :paramtype access_rules:
+         list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRule]
+        :keyword diagnostic_settings_version: Current diagnostic settings version.
+        :paramtype diagnostic_settings_version: int
+        :keyword enabled_log_categories: List of enabled log categories.
+        :paramtype enabled_log_categories: list[str]
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.access_rules_version = access_rules_version
+        self.access_rules = access_rules
+        self.diagnostic_settings_version = diagnostic_settings_version
+        self.enabled_log_categories = enabled_log_categories
+
+
+class NoneAuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """NoneAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "None"
+
+
+class OAuth2AuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """OAuth2AuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials: ClientId and ClientSecret are required. Other properties are optional
+     depending on each OAuth2 provider's implementation.
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionOAuth2
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionOAuth2"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionOAuth2"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials: ClientId and ClientSecret are required. Other properties are optional
+         depending on each OAuth2 provider's implementation.
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionOAuth2
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "OAuth2"
+        self.credentials = credentials
 
 
 class Operation(_serialization.Model):
@@ -2378,11 +5631,11 @@ class Operation(_serialization.Model):
         :paramtype display: ~azure.mgmt.cognitiveservices.models.OperationDisplay
         """
         super().__init__(**kwargs)
-        self.name = None
-        self.is_data_action = None
+        self.name: Optional[str] = None
+        self.is_data_action: Optional[bool] = None
         self.display = display
-        self.origin = None
-        self.action_type = None
+        self.origin: Optional[Union[str, "_models.Origin"]] = None
+        self.action_type: Optional[Union[str, "_models.ActionType"]] = None
 
 
 class OperationDisplay(_serialization.Model):
@@ -2421,10 +5674,10 @@ class OperationDisplay(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.provider = None
-        self.resource = None
-        self.operation = None
-        self.description = None
+        self.provider: Optional[str] = None
+        self.resource: Optional[str] = None
+        self.operation: Optional[str] = None
+        self.description: Optional[str] = None
 
 
 class OperationListResult(_serialization.Model):
@@ -2452,8 +5705,162 @@ class OperationListResult(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.value = None
-        self.next_link = None
+        self.value: Optional[List["_models.Operation"]] = None
+        self.next_link: Optional[str] = None
+
+
+class PATAuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """PATAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials:
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionPersonalAccessToken
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionPersonalAccessToken"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionPersonalAccessToken"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials:
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionPersonalAccessToken
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "PAT"
+        self.credentials = credentials
 
 
 class PatchResourceTags(_serialization.Model):
@@ -2524,7 +5931,7 @@ class PrivateEndpoint(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.id = None
+        self.id: Optional[str] = None
 
 
 class PrivateEndpointConnection(AzureEntityResource):
@@ -2583,7 +5990,7 @@ class PrivateEndpointConnection(AzureEntityResource):
         """
         super().__init__(**kwargs)
         self.properties = properties
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
         self.location = location
 
 
@@ -2612,7 +6019,7 @@ class PrivateEndpointConnectionProperties(_serialization.Model):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar private_endpoint: The resource of private end point.
     :vartype private_endpoint: ~azure.mgmt.cognitiveservices.models.PrivateEndpoint
@@ -2664,7 +6071,7 @@ class PrivateEndpointConnectionProperties(_serialization.Model):
         super().__init__(**kwargs)
         self.private_endpoint = private_endpoint
         self.private_link_service_connection_state = private_link_service_connection_state
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.PrivateEndpointConnectionProvisioningState"]] = None
         self.group_ids = group_ids
 
 
@@ -2761,10 +6168,10 @@ class PrivateLinkResourceProperties(_serialization.Model):
         :paramtype required_zone_names: list[str]
         """
         super().__init__(**kwargs)
-        self.group_id = None
-        self.required_members = None
+        self.group_id: Optional[str] = None
+        self.required_members: Optional[List[str]] = None
         self.required_zone_names = required_zone_names
-        self.display_name = None
+        self.display_name: Optional[str] = None
 
 
 class PrivateLinkServiceConnectionState(_serialization.Model):
@@ -2813,6 +6220,248 @@ class PrivateLinkServiceConnectionState(_serialization.Model):
         self.actions_required = actions_required
 
 
+class Project(AzureEntityResource):
+    """Cognitive Services project is an Azure resource representing the provisioned account's project,
+    it's type, location and SKU.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar etag: Resource Etag.
+    :vartype etag: str
+    :ivar identity: Identity for the resource.
+    :vartype identity: ~azure.mgmt.cognitiveservices.models.Identity
+    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
+    :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives.
+    :vartype location: str
+    :ivar properties: Properties of Cognitive Services project.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.ProjectProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "etag": {"readonly": True},
+        "system_data": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
+        "identity": {"key": "identity", "type": "Identity"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
+        "properties": {"key": "properties", "type": "ProjectProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        identity: Optional["_models.Identity"] = None,
+        tags: Optional[Dict[str, str]] = None,
+        location: Optional[str] = None,
+        properties: Optional["_models.ProjectProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword identity: Identity for the resource.
+        :paramtype identity: ~azure.mgmt.cognitiveservices.models.Identity
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives.
+        :paramtype location: str
+        :keyword properties: Properties of Cognitive Services project.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.ProjectProperties
+        """
+        super().__init__(**kwargs)
+        self.identity = identity
+        self.system_data: Optional["_models.SystemData"] = None
+        self.tags = tags
+        self.location = location
+        self.properties = properties
+
+
+class ProjectListResult(_serialization.Model):
+    """The list of cognitive services projects operation response.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar next_link: The link used to get the next page of projects.
+    :vartype next_link: str
+    :ivar value: Gets the list of Cognitive Services projects and their properties.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.Project]
+    """
+
+    _validation = {
+        "value": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[Project]"},
+    }
+
+    def __init__(self, *, next_link: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword next_link: The link used to get the next page of projects.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value: Optional[List["_models.Project"]] = None
+
+
+class ProjectProperties(_serialization.Model):
+    """Properties of Cognitive Services Project'.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar provisioning_state: Gets the status of the cognitive services project at the time the
+     operation was called. Known values are: "Accepted", "Creating", "Deleting", "Moving", "Failed",
+     "Succeeded", "ResolvingDNS", and "Canceled".
+    :vartype provisioning_state: str or ~azure.mgmt.cognitiveservices.models.ProvisioningState
+    :ivar display_name: The display name of the Cognitive Services Project.
+    :vartype display_name: str
+    :ivar description: The description of the Cognitive Services Project.
+    :vartype description: str
+    :ivar endpoints: The list of endpoint for this Cognitive Services Project.
+    :vartype endpoints: dict[str, str]
+    :ivar is_default: Indicates whether the project is the default project for the account.
+    :vartype is_default: bool
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "endpoints": {"readonly": True},
+        "is_default": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "display_name": {"key": "displayName", "type": "str"},
+        "description": {"key": "description", "type": "str"},
+        "endpoints": {"key": "endpoints", "type": "{str}"},
+        "is_default": {"key": "isDefault", "type": "bool"},
+    }
+
+    def __init__(self, *, display_name: Optional[str] = None, description: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword display_name: The display name of the Cognitive Services Project.
+        :paramtype display_name: str
+        :keyword description: The description of the Cognitive Services Project.
+        :paramtype description: str
+        """
+        super().__init__(**kwargs)
+        self.provisioning_state: Optional[Union[str, "_models.ProvisioningState"]] = None
+        self.display_name = display_name
+        self.description = description
+        self.endpoints: Optional[Dict[str, str]] = None
+        self.is_default: Optional[bool] = None
+
+
+class ProvisioningIssue(_serialization.Model):
+    """ProvisioningIssue.
+
+    :ivar name: Name of the NSP provisioning issue.
+    :vartype name: str
+    :ivar properties: Properties of Provisioning Issue.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.ProvisioningIssueProperties
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "ProvisioningIssueProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: Optional[str] = None,
+        properties: Optional["_models.ProvisioningIssueProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Name of the NSP provisioning issue.
+        :paramtype name: str
+        :keyword properties: Properties of Provisioning Issue.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.ProvisioningIssueProperties
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.properties = properties
+
+
+class ProvisioningIssueProperties(_serialization.Model):
+    """Properties of Provisioning Issue.
+
+    :ivar issue_type: Type of Issue.
+    :vartype issue_type: str
+    :ivar severity: Severity of the issue.
+    :vartype severity: str
+    :ivar description: Description of the issue.
+    :vartype description: str
+    :ivar suggested_resource_ids: IDs of resources that can be associated to the same perimeter to
+     remediate the issue.
+    :vartype suggested_resource_ids: list[str]
+    :ivar suggested_access_rules: Optional array, suggested access rules.
+    :vartype suggested_access_rules:
+     list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRule]
+    """
+
+    _attribute_map = {
+        "issue_type": {"key": "issueType", "type": "str"},
+        "severity": {"key": "severity", "type": "str"},
+        "description": {"key": "description", "type": "str"},
+        "suggested_resource_ids": {"key": "suggestedResourceIds", "type": "[str]"},
+        "suggested_access_rules": {"key": "suggestedAccessRules", "type": "[NetworkSecurityPerimeterAccessRule]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        issue_type: Optional[str] = None,
+        severity: Optional[str] = None,
+        description: Optional[str] = None,
+        suggested_resource_ids: Optional[List[str]] = None,
+        suggested_access_rules: Optional[List["_models.NetworkSecurityPerimeterAccessRule"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword issue_type: Type of Issue.
+        :paramtype issue_type: str
+        :keyword severity: Severity of the issue.
+        :paramtype severity: str
+        :keyword description: Description of the issue.
+        :paramtype description: str
+        :keyword suggested_resource_ids: IDs of resources that can be associated to the same perimeter
+         to remediate the issue.
+        :paramtype suggested_resource_ids: list[str]
+        :keyword suggested_access_rules: Optional array, suggested access rules.
+        :paramtype suggested_access_rules:
+         list[~azure.mgmt.cognitiveservices.models.NetworkSecurityPerimeterAccessRule]
+        """
+        super().__init__(**kwargs)
+        self.issue_type = issue_type
+        self.severity = severity
+        self.description = description
+        self.suggested_resource_ids = suggested_resource_ids
+        self.suggested_access_rules = suggested_access_rules
+
+
 class QuotaLimit(_serialization.Model):
     """QuotaLimit.
 
@@ -2852,10 +6501,620 @@ class QuotaLimit(_serialization.Model):
         self.rules = rules
 
 
+class RaiBlocklist(ProxyResource):
+    """Cognitive Services RaiBlocklist.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
+    :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
+    :ivar etag: Resource Etag.
+    :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar properties: Properties of Cognitive Services RaiBlocklist.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.RaiBlocklistProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "etag": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "properties": {"key": "properties", "type": "RaiBlocklistProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        tags: Optional[Dict[str, str]] = None,
+        properties: Optional["_models.RaiBlocklistProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword properties: Properties of Cognitive Services RaiBlocklist.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.RaiBlocklistProperties
+        """
+        super().__init__(**kwargs)
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
+        self.properties = properties
+
+
+class RaiBlocklistItem(ProxyResource):
+    """Cognitive Services RaiBlocklist Item.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
+    :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
+    :ivar etag: Resource Etag.
+    :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar properties: Properties of Cognitive Services RaiBlocklist Item.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.RaiBlocklistItemProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "etag": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "properties": {"key": "properties", "type": "RaiBlocklistItemProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        tags: Optional[Dict[str, str]] = None,
+        properties: Optional["_models.RaiBlocklistItemProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword properties: Properties of Cognitive Services RaiBlocklist Item.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.RaiBlocklistItemProperties
+        """
+        super().__init__(**kwargs)
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
+        self.properties = properties
+
+
+class RaiBlocklistItemBulkRequest(_serialization.Model):
+    """The Cognitive Services RaiBlocklist Item request body.
+
+    :ivar name:
+    :vartype name: str
+    :ivar properties: Properties of Cognitive Services RaiBlocklist Item.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.RaiBlocklistItemProperties
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "RaiBlocklistItemProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: Optional[str] = None,
+        properties: Optional["_models.RaiBlocklistItemProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name:
+        :paramtype name: str
+        :keyword properties: Properties of Cognitive Services RaiBlocklist Item.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.RaiBlocklistItemProperties
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.properties = properties
+
+
+class RaiBlocklistItemProperties(_serialization.Model):
+    """RAI Custom Blocklist Item properties.
+
+    :ivar pattern: Pattern to match against.
+    :vartype pattern: str
+    :ivar is_regex: If the pattern is a regex pattern.
+    :vartype is_regex: bool
+    """
+
+    _attribute_map = {
+        "pattern": {"key": "pattern", "type": "str"},
+        "is_regex": {"key": "isRegex", "type": "bool"},
+    }
+
+    def __init__(self, *, pattern: Optional[str] = None, is_regex: Optional[bool] = None, **kwargs: Any) -> None:
+        """
+        :keyword pattern: Pattern to match against.
+        :paramtype pattern: str
+        :keyword is_regex: If the pattern is a regex pattern.
+        :paramtype is_regex: bool
+        """
+        super().__init__(**kwargs)
+        self.pattern = pattern
+        self.is_regex = is_regex
+
+
+class RaiBlockListItemsResult(_serialization.Model):
+    """The list of cognitive services RAI Blocklist Items.
+
+    :ivar next_link: The link used to get the next page of RaiBlocklistItems.
+    :vartype next_link: str
+    :ivar value: The list of RaiBlocklistItems.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.RaiBlocklistItem]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[RaiBlocklistItem]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        next_link: Optional[str] = None,
+        value: Optional[List["_models.RaiBlocklistItem"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of RaiBlocklistItems.
+        :paramtype next_link: str
+        :keyword value: The list of RaiBlocklistItems.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.RaiBlocklistItem]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class RaiBlocklistProperties(_serialization.Model):
+    """RAI Custom Blocklist properties.
+
+    :ivar description: Description of the block list.
+    :vartype description: str
+    """
+
+    _attribute_map = {
+        "description": {"key": "description", "type": "str"},
+    }
+
+    def __init__(self, *, description: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword description: Description of the block list.
+        :paramtype description: str
+        """
+        super().__init__(**kwargs)
+        self.description = description
+
+
+class RaiBlockListResult(_serialization.Model):
+    """The list of cognitive services RAI Blocklists.
+
+    :ivar next_link: The link used to get the next page of RaiBlocklists.
+    :vartype next_link: str
+    :ivar value: The list of RaiBlocklist.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.RaiBlocklist]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[RaiBlocklist]"},
+    }
+
+    def __init__(
+        self, *, next_link: Optional[str] = None, value: Optional[List["_models.RaiBlocklist"]] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of RaiBlocklists.
+        :paramtype next_link: str
+        :keyword value: The list of RaiBlocklist.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.RaiBlocklist]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class RaiContentFilter(ProxyResource):
+    """Azure OpenAI Content Filter.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar properties: Azure OpenAI Content Filter Properties.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.RaiContentFilterProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "properties": {"key": "properties", "type": "RaiContentFilterProperties"},
+    }
+
+    def __init__(self, *, properties: Optional["_models.RaiContentFilterProperties"] = None, **kwargs: Any) -> None:
+        """
+        :keyword properties: Azure OpenAI Content Filter Properties.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.RaiContentFilterProperties
+        """
+        super().__init__(**kwargs)
+        self.properties = properties
+
+
+class RaiContentFilterListResult(_serialization.Model):
+    """The list of Content Filters.
+
+    :ivar next_link: The link used to get the next page of Content Filters.
+    :vartype next_link: str
+    :ivar value: The list of RaiContentFilter.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.RaiContentFilter]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[RaiContentFilter]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        next_link: Optional[str] = None,
+        value: Optional[List["_models.RaiContentFilter"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of Content Filters.
+        :paramtype next_link: str
+        :keyword value: The list of RaiContentFilter.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.RaiContentFilter]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class RaiContentFilterProperties(_serialization.Model):
+    """Azure OpenAI Content Filter Properties.
+
+    :ivar name: Name of Content Filter.
+    :vartype name: str
+    :ivar is_multi_level_filter: If the Content Filter has multi severity levels(Low, Medium, or
+     High).
+    :vartype is_multi_level_filter: bool
+    :ivar source: Content source to apply the Content Filters. Known values are: "Prompt" and
+     "Completion".
+    :vartype source: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyContentSource
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "is_multi_level_filter": {"key": "isMultiLevelFilter", "type": "bool"},
+        "source": {"key": "source", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: Optional[str] = None,
+        is_multi_level_filter: Optional[bool] = None,
+        source: Optional[Union[str, "_models.RaiPolicyContentSource"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Name of Content Filter.
+        :paramtype name: str
+        :keyword is_multi_level_filter: If the Content Filter has multi severity levels(Low, Medium, or
+         High).
+        :paramtype is_multi_level_filter: bool
+        :keyword source: Content source to apply the Content Filters. Known values are: "Prompt" and
+         "Completion".
+        :paramtype source: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyContentSource
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.is_multi_level_filter = is_multi_level_filter
+        self.source = source
+
+
+class RaiMonitorConfig(_serialization.Model):
+    """Cognitive Services Rai Monitor Config.
+
+    :ivar adx_storage_resource_id: The storage resource Id.
+    :vartype adx_storage_resource_id: str
+    :ivar identity_client_id: The identity client Id to access the storage.
+    :vartype identity_client_id: str
+    """
+
+    _attribute_map = {
+        "adx_storage_resource_id": {"key": "adxStorageResourceId", "type": "str"},
+        "identity_client_id": {"key": "identityClientId", "type": "str"},
+    }
+
+    def __init__(
+        self, *, adx_storage_resource_id: Optional[str] = None, identity_client_id: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword adx_storage_resource_id: The storage resource Id.
+        :paramtype adx_storage_resource_id: str
+        :keyword identity_client_id: The identity client Id to access the storage.
+        :paramtype identity_client_id: str
+        """
+        super().__init__(**kwargs)
+        self.adx_storage_resource_id = adx_storage_resource_id
+        self.identity_client_id = identity_client_id
+
+
+class RaiPolicy(ProxyResource):
+    """Cognitive Services RaiPolicy.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: Fully qualified resource ID for the resource. Ex -
+     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
+    :vartype system_data: ~azure.mgmt.cognitiveservices.models.SystemData
+    :ivar etag: Resource Etag.
+    :vartype etag: str
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar properties: Properties of Cognitive Services RaiPolicy.
+    :vartype properties: ~azure.mgmt.cognitiveservices.models.RaiPolicyProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "etag": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "etag": {"key": "etag", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "properties": {"key": "properties", "type": "RaiPolicyProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        tags: Optional[Dict[str, str]] = None,
+        properties: Optional["_models.RaiPolicyProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword properties: Properties of Cognitive Services RaiPolicy.
+        :paramtype properties: ~azure.mgmt.cognitiveservices.models.RaiPolicyProperties
+        """
+        super().__init__(**kwargs)
+        self.system_data: Optional["_models.SystemData"] = None
+        self.etag: Optional[str] = None
+        self.tags = tags
+        self.properties = properties
+
+
+class RaiPolicyContentFilter(_serialization.Model):
+    """Azure OpenAI Content Filter.
+
+    :ivar name: Name of ContentFilter.
+    :vartype name: str
+    :ivar enabled: If the ContentFilter is enabled.
+    :vartype enabled: bool
+    :ivar severity_threshold: Level at which content is filtered. Known values are: "Low",
+     "Medium", and "High".
+    :vartype severity_threshold: str or ~azure.mgmt.cognitiveservices.models.ContentLevel
+    :ivar blocking: If blocking would occur.
+    :vartype blocking: bool
+    :ivar source: Content source to apply the Content Filters. Known values are: "Prompt" and
+     "Completion".
+    :vartype source: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyContentSource
+    """
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "enabled": {"key": "enabled", "type": "bool"},
+        "severity_threshold": {"key": "severityThreshold", "type": "str"},
+        "blocking": {"key": "blocking", "type": "bool"},
+        "source": {"key": "source", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: Optional[str] = None,
+        enabled: Optional[bool] = None,
+        severity_threshold: Optional[Union[str, "_models.ContentLevel"]] = None,
+        blocking: Optional[bool] = None,
+        source: Optional[Union[str, "_models.RaiPolicyContentSource"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Name of ContentFilter.
+        :paramtype name: str
+        :keyword enabled: If the ContentFilter is enabled.
+        :paramtype enabled: bool
+        :keyword severity_threshold: Level at which content is filtered. Known values are: "Low",
+         "Medium", and "High".
+        :paramtype severity_threshold: str or ~azure.mgmt.cognitiveservices.models.ContentLevel
+        :keyword blocking: If blocking would occur.
+        :paramtype blocking: bool
+        :keyword source: Content source to apply the Content Filters. Known values are: "Prompt" and
+         "Completion".
+        :paramtype source: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyContentSource
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.enabled = enabled
+        self.severity_threshold = severity_threshold
+        self.blocking = blocking
+        self.source = source
+
+
+class RaiPolicyListResult(_serialization.Model):
+    """The list of cognitive services RaiPolicies.
+
+    :ivar next_link: The link used to get the next page of RaiPolicy.
+    :vartype next_link: str
+    :ivar value: The list of RaiPolicy.
+    :vartype value: list[~azure.mgmt.cognitiveservices.models.RaiPolicy]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[RaiPolicy]"},
+    }
+
+    def __init__(
+        self, *, next_link: Optional[str] = None, value: Optional[List["_models.RaiPolicy"]] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of RaiPolicy.
+        :paramtype next_link: str
+        :keyword value: The list of RaiPolicy.
+        :paramtype value: list[~azure.mgmt.cognitiveservices.models.RaiPolicy]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class RaiPolicyProperties(_serialization.Model):
+    """Azure OpenAI Content Filters properties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar type: Content Filters policy type. Known values are: "UserManaged" and "SystemManaged".
+    :vartype type: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyType
+    :ivar mode: Rai policy mode. The enum value mapping is as below: Default = 0, Deferred=1,
+     Blocking=2, Asynchronous_filter =3. Please use 'Asynchronous_filter' after 2025-04-01-preview.
+     It is the same as 'Deferred' in previous version. Known values are: "Default", "Deferred",
+     "Blocking", and "Asynchronous_filter".
+    :vartype mode: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyMode
+    :ivar base_policy_name: Name of Rai policy.
+    :vartype base_policy_name: str
+    :ivar content_filters: The list of Content Filters.
+    :vartype content_filters: list[~azure.mgmt.cognitiveservices.models.RaiPolicyContentFilter]
+    :ivar custom_blocklists: The list of custom Blocklist.
+    :vartype custom_blocklists: list[~azure.mgmt.cognitiveservices.models.CustomBlocklistConfig]
+    """
+
+    _validation = {
+        "type": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "type": {"key": "type", "type": "str"},
+        "mode": {"key": "mode", "type": "str"},
+        "base_policy_name": {"key": "basePolicyName", "type": "str"},
+        "content_filters": {"key": "contentFilters", "type": "[RaiPolicyContentFilter]"},
+        "custom_blocklists": {"key": "customBlocklists", "type": "[CustomBlocklistConfig]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        mode: Optional[Union[str, "_models.RaiPolicyMode"]] = None,
+        base_policy_name: Optional[str] = None,
+        content_filters: Optional[List["_models.RaiPolicyContentFilter"]] = None,
+        custom_blocklists: Optional[List["_models.CustomBlocklistConfig"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword mode: Rai policy mode. The enum value mapping is as below: Default = 0, Deferred=1,
+         Blocking=2, Asynchronous_filter =3. Please use 'Asynchronous_filter' after 2025-04-01-preview.
+         It is the same as 'Deferred' in previous version. Known values are: "Default", "Deferred",
+         "Blocking", and "Asynchronous_filter".
+        :paramtype mode: str or ~azure.mgmt.cognitiveservices.models.RaiPolicyMode
+        :keyword base_policy_name: Name of Rai policy.
+        :paramtype base_policy_name: str
+        :keyword content_filters: The list of Content Filters.
+        :paramtype content_filters: list[~azure.mgmt.cognitiveservices.models.RaiPolicyContentFilter]
+        :keyword custom_blocklists: The list of custom Blocklist.
+        :paramtype custom_blocklists: list[~azure.mgmt.cognitiveservices.models.CustomBlocklistConfig]
+        """
+        super().__init__(**kwargs)
+        self.type: Optional[Union[str, "_models.RaiPolicyType"]] = None
+        self.mode = mode
+        self.base_policy_name = base_policy_name
+        self.content_filters = content_filters
+        self.custom_blocklists = custom_blocklists
+
+
 class RegenerateKeyParameters(_serialization.Model):
     """Regenerate key parameters.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar key_name: key name to generate (Key1|Key2). Required. Known values are: "Key1" and
      "Key2".
@@ -3010,7 +7269,7 @@ class ResourceSku(_serialization.Model):
 class ResourceSkuListResult(_serialization.Model):
     """The Get Skus operation response.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar value: The list of skus available for the subscription. Required.
     :vartype value: list[~azure.mgmt.cognitiveservices.models.ResourceSku]
@@ -3119,10 +7378,318 @@ class ResourceSkuRestrictions(_serialization.Model):
         self.reason_code = reason_code
 
 
+class SASAuthTypeConnectionProperties(ConnectionPropertiesV2):
+    """SASAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials:
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionSharedAccessSignature
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionSharedAccessSignature"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionSharedAccessSignature"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials:
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionSharedAccessSignature
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "SAS"
+        self.credentials = credentials
+
+
+class ServicePrincipalAuthTypeConnectionProperties(ConnectionPropertiesV2):  # pylint: disable=name-too-long
+    """ServicePrincipalAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials:
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionServicePrincipal
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionServicePrincipal"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionServicePrincipal"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials:
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionServicePrincipal
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "ServicePrincipal"
+        self.credentials = credentials
+
+
 class Sku(_serialization.Model):
     """The resource model definition representing SKU.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar name: The name of the SKU. Ex - P3. It is typically a letter+number code. Required.
     :vartype name: str
@@ -3331,6 +7898,45 @@ class SkuChangeInfo(_serialization.Model):
         self.count_of_downgrades = count_of_downgrades
         self.count_of_upgrades_after_downgrades = count_of_upgrades_after_downgrades
         self.last_change_date = last_change_date
+
+
+class SkuResource(_serialization.Model):
+    """Properties of Cognitive Services account resource sku resource properties.
+
+    :ivar resource_type: The resource type name.
+    :vartype resource_type: str
+    :ivar sku: The resource model definition representing SKU.
+    :vartype sku: ~azure.mgmt.cognitiveservices.models.Sku
+    :ivar capacity: The capacity configuration.
+    :vartype capacity: ~azure.mgmt.cognitiveservices.models.CapacityConfig
+    """
+
+    _attribute_map = {
+        "resource_type": {"key": "resourceType", "type": "str"},
+        "sku": {"key": "sku", "type": "Sku"},
+        "capacity": {"key": "capacity", "type": "CapacityConfig"},
+    }
+
+    def __init__(
+        self,
+        *,
+        resource_type: Optional[str] = None,
+        sku: Optional["_models.Sku"] = None,
+        capacity: Optional["_models.CapacityConfig"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword resource_type: The resource type name.
+        :paramtype resource_type: str
+        :keyword sku: The resource model definition representing SKU.
+        :paramtype sku: ~azure.mgmt.cognitiveservices.models.Sku
+        :keyword capacity: The capacity configuration.
+        :paramtype capacity: ~azure.mgmt.cognitiveservices.models.CapacityConfig
+        """
+        super().__init__(**kwargs)
+        self.resource_type = resource_type
+        self.sku = sku
+        self.capacity = capacity
 
 
 class SystemData(_serialization.Model):
@@ -3580,8 +8186,190 @@ class UserAssignedIdentity(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.principal_id = None
-        self.client_id = None
+        self.principal_id: Optional[str] = None
+        self.client_id: Optional[str] = None
+
+
+class UsernamePasswordAuthTypeConnectionProperties(ConnectionPropertiesV2):  # pylint: disable=name-too-long
+    """UsernamePasswordAuthTypeConnectionProperties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar auth_type: Authentication type of the connection target. Required. Known values are:
+     "PAT", "ManagedIdentity", "UsernamePassword", "None", "SAS", "AccountKey", "ServicePrincipal",
+     "AccessKey", "ApiKey", "CustomKeys", "OAuth2", and "AAD".
+    :vartype auth_type: str or ~azure.mgmt.cognitiveservices.models.ConnectionAuthType
+    :ivar category: Category of the connection. Known values are: "PythonFeed",
+     "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+     "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+     "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+     "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+     "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+     "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+     "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+     "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+     "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+     "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+     "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+     "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+     "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+     "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+     "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+     "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+     "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+    :vartype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+    :ivar created_by_workspace_arm_id:
+    :vartype created_by_workspace_arm_id: str
+    :ivar error:
+    :vartype error: str
+    :ivar expiry_time:
+    :vartype expiry_time: ~datetime.datetime
+    :ivar group: Group based on connection category. Known values are: "Azure", "AzureAI",
+     "Database", "NoSQL", "File", "GenericProtocol", and "ServicesAndApps".
+    :vartype group: str or ~azure.mgmt.cognitiveservices.models.ConnectionGroup
+    :ivar is_shared_to_all:
+    :vartype is_shared_to_all: bool
+    :ivar metadata: Store user metadata for this connection.
+    :vartype metadata: dict[str, str]
+    :ivar pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+    :vartype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+    :ivar pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+    :vartype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+    :ivar shared_user_list:
+    :vartype shared_user_list: list[str]
+    :ivar target:
+    :vartype target: str
+    :ivar use_workspace_managed_identity:
+    :vartype use_workspace_managed_identity: bool
+    :ivar credentials:
+    :vartype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionUsernamePassword
+    """
+
+    _validation = {
+        "auth_type": {"required": True},
+        "created_by_workspace_arm_id": {"readonly": True},
+        "group": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "auth_type": {"key": "authType", "type": "str"},
+        "category": {"key": "category", "type": "str"},
+        "created_by_workspace_arm_id": {"key": "createdByWorkspaceArmId", "type": "str"},
+        "error": {"key": "error", "type": "str"},
+        "expiry_time": {"key": "expiryTime", "type": "iso-8601"},
+        "group": {"key": "group", "type": "str"},
+        "is_shared_to_all": {"key": "isSharedToAll", "type": "bool"},
+        "metadata": {"key": "metadata", "type": "{str}"},
+        "pe_requirement": {"key": "peRequirement", "type": "str"},
+        "pe_status": {"key": "peStatus", "type": "str"},
+        "shared_user_list": {"key": "sharedUserList", "type": "[str]"},
+        "target": {"key": "target", "type": "str"},
+        "use_workspace_managed_identity": {"key": "useWorkspaceManagedIdentity", "type": "bool"},
+        "credentials": {"key": "credentials", "type": "ConnectionUsernamePassword"},
+    }
+
+    def __init__(
+        self,
+        *,
+        category: Optional[Union[str, "_models.ConnectionCategory"]] = None,
+        error: Optional[str] = None,
+        expiry_time: Optional[datetime.datetime] = None,
+        is_shared_to_all: Optional[bool] = None,
+        metadata: Optional[Dict[str, str]] = None,
+        pe_requirement: Optional[Union[str, "_models.ManagedPERequirement"]] = None,
+        pe_status: Optional[Union[str, "_models.ManagedPEStatus"]] = None,
+        shared_user_list: Optional[List[str]] = None,
+        target: Optional[str] = None,
+        use_workspace_managed_identity: Optional[bool] = None,
+        credentials: Optional["_models.ConnectionUsernamePassword"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword category: Category of the connection. Known values are: "PythonFeed",
+         "ContainerRegistry", "Git", "S3", "Snowflake", "AzureSqlDb", "AzureSynapseAnalytics",
+         "AzureMySqlDb", "AzurePostgresDb", "ADLSGen2", "Redis", "ApiKey", "AzureOpenAI", "AIServices",
+         "CognitiveSearch", "CognitiveService", "CustomKeys", "AzureBlob", "AzureOneLake", "CosmosDb",
+         "CosmosDbMongoDbApi", "AzureDataExplorer", "AzureMariaDb", "AzureDatabricksDeltaLake",
+         "AzureSqlMi", "AzureTableStorage", "AmazonRdsForOracle", "AmazonRdsForSqlServer",
+         "AmazonRedshift", "Db2", "Drill", "GoogleBigQuery", "Greenplum", "Hbase", "Hive", "Impala",
+         "Informix", "MariaDb", "MicrosoftAccess", "MySql", "Netezza", "Oracle", "Phoenix",
+         "PostgreSql", "Presto", "SapOpenHub", "SapBw", "SapHana", "SapTable", "Spark", "SqlServer",
+         "Sybase", "Teradata", "Vertica", "Pinecone", "Cassandra", "Couchbase", "MongoDbV2",
+         "MongoDbAtlas", "AmazonS3Compatible", "FileServer", "FtpServer", "GoogleCloudStorage", "Hdfs",
+         "OracleCloudStorage", "Sftp", "GenericHttp", "ODataRest", "Odbc", "GenericRest", "AmazonMws",
+         "Concur", "Dynamics", "DynamicsAx", "DynamicsCrm", "GoogleAdWords", "Hubspot", "Jira",
+         "Magento", "Marketo", "Office365", "Eloqua", "Responsys", "OracleServiceCloud", "PayPal",
+         "QuickBooks", "Salesforce", "SalesforceServiceCloud", "SalesforceMarketingCloud",
+         "SapCloudForCustomer", "SapEcc", "ServiceNow", "SharePointOnlineList", "Shopify", "Square",
+         "WebTable", "Xero", "Zoho", "GenericContainerRegistry", "Elasticsearch", "OpenAI", "Serp",
+         "BingLLMSearch", "Serverless", and "ManagedOnlineEndpoint".
+        :paramtype category: str or ~azure.mgmt.cognitiveservices.models.ConnectionCategory
+        :keyword error:
+        :paramtype error: str
+        :keyword expiry_time:
+        :paramtype expiry_time: ~datetime.datetime
+        :keyword is_shared_to_all:
+        :paramtype is_shared_to_all: bool
+        :keyword metadata: Store user metadata for this connection.
+        :paramtype metadata: dict[str, str]
+        :keyword pe_requirement: Known values are: "Required", "NotRequired", and "NotApplicable".
+        :paramtype pe_requirement: str or ~azure.mgmt.cognitiveservices.models.ManagedPERequirement
+        :keyword pe_status: Known values are: "Inactive", "Active", and "NotApplicable".
+        :paramtype pe_status: str or ~azure.mgmt.cognitiveservices.models.ManagedPEStatus
+        :keyword shared_user_list:
+        :paramtype shared_user_list: list[str]
+        :keyword target:
+        :paramtype target: str
+        :keyword use_workspace_managed_identity:
+        :paramtype use_workspace_managed_identity: bool
+        :keyword credentials:
+        :paramtype credentials: ~azure.mgmt.cognitiveservices.models.ConnectionUsernamePassword
+        """
+        super().__init__(
+            category=category,
+            error=error,
+            expiry_time=expiry_time,
+            is_shared_to_all=is_shared_to_all,
+            metadata=metadata,
+            pe_requirement=pe_requirement,
+            pe_status=pe_status,
+            shared_user_list=shared_user_list,
+            target=target,
+            use_workspace_managed_identity=use_workspace_managed_identity,
+            **kwargs
+        )
+        self.auth_type: str = "UsernamePassword"
+        self.credentials = credentials
+
+
+class UserOwnedAmlWorkspace(_serialization.Model):
+    """The user owned AML account for Cognitive Services account.
+
+    :ivar resource_id: Full resource id of a AML account resource.
+    :vartype resource_id: str
+    :ivar identity_client_id: Identity Client id of a AML account resource.
+    :vartype identity_client_id: str
+    """
+
+    _attribute_map = {
+        "resource_id": {"key": "resourceId", "type": "str"},
+        "identity_client_id": {"key": "identityClientId", "type": "str"},
+    }
+
+    def __init__(
+        self, *, resource_id: Optional[str] = None, identity_client_id: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword resource_id: Full resource id of a AML account resource.
+        :paramtype resource_id: str
+        :keyword identity_client_id: Identity Client id of a AML account resource.
+        :paramtype identity_client_id: str
+        """
+        super().__init__(**kwargs)
+        self.resource_id = resource_id
+        self.identity_client_id = identity_client_id
 
 
 class UserOwnedStorage(_serialization.Model):
@@ -3615,7 +8403,7 @@ class UserOwnedStorage(_serialization.Model):
 class VirtualNetworkRule(_serialization.Model):
     """A rule governing the accessibility from a specific virtual network.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Full resource id of a vnet subnet, such as
      '/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.Network/virtualNetworks/test-vnet/subnets/subnet1'.

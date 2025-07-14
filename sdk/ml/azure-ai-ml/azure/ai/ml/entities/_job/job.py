@@ -70,8 +70,6 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
     :type services: Optional[dict[str, ~azure.ai.ml.entities.JobService]]
     :param compute: Information about the compute resources associated with the job.
     :type compute: Optional[str]
-    :keyword kwargs: A dictionary of additional configuration parameters.
-    :paramtype kwargs: dict
     """
 
     def __init__(
@@ -191,7 +189,10 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
         if self.studio_url:
             info.update(
                 [
-                    ("Details Page", make_link(self.studio_url, "Link to Azure Machine Learning studio")),
+                    (
+                        "Details Page",
+                        make_link(self.studio_url, "Link to Azure Machine Learning studio"),
+                    ),
                 ]
             )
         res: str = to_html(info)
@@ -206,6 +207,7 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
         from azure.ai.ml.entities._builders.command import Command
         from azure.ai.ml.entities._builders.spark import Spark
         from azure.ai.ml.entities._job.automl.automl_job import AutoMLJob
+        from azure.ai.ml.entities._job.distillation.distillation_job import DistillationJob
         from azure.ai.ml.entities._job.finetuning.finetuning_job import FineTuningJob
         from azure.ai.ml.entities._job.import_job import ImportJob
         from azure.ai.ml.entities._job.pipeline.pipeline_job import PipelineJob
@@ -228,6 +230,8 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
             job_type = PipelineJob
         elif type_str == JobType.FINE_TUNING:
             job_type = FineTuningJob
+        elif type_str == JobType.DISTILLATION:
+            job_type = DistillationJob
         else:
             msg = f"Unsupported job type: {type_str}."
             raise ValidationException(
@@ -283,12 +287,13 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
     @classmethod
     def _from_rest_object(  # pylint: disable=too-many-return-statements
         cls, obj: Union[JobBase, JobBase_2401, Run]
-    ) -> "Job":  # pylint: disable=too-many-return-statements
+    ) -> "Job":
         from azure.ai.ml.entities import PipelineJob
         from azure.ai.ml.entities._builders.command import Command
         from azure.ai.ml.entities._builders.spark import Spark
         from azure.ai.ml.entities._job.automl.automl_job import AutoMLJob
         from azure.ai.ml.entities._job.base_job import _BaseJob
+        from azure.ai.ml.entities._job.distillation.distillation_job import DistillationJob
         from azure.ai.ml.entities._job.finetuning.finetuning_job import FineTuningJob
         from azure.ai.ml.entities._job.import_job import ImportJob
         from azure.ai.ml.entities._job.sweep.sweep_job import SweepJob
@@ -319,6 +324,8 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
             if obj.properties.job_type == RestJobType.AUTO_ML:
                 return AutoMLJob._load_from_rest(obj)
             if obj.properties.job_type == RestJobType_20240101Preview.FINE_TUNING:
+                if obj.properties.properties.get("azureml.enable_distillation", False):
+                    return DistillationJob._load_from_rest(obj)
                 return FineTuningJob._load_from_rest(obj)
             if obj.properties.job_type == RestJobType.PIPELINE:
                 res_pipeline: Job = PipelineJob._load_from_rest(obj)
@@ -327,9 +334,13 @@ class Job(Resource, ComponentTranslatableMixin, TelemetryMixin):
             raise ex
         except Exception as ex:
             error_message = json.dumps(obj.as_dict(), indent=2) if obj else None
-            module_logger.info(
-                "Exception: %s.\n%s\nUnable to parse the job resource: %s.\n", ex, traceback.format_exc(), error_message
+            module_logger.debug(
+                "Exception: %s.\n%s\nUnable to parse the job resource: %s.\n",
+                ex,
+                traceback.format_exc(),
+                error_message,
             )
+            module_logger.info("Failed to parse job resource")
             raise JobParsingError(
                 message=str(ex),
                 no_personal_data_message=f"Unable to parse a job resource of type:{type(obj).__name__}",

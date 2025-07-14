@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 # coding=utf-8
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -6,7 +7,7 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 import pytest
-from azure.mgmt.web.aio import WebSiteManagementClient
+from azure.mgmt.web.v2024_11_01.aio import WebSiteManagementClient
 
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer
 from devtools_testutils.aio import recorded_by_proxy_async
@@ -21,7 +22,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_preview_workflow(self, resource_group):
+    async def test_static_sites_preview_workflow(self, resource_group):
         response = await self.client.static_sites.preview_workflow(
             location="str",
             static_sites_workflow_preview_request={
@@ -42,7 +43,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "repositoryUrl": "str",
                 "type": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -50,9 +51,9 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list(self, resource_group):
+    async def test_static_sites_list(self, resource_group):
         response = self.client.static_sites.list(
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -60,10 +61,10 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_static_sites_by_resource_group(self, resource_group):
+    async def test_static_sites_get_static_sites_by_resource_group(self, resource_group):
         response = self.client.static_sites.get_static_sites_by_resource_group(
             resource_group_name=resource_group.name,
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -71,11 +72,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_static_site(self, resource_group):
+    async def test_static_sites_get_static_site(self, resource_group):
         response = await self.client.static_sites.get_static_site(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -83,7 +84,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_create_or_update_static_site(self, resource_group):
+    async def test_static_sites_begin_create_or_update_static_site(self, resource_group):
         response = await (
             await self.client.static_sites.begin_create_or_update_static_site(
                 resource_group_name=resource_group.name,
@@ -239,7 +240,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                         }
                     ],
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -248,12 +249,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_delete_static_site(self, resource_group):
+    async def test_static_sites_begin_delete_static_site(self, resource_group):
         response = await (
             await self.client.static_sites.begin_delete_static_site(
                 resource_group_name=resource_group.name,
                 name="str",
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -262,7 +263,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_update_static_site(self, resource_group):
+    async def test_static_sites_update_static_site(self, resource_group):
         response = await self.client.static_sites.update_static_site(
             resource_group_name=resource_group.name,
             name="str",
@@ -393,7 +394,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     }
                 ],
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -401,12 +402,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_users(self, resource_group):
+    async def test_static_sites_list_static_site_users(self, resource_group):
         response = self.client.static_sites.list_static_site_users(
             resource_group_name=resource_group.name,
             name="str",
             authprovider="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -414,13 +415,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_delete_static_site_user(self, resource_group):
+    async def test_static_sites_delete_static_site_user(self, resource_group):
         response = await self.client.static_sites.delete_static_site_user(
             resource_group_name=resource_group.name,
             name="str",
             authprovider="str",
             userid="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -428,7 +429,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_update_static_site_user(self, resource_group):
+    async def test_static_sites_update_static_site_user(self, resource_group):
         response = await self.client.static_sites.update_static_site_user(
             resource_group_name=resource_group.name,
             name="str",
@@ -444,7 +445,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "type": "str",
                 "userId": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -452,11 +453,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_static_site_builds(self, resource_group):
+    async def test_static_sites_get_static_site_builds(self, resource_group):
         response = self.client.static_sites.get_static_site_builds(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -464,12 +465,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_static_site_build(self, resource_group):
+    async def test_static_sites_get_static_site_build(self, resource_group):
         response = await self.client.static_sites.get_static_site_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -477,13 +478,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_delete_static_site_build(self, resource_group):
+    async def test_static_sites_begin_delete_static_site_build(self, resource_group):
         response = await (
             await self.client.static_sites.begin_delete_static_site_build(
                 resource_group_name=resource_group.name,
                 name="str",
                 environment_name="str",
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -492,13 +493,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_static_site_build_app_settings(self, resource_group):
+    async def test_static_sites_create_or_update_static_site_build_app_settings(self, resource_group):
         response = await self.client.static_sites.create_or_update_static_site_build_app_settings(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             app_settings={"id": "str", "kind": "str", "name": "str", "properties": {"str": "str"}, "type": "str"},
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -506,13 +507,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_static_site_build_function_app_settings(self, resource_group):
+    async def test_static_sites_create_or_update_static_site_build_function_app_settings(self, resource_group):
         response = await self.client.static_sites.create_or_update_static_site_build_function_app_settings(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             app_settings={"id": "str", "kind": "str", "name": "str", "properties": {"str": "str"}, "type": "str"},
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -520,12 +521,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_build_database_connections(self, resource_group):
+    async def test_static_sites_get_build_database_connections(self, resource_group):
         response = self.client.static_sites.get_build_database_connections(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -533,13 +534,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_build_database_connection(self, resource_group):
+    async def test_static_sites_get_build_database_connection(self, resource_group):
         response = await self.client.static_sites.get_build_database_connection(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             database_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -547,7 +548,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_build_database_connection(self, resource_group):
+    async def test_static_sites_create_or_update_build_database_connection(self, resource_group):
         response = await self.client.static_sites.create_or_update_build_database_connection(
             resource_group_name=resource_group.name,
             name="str",
@@ -564,7 +565,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "resourceId": "str",
                 "type": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -572,13 +573,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_delete_build_database_connection(self, resource_group):
+    async def test_static_sites_delete_build_database_connection(self, resource_group):
         response = await self.client.static_sites.delete_build_database_connection(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             database_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -586,7 +587,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_update_build_database_connection(self, resource_group):
+    async def test_static_sites_update_build_database_connection(self, resource_group):
         response = await self.client.static_sites.update_build_database_connection(
             resource_group_name=resource_group.name,
             name="str",
@@ -598,7 +599,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "region": "str",
                 "resourceId": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -606,13 +607,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_build_database_connection_with_details(self, resource_group):
+    async def test_static_sites_get_build_database_connection_with_details(self, resource_group):
         response = await self.client.static_sites.get_build_database_connection_with_details(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             database_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -620,12 +621,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_build_functions(self, resource_group):
+    async def test_static_sites_list_static_site_build_functions(self, resource_group):
         response = self.client.static_sites.list_static_site_build_functions(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -633,12 +634,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_build_app_settings(self, resource_group):
+    async def test_static_sites_list_static_site_build_app_settings(self, resource_group):
         response = await self.client.static_sites.list_static_site_build_app_settings(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -646,12 +647,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_build_function_app_settings(self, resource_group):
+    async def test_static_sites_list_static_site_build_function_app_settings(self, resource_group):
         response = await self.client.static_sites.list_static_site_build_function_app_settings(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -659,12 +660,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_build_database_connections_with_details(self, resource_group):
+    async def test_static_sites_get_build_database_connections_with_details(self, resource_group):
         response = self.client.static_sites.get_build_database_connections_with_details(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -672,12 +673,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_user_provided_function_apps_for_static_site_build(self, resource_group):
+    async def test_static_sites_get_user_provided_function_apps_for_static_site_build(self, resource_group):
         response = self.client.static_sites.get_user_provided_function_apps_for_static_site_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -685,13 +686,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_user_provided_function_app_for_static_site_build(self, resource_group):
+    async def test_static_sites_get_user_provided_function_app_for_static_site_build(self, resource_group):
         response = await self.client.static_sites.get_user_provided_function_app_for_static_site_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             function_app_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -699,7 +700,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_register_user_provided_function_app_with_static_site_build(self, resource_group):
+    async def test_static_sites_begin_register_user_provided_function_app_with_static_site_build(self, resource_group):
         response = await (
             await self.client.static_sites.begin_register_user_provided_function_app_with_static_site_build(
                 resource_group_name=resource_group.name,
@@ -715,7 +716,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "name": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -724,13 +725,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_detach_user_provided_function_app_from_static_site_build(self, resource_group):
+    async def test_static_sites_detach_user_provided_function_app_from_static_site_build(self, resource_group):
         response = await self.client.static_sites.detach_user_provided_function_app_from_static_site_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             function_app_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -738,7 +739,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_create_zip_deployment_for_static_site_build(self, resource_group):
+    async def test_static_sites_begin_create_zip_deployment_for_static_site_build(self, resource_group):
         response = await (
             await self.client.static_sites.begin_create_zip_deployment_for_static_site_build(
                 resource_group_name=resource_group.name,
@@ -755,7 +756,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "provider": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -764,12 +765,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_static_site_app_settings(self, resource_group):
+    async def test_static_sites_create_or_update_static_site_app_settings(self, resource_group):
         response = await self.client.static_sites.create_or_update_static_site_app_settings(
             resource_group_name=resource_group.name,
             name="str",
             app_settings={"id": "str", "kind": "str", "name": "str", "properties": {"str": "str"}, "type": "str"},
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -777,11 +778,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_basic_auth(self, resource_group):
+    async def test_static_sites_list_basic_auth(self, resource_group):
         response = self.client.static_sites.list_basic_auth(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -789,12 +790,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_basic_auth(self, resource_group):
+    async def test_static_sites_get_basic_auth(self, resource_group):
         response = await self.client.static_sites.get_basic_auth(
             resource_group_name=resource_group.name,
             name="str",
             basic_auth_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -802,7 +803,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_basic_auth(self, resource_group):
+    async def test_static_sites_create_or_update_basic_auth(self, resource_group):
         response = await self.client.static_sites.create_or_update_basic_auth(
             resource_group_name=resource_group.name,
             name="str",
@@ -818,7 +819,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "secretUrl": "str",
                 "type": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -826,12 +827,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_static_site_function_app_settings(self, resource_group):
+    async def test_static_sites_create_or_update_static_site_function_app_settings(self, resource_group):
         response = await self.client.static_sites.create_or_update_static_site_function_app_settings(
             resource_group_name=resource_group.name,
             name="str",
             app_settings={"id": "str", "kind": "str", "name": "str", "properties": {"str": "str"}, "type": "str"},
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -839,7 +840,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_user_roles_invitation_link(self, resource_group):
+    async def test_static_sites_create_user_roles_invitation_link(self, resource_group):
         response = await self.client.static_sites.create_user_roles_invitation_link(
             resource_group_name=resource_group.name,
             name="str",
@@ -854,7 +855,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "type": "str",
                 "userDetails": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -862,11 +863,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_custom_domains(self, resource_group):
+    async def test_static_sites_list_static_site_custom_domains(self, resource_group):
         response = self.client.static_sites.list_static_site_custom_domains(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -874,12 +875,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_static_site_custom_domain(self, resource_group):
+    async def test_static_sites_get_static_site_custom_domain(self, resource_group):
         response = await self.client.static_sites.get_static_site_custom_domain(
             resource_group_name=resource_group.name,
             name="str",
             domain_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -887,7 +888,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_create_or_update_static_site_custom_domain(self, resource_group):
+    async def test_static_sites_begin_create_or_update_static_site_custom_domain(self, resource_group):
         response = await (
             await self.client.static_sites.begin_create_or_update_static_site_custom_domain(
                 resource_group_name=resource_group.name,
@@ -900,7 +901,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "type": "str",
                     "validationMethod": "cname-delegation",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -909,13 +910,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_delete_static_site_custom_domain(self, resource_group):
+    async def test_static_sites_begin_delete_static_site_custom_domain(self, resource_group):
         response = await (
             await self.client.static_sites.begin_delete_static_site_custom_domain(
                 resource_group_name=resource_group.name,
                 name="str",
                 domain_name="str",
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -924,7 +925,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_validate_custom_domain_can_be_added_to_static_site(self, resource_group):
+    async def test_static_sites_begin_validate_custom_domain_can_be_added_to_static_site(self, resource_group):
         response = await (
             await self.client.static_sites.begin_validate_custom_domain_can_be_added_to_static_site(
                 resource_group_name=resource_group.name,
@@ -937,7 +938,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "type": "str",
                     "validationMethod": "cname-delegation",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -946,11 +947,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_database_connections(self, resource_group):
+    async def test_static_sites_get_database_connections(self, resource_group):
         response = self.client.static_sites.get_database_connections(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -958,12 +959,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_database_connection(self, resource_group):
+    async def test_static_sites_get_database_connection(self, resource_group):
         response = await self.client.static_sites.get_database_connection(
             resource_group_name=resource_group.name,
             name="str",
             database_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -971,7 +972,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_create_or_update_database_connection(self, resource_group):
+    async def test_static_sites_create_or_update_database_connection(self, resource_group):
         response = await self.client.static_sites.create_or_update_database_connection(
             resource_group_name=resource_group.name,
             name="str",
@@ -987,7 +988,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "resourceId": "str",
                 "type": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -995,12 +996,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_delete_database_connection(self, resource_group):
+    async def test_static_sites_delete_database_connection(self, resource_group):
         response = await self.client.static_sites.delete_database_connection(
             resource_group_name=resource_group.name,
             name="str",
             database_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1008,7 +1009,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_update_database_connection(self, resource_group):
+    async def test_static_sites_update_database_connection(self, resource_group):
         response = await self.client.static_sites.update_database_connection(
             resource_group_name=resource_group.name,
             name="str",
@@ -1019,7 +1020,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "region": "str",
                 "resourceId": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1027,12 +1028,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_database_connection_with_details(self, resource_group):
+    async def test_static_sites_get_database_connection_with_details(self, resource_group):
         response = await self.client.static_sites.get_database_connection_with_details(
             resource_group_name=resource_group.name,
             name="str",
             database_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1040,12 +1041,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_detach_static_site(self, resource_group):
+    async def test_static_sites_begin_detach_static_site(self, resource_group):
         response = await (
             await self.client.static_sites.begin_detach_static_site(
                 resource_group_name=resource_group.name,
                 name="str",
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1054,11 +1055,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_functions(self, resource_group):
+    async def test_static_sites_list_static_site_functions(self, resource_group):
         response = self.client.static_sites.list_static_site_functions(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -1066,11 +1067,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_app_settings(self, resource_group):
+    async def test_static_sites_list_static_site_app_settings(self, resource_group):
         response = await self.client.static_sites.list_static_site_app_settings(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1078,11 +1079,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_configured_roles(self, resource_group):
+    async def test_static_sites_list_static_site_configured_roles(self, resource_group):
         response = await self.client.static_sites.list_static_site_configured_roles(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1090,11 +1091,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_function_app_settings(self, resource_group):
+    async def test_static_sites_list_static_site_function_app_settings(self, resource_group):
         response = await self.client.static_sites.list_static_site_function_app_settings(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1102,11 +1103,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_static_site_secrets(self, resource_group):
+    async def test_static_sites_list_static_site_secrets(self, resource_group):
         response = await self.client.static_sites.list_static_site_secrets(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1114,11 +1115,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_private_endpoint_connection_list(self, resource_group):
+    async def test_static_sites_get_private_endpoint_connection_list(self, resource_group):
         response = self.client.static_sites.get_private_endpoint_connection_list(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -1126,12 +1127,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_private_endpoint_connection(self, resource_group):
+    async def test_static_sites_get_private_endpoint_connection(self, resource_group):
         response = await self.client.static_sites.get_private_endpoint_connection(
             resource_group_name=resource_group.name,
             name="str",
             private_endpoint_connection_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1139,7 +1140,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_approve_or_reject_private_endpoint_connection(self, resource_group):
+    async def test_static_sites_begin_approve_or_reject_private_endpoint_connection(self, resource_group):
         response = await (
             await self.client.static_sites.begin_approve_or_reject_private_endpoint_connection(
                 resource_group_name=resource_group.name,
@@ -1159,7 +1160,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "provisioningState": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1168,13 +1169,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_delete_private_endpoint_connection(self, resource_group):
+    async def test_static_sites_begin_delete_private_endpoint_connection(self, resource_group):
         response = await (
             await self.client.static_sites.begin_delete_private_endpoint_connection(
                 resource_group_name=resource_group.name,
                 name="str",
                 private_endpoint_connection_name="str",
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1183,11 +1184,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_private_link_resources(self, resource_group):
+    async def test_static_sites_get_private_link_resources(self, resource_group):
         response = await self.client.static_sites.get_private_link_resources(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1195,7 +1196,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_reset_static_site_api_key(self, resource_group):
+    async def test_static_sites_reset_static_site_api_key(self, resource_group):
         response = await self.client.static_sites.reset_static_site_api_key(
             resource_group_name=resource_group.name,
             name="str",
@@ -1207,7 +1208,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                 "shouldUpdateRepository": bool,
                 "type": "str",
             },
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1215,11 +1216,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_database_connections_with_details(self, resource_group):
+    async def test_static_sites_get_database_connections_with_details(self, resource_group):
         response = self.client.static_sites.get_database_connections_with_details(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -1227,11 +1228,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_user_provided_function_apps_for_static_site(self, resource_group):
+    async def test_static_sites_get_user_provided_function_apps_for_static_site(self, resource_group):
         response = self.client.static_sites.get_user_provided_function_apps_for_static_site(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -1239,12 +1240,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_user_provided_function_app_for_static_site(self, resource_group):
+    async def test_static_sites_get_user_provided_function_app_for_static_site(self, resource_group):
         response = await self.client.static_sites.get_user_provided_function_app_for_static_site(
             resource_group_name=resource_group.name,
             name="str",
             function_app_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1252,7 +1253,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_register_user_provided_function_app_with_static_site(self, resource_group):
+    async def test_static_sites_begin_register_user_provided_function_app_with_static_site(self, resource_group):
         response = await (
             await self.client.static_sites.begin_register_user_provided_function_app_with_static_site(
                 resource_group_name=resource_group.name,
@@ -1267,7 +1268,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "name": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1276,12 +1277,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_detach_user_provided_function_app_from_static_site(self, resource_group):
+    async def test_static_sites_detach_user_provided_function_app_from_static_site(self, resource_group):
         response = await self.client.static_sites.detach_user_provided_function_app_from_static_site(
             resource_group_name=resource_group.name,
             name="str",
             function_app_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1289,7 +1290,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_create_zip_deployment_for_static_site(self, resource_group):
+    async def test_static_sites_begin_create_zip_deployment_for_static_site(self, resource_group):
         response = await (
             await self.client.static_sites.begin_create_zip_deployment_for_static_site(
                 resource_group_name=resource_group.name,
@@ -1305,7 +1306,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "provider": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1314,7 +1315,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_validate_backend(self, resource_group):
+    async def test_static_sites_begin_validate_backend(self, resource_group):
         response = await (
             await self.client.static_sites.begin_validate_backend(
                 resource_group_name=resource_group.name,
@@ -1330,7 +1331,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "region": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1339,7 +1340,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_validate_backend_for_build(self, resource_group):
+    async def test_static_sites_begin_validate_backend_for_build(self, resource_group):
         response = await (
             await self.client.static_sites.begin_validate_backend_for_build(
                 resource_group_name=resource_group.name,
@@ -1356,7 +1357,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "region": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1365,11 +1366,11 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_linked_backends(self, resource_group):
+    async def test_static_sites_get_linked_backends(self, resource_group):
         response = self.client.static_sites.get_linked_backends(
             resource_group_name=resource_group.name,
             name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -1377,12 +1378,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_linked_backends_for_build(self, resource_group):
+    async def test_static_sites_get_linked_backends_for_build(self, resource_group):
         response = self.client.static_sites.get_linked_backends_for_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -1390,12 +1391,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_linked_backend(self, resource_group):
+    async def test_static_sites_get_linked_backend(self, resource_group):
         response = await self.client.static_sites.get_linked_backend(
             resource_group_name=resource_group.name,
             name="str",
             linked_backend_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1403,7 +1404,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_link_backend(self, resource_group):
+    async def test_static_sites_begin_link_backend(self, resource_group):
         response = await (
             await self.client.static_sites.begin_link_backend(
                 resource_group_name=resource_group.name,
@@ -1419,7 +1420,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "region": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1428,12 +1429,12 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_unlink_backend(self, resource_group):
+    async def test_static_sites_unlink_backend(self, resource_group):
         response = await self.client.static_sites.unlink_backend(
             resource_group_name=resource_group.name,
             name="str",
             linked_backend_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1441,13 +1442,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_linked_backend_for_build(self, resource_group):
+    async def test_static_sites_get_linked_backend_for_build(self, resource_group):
         response = await self.client.static_sites.get_linked_backend_for_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             linked_backend_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -1455,7 +1456,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_link_backend_to_build(self, resource_group):
+    async def test_static_sites_begin_link_backend_to_build(self, resource_group):
         response = await (
             await self.client.static_sites.begin_link_backend_to_build(
                 resource_group_name=resource_group.name,
@@ -1472,7 +1473,7 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
                     "region": "str",
                     "type": "str",
                 },
-                api_version="2023-12-01",
+                api_version="2024-11-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -1481,13 +1482,13 @@ class TestWebSiteManagementStaticSitesOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_unlink_backend_from_build(self, resource_group):
+    async def test_static_sites_unlink_backend_from_build(self, resource_group):
         response = await self.client.static_sites.unlink_backend_from_build(
             resource_group_name=resource_group.name,
             name="str",
             environment_name="str",
             linked_backend_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself

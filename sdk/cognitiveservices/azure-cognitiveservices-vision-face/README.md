@@ -1,23 +1,7 @@
 # Microsoft Azure SDK for Python
 
-This is the Microsoft Azure Cognitive Services Face Client Library.
-This package has been tested with Python 2.7, 3.6+.
-For a more complete view of Azure libraries, see the [azure sdk python release](https://aka.ms/azsdk/python/all).
+This package has been deprecated and will no longer be maintained after 11-01-2024. This package will only receive security fixes until 11-01-2024. To receive updates on new features and non-security bug fixes, upgrade to the replacement package, [azure-ai-vision-face](https://pypi.org/project/azure-ai-vision-face/).
 
+Package source code and samples have been removed from the `main` branch and can be found under the release tag for the latest version. See [azure-cognitiveservices-vision-face_0.6.1](https://github.com/Azure/azure-sdk-for-python/tree/azure-cognitiveservices-vision-face_0.6.1/sdk/cognitiveservices/azure-cognitiveservices-vision-face). The latest release can be found on [PyPI](https://pypi.org/project/azure-cognitiveservices-vision-face/).
 
-# Usage
-
-
-
-
-For code examples, see [Cognitive Services Face](https://docs.microsoft.com/python/api/overview/azure/cognitive-services) on docs.microsoft.com.
-
-
-# Provide Feedback
-
-If you encounter any bugs or have suggestions, please file an issue in the
-[Issues](https://github.com/Azure/azure-sdk-for-python/issues)
-section of the project. 
-
-
-![Impressions](https://azure-sdk-impressions.azurewebsites.net/api/impressions/azure-sdk-for-python%2Fazure-cognitiveservices-vision-face%2FREADME.png)
+If you have any questions, please open a [GitHub Issue](https://github.com/Azure/azure-sdk-for-python/issues) or email `azpysdkhelp@microsoft.com`.

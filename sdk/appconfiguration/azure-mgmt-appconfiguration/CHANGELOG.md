@@ -1,5 +1,21 @@
 # Release History
 
+## 5.0.0 (2025-06-17)
+
+### Features Added
+
+  - Model `ConfigurationStore` added property `default_key_value_revision_retention_period_in_seconds`
+  - Model `ConfigurationStoreUpdateParameters` added property `default_key_value_revision_retention_period_in_seconds`
+
+### Breaking Changes
+  - Parameter `key_value_parameters` of method `KeyValuesOperations.create_or_update` is now required
+
+## 4.0.0 (2024-10-29)
+
+### Breaking Changes
+
+  - This package now only targets the latest Api-Version available on Azure and removes APIs of other Api-Version. After this change, the package can have much smaller size. If your application requires a specific and non-latest Api-Version, it's recommended to pin this package to the previous released version; If your application always only use latest Api-Version, please ignore this change.
+
 ## 3.1.0 (2024-10-21)
 
 ### Features Added

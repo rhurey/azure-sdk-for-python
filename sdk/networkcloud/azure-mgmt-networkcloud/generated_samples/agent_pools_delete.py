@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,useless-suppression
 # coding=utf-8
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -7,6 +8,7 @@
 # --------------------------------------------------------------------------
 
 from azure.identity import DefaultAzureCredential
+
 from azure.mgmt.networkcloud import NetworkCloudMgmtClient
 
 """
@@ -29,13 +31,14 @@ def main():
         subscription_id="123e4567-e89b-12d3-a456-426655440000",
     )
 
-    client.agent_pools.begin_delete(
+    response = client.agent_pools.begin_delete(
         resource_group_name="resourceGroupName",
         kubernetes_cluster_name="kubernetesClusterName",
         agent_pool_name="agentPoolName",
     ).result()
+    print(response)
 
 
-# x-ms-original-file: specification/networkcloud/resource-manager/Microsoft.NetworkCloud/stable/2023-07-01/examples/AgentPools_Delete.json
+# x-ms-original-file: specification/networkcloud/resource-manager/Microsoft.NetworkCloud/stable/2025-02-01/examples/AgentPools_Delete.json
 if __name__ == "__main__":
     main()

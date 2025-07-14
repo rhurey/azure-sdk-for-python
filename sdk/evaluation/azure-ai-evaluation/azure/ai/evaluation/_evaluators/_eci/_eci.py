@@ -1,15 +1,16 @@
 # ---------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # ---------------------------------------------------------
-from typing_extensions import override
+from typing_extensions import overload, override
 
-from azure.ai.evaluation._common.constants import _InternalEvaluationMetrics
 from azure.ai.evaluation._common._experimental import experimental
+from azure.ai.evaluation._common.constants import _InternalEvaluationMetrics
 from azure.ai.evaluation._evaluators._common import RaiServiceEvaluatorBase
+from azure.ai.evaluation._model_configurations import Conversation
 
 
 @experimental
-class ECIEvaluator(RaiServiceEvaluatorBase[str]):
+class ECIEvaluator(RaiServiceEvaluatorBase):
     """
     Initialize an ECI evaluator to evaluate ECI based on the following guidelines:
     Detects whether ECI is present without a disclaimer in the AI system’s response.
@@ -21,9 +22,9 @@ class ECIEvaluator(RaiServiceEvaluatorBase[str]):
 
     :param credential: The credential for connecting to Azure AI project. Required
     :type credential: ~azure.core.credentials.TokenCredential
-    :param azure_ai_project: The scope of the Azure AI project.
-        It contains subscription id, resource group, and project name.
-    :type azure_ai_project: ~azure.ai.evaluation.AzureAIProject
+    :param azure_ai_project: The Azure AI project, which can either be a string representing the project endpoint
+        or an instance of AzureAIProject. It contains subscription id, resource group, and project name.
+    :type azure_ai_project: Union[str, ~azure.ai.evaluation.AzureAIProject]
     :return: Whether or not ECI was found in the response without a disclaimer, with AI-generated reasoning
     :rtype: Dict[str, str]
 
@@ -49,16 +50,44 @@ class ECIEvaluator(RaiServiceEvaluatorBase[str]):
         }
     """
 
+    id = "eci"
+    """Evaluator identifier, experimental and to be used only with evaluation in cloud."""
+    _OPTIONAL_PARAMS = ["query"]
+
     @override
     def __init__(
         self,
         credential,
         azure_ai_project,
-        eval_last_turn: bool = False,
+        *,
+        _evaluate_query: bool = False,
     ):
         super().__init__(
             eval_metric=_InternalEvaluationMetrics.ECI,
             azure_ai_project=azure_ai_project,
             credential=credential,
-            eval_last_turn=eval_last_turn,
+            _evaluate_query=_evaluate_query,
         )
+
+    @overload
+    def __call__(
+        self,
+        *,
+        query: str,
+        response: str,
+    ): ...
+
+    @overload
+    def __call__(
+        self,
+        *,
+        conversation: Conversation,
+    ): ...
+
+    @override
+    def __call__(  # pylint: disable=docstring-missing-param
+        self,
+        *args,
+        **kwargs,
+    ):
+        return super().__call__(*args, **kwargs)

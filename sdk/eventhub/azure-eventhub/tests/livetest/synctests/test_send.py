@@ -48,17 +48,14 @@ from azure.eventhub._transport._pyamqp_transport import PyamqpTransport
 
 
 @pytest.mark.liveTest
-def test_send_with_partition_key(
-    auth_credential_receivers, live_eventhub, uamqp_transport, timeout_factor
-):
-    fully_qualified_namespace, eventhub_name, credential, receivers = (
-        auth_credential_receivers
-    )
+def test_send_with_partition_key(auth_credential_receivers, live_eventhub, uamqp_transport, timeout_factor, client_args):
+    fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     with client:
         data_val = 0
@@ -103,9 +100,7 @@ def test_send_with_partition_key(
                 break
             retry_total += 1
         if retry_total >= 3:
-            raise OperationTimeoutError(
-                f"Exhausted retries for receiving from {live_eventhub['hostname']}."
-            )
+            raise OperationTimeoutError(f"Exhausted retries for receiving from {live_eventhub['hostname']}.")
 
     assert single_cnt == 60
     assert batch_cnt == 60
@@ -113,16 +108,14 @@ def test_send_with_partition_key(
 
 
 @pytest.mark.liveTest
-def test_send_and_receive_large_body_size(
-    auth_credential_receivers, uamqp_transport, timeout_factor, live_eventhub
-):
+def test_send_and_receive_large_body_size(auth_credential_receivers, uamqp_transport, timeout_factor, live_eventhub, client_args):
     if sys.platform.startswith("darwin"):
         pytest.skip("Skipping on OSX - open issue regarding message size")
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
 
     # TODO: sending large batch to China cloud results in write timeout for pyamqp
     # https://github.com/Azure/azure-sdk-for-python/issues/29177
-    if not uamqp_transport and "servicebus.windows.net" not in live_eventhub['connection_str']:
+    if not uamqp_transport and "servicebus.windows.net" not in live_eventhub["connection_str"]:
         pytest.skip("Skipping for pyamqp - open issue regarding write timeout")
 
     client = EventHubProducerClient(
@@ -130,6 +123,7 @@ def test_send_and_receive_large_body_size(
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     with client:
         payload = 250 * 1024
@@ -141,12 +135,7 @@ def test_send_and_receive_large_body_size(
     received = []
     timeout = 20 * timeout_factor
     for r in receivers:
-        received.extend(
-            [
-                EventData._from_message(x)
-                for x in r.receive_message_batch(timeout=timeout)
-            ]
-        )
+        received.extend([EventData._from_message(x) for x in r.receive_message_batch(timeout=timeout)])
 
     assert len(received) == 2
     assert len(list(received[0].body)[0]) == payload
@@ -154,13 +143,14 @@ def test_send_and_receive_large_body_size(
 
 
 @pytest.mark.liveTest
-def test_send_amqp_annotated_message(auth_credential_receivers, uamqp_transport):
+def test_send_amqp_annotated_message(auth_credential_receivers, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     with client:
         sequence_body = [b"message", 123.456, True]
@@ -235,10 +225,7 @@ def test_send_amqp_annotated_message(auth_credential_receivers, uamqp_transport)
                 body = [data for data in raw_amqp_message.body]
                 assert data_body == body
                 assert event.body_as_str() == "aabbcc"
-                assert (
-                    raw_amqp_message.delivery_annotations[b"delann_key"]
-                    == b"delann_value"
-                )
+                assert raw_amqp_message.delivery_annotations[b"delann_key"] == b"delann_value"
                 assert raw_amqp_message.application_properties[b"body_type"] == b"data"
                 received_count["data_msg"] += 1
             else:
@@ -273,12 +260,10 @@ def test_send_amqp_annotated_message(auth_credential_receivers, uamqp_transport)
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
     )
     with client:
-        thread = threading.Thread(
-            target=client.receive, args=(on_event,), kwargs={"starting_position": "-1"}
-        )
+        thread = threading.Thread(target=client.receive, args=(on_event,), kwargs={"starting_position": "-1"})
         thread.start()
         time.sleep(15)
         for event in on_event.received:
@@ -293,21 +278,20 @@ def test_send_amqp_annotated_message(auth_credential_receivers, uamqp_transport)
 
 @pytest.mark.parametrize("payload", [b"", b"A single event"])
 @pytest.mark.liveTest
-def test_send_and_receive_small_body(
-    auth_credential_receivers, payload, uamqp_transport, timeout_factor
-):
+def test_send_and_receive_small_body(auth_credential_receivers, payload, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
 
     # TODO: Commenting out tracing for now. Need to fix this issue first: #36571
-    #fake_span = enable_tracing
+    # fake_span = enable_tracing
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
-    #with fake_span(name="SendTest") as root_span:
+    # with fake_span(name="SendTest") as root_span:
     with client:
         batch = client.create_batch()
         batch.add(EventData(payload))
@@ -318,12 +302,7 @@ def test_send_and_receive_small_body(
     received = []
     timeout = 5 * timeout_factor
     for r in receivers:
-        received.extend(
-            [
-                EventData._from_message(x)
-                for x in r.receive_message_batch(timeout=timeout)
-            ]
-        )
+        received.extend([EventData._from_message(x) for x in r.receive_message_batch(timeout=timeout)])
 
     assert len(received) == 3
     assert list(received[0].body)[0] == payload
@@ -331,46 +310,46 @@ def test_send_and_receive_small_body(
     assert list(received[2].body)[0] == payload
 
     # Will need to modify FakeSpan in conftest.
-    #assert root_span.name == "SendTest"
-    #assert len(root_span.children) == 5
+    # assert root_span.name == "SendTest"
+    # assert len(root_span.children) == 5
 
     ## Check first message added to batch.
-    #assert root_span.children[0].name == "EventHubs.message"
-    #assert root_span.children[0].kind == SpanKind.PRODUCER
+    # assert root_span.children[0].name == "EventHubs.message"
+    # assert root_span.children[0].kind == SpanKind.PRODUCER
 
     ## Check second message added to batch.
-    #assert root_span.children[1].name == "EventHubs.message"
-    #assert root_span.children[1].kind == SpanKind.PRODUCER
+    # assert root_span.children[1].name == "EventHubs.message"
+    # assert root_span.children[1].kind == SpanKind.PRODUCER
 
     ## Check send span corresponding to send_batch
-    #assert root_span.children[2].name == "EventHubs.send"
-    #assert root_span.children[2].kind == SpanKind.CLIENT
-    #assert len(root_span.children[2].links) == 2
-    #assert (
+    # assert root_span.children[2].name == "EventHubs.send"
+    # assert root_span.children[2].kind == SpanKind.CLIENT
+    # assert len(root_span.children[2].links) == 2
+    # assert (
     #    root_span.children[2].links[0].headers["traceparent"]
     #    == root_span.children[0].traceparent
-    #)
-    #assert (
+    # )
+    # assert (
     #    root_span.children[2].links[1].headers["traceparent"]
     #    == root_span.children[1].traceparent
-    #)
+    # )
 
     ## Check message sent using send_event
-    #assert root_span.children[3].name == "EventHubs.message"
-    #assert root_span.children[3].kind == SpanKind.PRODUCER
+    # assert root_span.children[3].name == "EventHubs.message"
+    # assert root_span.children[3].kind == SpanKind.PRODUCER
 
     ## Check send span corresponding to send_event
-    #assert root_span.children[4].name == "EventHubs.send"
-    #assert root_span.children[4].kind == SpanKind.CLIENT
-    #assert len(root_span.children[4].links) == 1
-    #assert (
+    # assert root_span.children[4].name == "EventHubs.send"
+    # assert root_span.children[4].kind == SpanKind.CLIENT
+    # assert len(root_span.children[4].links) == 1
+    # assert (
     #    root_span.children[4].links[0].headers["traceparent"]
     #    == root_span.children[3].traceparent
-    #)
+    # )
 
 
 @pytest.mark.liveTest
-def test_send_partition(auth_credential_receivers, uamqp_transport, timeout_factor):
+def test_send_partition(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     timeout = 10 * timeout_factor
     client = EventHubProducerClient(
@@ -378,6 +357,7 @@ def test_send_partition(auth_credential_receivers, uamqp_transport, timeout_fact
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     with client:
@@ -422,7 +402,7 @@ def test_send_partition(auth_credential_receivers, uamqp_transport, timeout_fact
 
 
 @pytest.mark.liveTest
-def test_send_non_ascii(auth_credential_receivers, uamqp_transport, timeout_factor):
+def test_send_non_ascii(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     timeout = 5 * timeout_factor
     client = EventHubProducerClient(
@@ -430,6 +410,7 @@ def test_send_non_ascii(auth_credential_receivers, uamqp_transport, timeout_fact
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     with client:
         batch = client.create_batch(partition_id="0")
@@ -442,12 +423,8 @@ def test_send_non_ascii(auth_credential_receivers, uamqp_transport, timeout_fact
     # receive_message_batch() returns immediately once it receives any messages before the max_batch_size
     # and timeout reach. Could be 1, 2, or any number between 1 and max_batch_size.
     # So call it twice to ensure the two events are received.
-    partition_0 = [
-        EventData._from_message(x)
-        for x in receivers[0].receive_message_batch(timeout=timeout)
-    ] + [
-        EventData._from_message(x)
-        for x in receivers[0].receive_message_batch(timeout=timeout)
+    partition_0 = [EventData._from_message(x) for x in receivers[0].receive_message_batch(timeout=timeout)] + [
+        EventData._from_message(x) for x in receivers[0].receive_message_batch(timeout=timeout)
     ]
     assert len(partition_0) == 4
     assert partition_0[0].body_as_str() == "é,è,à,ù,â,ê,î,ô,û"
@@ -457,9 +434,7 @@ def test_send_non_ascii(auth_credential_receivers, uamqp_transport, timeout_fact
 
 
 @pytest.mark.liveTest
-def test_send_multiple_partitions_with_app_prop(
-    auth_credential_receivers, uamqp_transport, timeout_factor
-):
+def test_send_multiple_partitions_with_app_prop(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     timeout = 5 * timeout_factor
     app_prop_key = "raw_prop"
@@ -470,7 +445,7 @@ def test_send_multiple_partitions_with_app_prop(
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
-        transport_type=TransportType.Amqp,
+        **client_args
     )
     with client:
         ed0 = EventData(b"Message 0")
@@ -487,24 +462,19 @@ def test_send_multiple_partitions_with_app_prop(
         client.send_batch(batch)
         client.send_event(ed1, partition_id="1")
 
-    partition_0 = [
-        EventData._from_message(x)
-        for x in receivers[0].receive_message_batch(timeout=timeout)
-    ]
+    partition_0 = [EventData._from_message(x) for x in receivers[0].receive_message_batch(timeout=timeout)]
     assert len(partition_0) == 2
     assert partition_0[0].properties[b"raw_prop"] == b"raw_value"
     assert partition_0[1].properties[b"raw_prop"] == b"raw_value"
-    partition_1 = [
-        EventData._from_message(x)
-        for x in receivers[1].receive_message_batch(timeout=timeout)
-    ]
+    partition_1 = [EventData._from_message(x) for x in receivers[1].receive_message_batch(timeout=timeout)]
     assert len(partition_1) == 2
     assert partition_1[0].properties[b"raw_prop"] == b"raw_value"
     assert partition_1[1].properties[b"raw_prop"] == b"raw_value"
 
 
 @pytest.mark.liveTest
-def test_send_over_websocket_sync(auth_credential_receivers, uamqp_transport, timeout_factor):
+@pytest.mark.no_amqpproxy # Proxy requires TransportType.Amqp
+def test_send_over_websocket_sync(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     timeout = 10 * timeout_factor
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     client = EventHubProducerClient(
@@ -513,6 +483,7 @@ def test_send_over_websocket_sync(auth_credential_receivers, uamqp_transport, ti
         credential=credential(),
         transport_type=uamqp_TransportType.AmqpOverWebsocket,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     with client:
@@ -523,16 +494,13 @@ def test_send_over_websocket_sync(auth_credential_receivers, uamqp_transport, ti
 
     time.sleep(1)
     received = []
-    received.extend(
-        receivers[0].receive_message_batch(max_batch_size=5, timeout=timeout)
-    )
+    received.extend(receivers[0].receive_message_batch(max_batch_size=5, timeout=timeout))
     assert len(received) == 2
 
 
 @pytest.mark.liveTest
-def test_send_with_create_event_batch_with_app_prop_sync(
-    auth_credential_receivers, uamqp_transport, timeout_factor
-):
+@pytest.mark.no_amqpproxy # Proxy requires TransportType.Amqp
+def test_send_with_create_event_batch_with_app_prop_sync(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     timeout = 5 * timeout_factor
     app_prop_key = "raw_prop"
@@ -544,6 +512,7 @@ def test_send_with_create_event_batch_with_app_prop_sync(
         credential=credential(),
         transport_type=TransportType.AmqpOverWebsocket,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     with client:
         event_data_batch = client.create_batch(max_size_in_bytes=100000)
@@ -559,13 +528,11 @@ def test_send_with_create_event_batch_with_app_prop_sync(
         for r in receivers:
             received.extend(r.receive_message_batch(timeout=timeout))
         assert len(received) >= 1
-        assert (
-            EventData._from_message(received[0]).properties[b"raw_prop"] == b"raw_value"
-        )
+        assert EventData._from_message(received[0]).properties[b"raw_prop"] == b"raw_value"
 
 
 @pytest.mark.liveTest
-def test_send_list(auth_credential_receivers, uamqp_transport, timeout_factor):
+def test_send_list(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     timeout = 10 * timeout_factor
     client = EventHubProducerClient(
@@ -573,26 +540,21 @@ def test_send_list(auth_credential_receivers, uamqp_transport, timeout_factor):
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
-        transport_type=uamqp_TransportType.Amqp,
+        **client_args
     )
     payload = "A1"
     with client:
         client.send_batch([EventData(payload)])
     received = []
     for r in receivers:
-        received.extend(
-            [
-                EventData._from_message(x)
-                for x in r.receive_message_batch(timeout=timeout)
-            ]
-        )
+        received.extend([EventData._from_message(x) for x in r.receive_message_batch(timeout=timeout)])
 
     assert len(received) == 1
     assert received[0].body_as_str() == payload
 
 
 @pytest.mark.liveTest
-def test_send_list_partition(auth_credential_receivers, uamqp_transport, timeout_factor):
+def test_send_list_partition(auth_credential_receivers, uamqp_transport, timeout_factor, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     timeout = 10 * timeout_factor
     client = EventHubProducerClient(
@@ -600,6 +562,7 @@ def test_send_list_partition(auth_credential_receivers, uamqp_transport, timeout
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     payload = "A1"
     with client:
@@ -614,13 +577,14 @@ def test_send_list_partition(auth_credential_receivers, uamqp_transport, timeout
     [([EventData("A" * 1024)] * 1100, ValueError), ("any str", AttributeError)],
 )
 @pytest.mark.liveTest
-def test_send_list_wrong_data(auth_credentials, to_send, exception_type, uamqp_transport):
+def test_send_list_wrong_data(auth_credentials, to_send, exception_type, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     with client:
         with pytest.raises(exception_type):
@@ -628,21 +592,17 @@ def test_send_list_wrong_data(auth_credentials, to_send, exception_type, uamqp_t
 
 
 @pytest.mark.parametrize("partition_id, partition_key", [("0", None), (None, "pk")])
-def test_send_batch_pid_pk(
-    invalid_hostname, partition_id, partition_key, uamqp_transport
-):
+def test_send_batch_pid_pk(invalid_hostname, partition_id, partition_key, uamqp_transport, client_args):
     # Use invalid_hostname because this is not a live test.
-    client = EventHubProducerClient.from_connection_string(invalid_hostname, uamqp_transport=uamqp_transport)
+    client = EventHubProducerClient.from_connection_string(invalid_hostname, uamqp_transport=uamqp_transport, **client_args)
     batch = EventDataBatch(partition_id=partition_id, partition_key=partition_key)
     with client:
         with pytest.raises(TypeError):
-            client.send_batch(
-                batch, partition_id=partition_id, partition_key=partition_key
-            )
+            client.send_batch(batch, partition_id=partition_id, partition_key=partition_key)
 
 
 @pytest.mark.liveTest
-def test_send_with_callback(auth_credential_receivers, uamqp_transport):
+def test_send_with_callback(auth_credential_receivers, uamqp_transport, client_args):
 
     def on_error(events, pid, err):
         on_error.err = err
@@ -660,6 +620,7 @@ def test_send_with_callback(auth_credential_receivers, uamqp_transport):
         on_success=on_success,
         on_error=on_error,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
 
     with client:
@@ -698,7 +659,7 @@ def test_send_with_callback(auth_credential_receivers, uamqp_transport):
 
 @pytest.mark.parametrize("keep_alive", [None, 30, 60])
 @pytest.mark.liveTest
-def test_send_with_keep_alive(auth_credential_receivers, keep_alive, uamqp_transport):
+def test_send_with_keep_alive(auth_credential_receivers, keep_alive, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential, receivers = auth_credential_receivers
     client = EventHubProducerClient(
         fully_qualified_namespace=fully_qualified_namespace,
@@ -706,13 +667,16 @@ def test_send_with_keep_alive(auth_credential_receivers, keep_alive, uamqp_trans
         credential=credential(),
         keep_alive=keep_alive,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     assert client._producers["all-partitions"]._keep_alive == keep_alive
 
 
+# TODO: This test fails both sync and async with amqp proxy and keep_alive=30. Investigate.
 @pytest.mark.parametrize("keep_alive", [None, 5, 30])
 @pytest.mark.liveTest
-def test_send_long_wait_idle_timeout(auth_credential_receivers, keep_alive, uamqp_transport):
+@pytest.mark.no_amqpproxy
+def test_send_long_wait_idle_timeout(auth_credential_receivers, keep_alive, uamqp_transport, client_args):
     if uamqp_transport:
         amqp_transport = UamqpTransport
         retry_total = 3
@@ -728,14 +692,13 @@ def test_send_long_wait_idle_timeout(auth_credential_receivers, keep_alive, uamq
         idle_timeout=10,
         retry_total=retry_total,
         uamqp_transport=uamqp_transport,
+        **client_args
     )
     sender = client._create_producer(partition_id="0")
     with sender:
         sender._open_with_retry()
         ed = EventData("data")
-        ed = transform_outbound_single_message(
-            ed, EventData, amqp_transport.to_outgoing_amqp_message
-        )
+        ed = transform_outbound_single_message(ed, EventData, amqp_transport.to_outgoing_amqp_message)
         sender._unsent_events = [ed._message]
         # hit idle timeout error
         time.sleep(11)

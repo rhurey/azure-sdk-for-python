@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,useless-suppression
 # ------------------------------------
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
@@ -58,11 +59,12 @@ def _parse_schema_properties_dict(response_headers: Mapping[str, Union[str, int]
         "version": int(response_headers["Schema-Version"]),
     }
 
+
 def _normalize_content_type(content_type: str) -> str:
     return content_type.replace(" ", "").lower()
 
+
 def _get_format(content_type: str) -> Union[SchemaFormat, str]:
-    # pylint:disable=redefined-builtin
     # Exception cases may be due to forward compatibility.
     # i.e. Getting a schema with a content type from a future API version.
     # In this case, we default to returning the content type string.
@@ -76,6 +78,7 @@ def _get_format(content_type: str) -> Union[SchemaFormat, str]:
     if normalized_content_type == NormalizedSchemaContentTypes.CUSTOM.value:
         return SchemaFormat.CUSTOM
     return content_type
+
 
 def prepare_schema_properties_result(  # pylint:disable=unused-argument,redefined-builtin
     format: str,
@@ -174,7 +177,7 @@ class SchemaRegistryClient:
         self._generated_client.close()
 
     @distributed_trace
-    def register_schema(  # pylint:disable=arguments-differ
+    def register_schema(
         self,
         group_name: str,
         name: str,
@@ -213,7 +216,7 @@ class SchemaRegistryClient:
             self._generated_client._register_schema(  # type:ignore # pylint:disable=protected-access
                 group_name=group_name,
                 schema_name=name,
-                content=cast(IO[Any], definition),
+                schema_content=cast(IO[Any], definition),
                 content_type=kwargs.pop("content_type", get_content_type(format)),
                 cls=partial(prepare_schema_properties_result, format),
                 **http_request_kwargs,
@@ -281,7 +284,7 @@ class SchemaRegistryClient:
         ...
 
     @distributed_trace
-    def get_schema(  # pylint: disable=docstring-missing-param,docstring-should-be-keyword
+    def get_schema(  # pylint: disable=docstring-missing-param,docstring-should-be-keyword,docstring-keyword-should-match-keyword-only
         self, *args: str, **kwargs: Any
     ) -> Schema:
         """Gets a registered schema. There are two ways to call this method:
@@ -341,7 +344,7 @@ class SchemaRegistryClient:
                 cls=prepare_schema_result,
                 headers={  # TODO: remove when multiple content types in response are supported
                     "Accept": """application/json; serialization=Avro, application/json; """
-                        """serialization=json, text/plain; charset=utf-8"""
+                    """serialization=json, text/plain; charset=utf-8"""
                 },
                 stream=True,
                 **http_request_kwargs,
@@ -365,7 +368,7 @@ class SchemaRegistryClient:
                 cls=prepare_schema_result,
                 headers={  # TODO: remove when multiple content types in response are supported
                     "Accept": """application/json; serialization=Avro, application/json; """
-                        """serialization=json, text/plain; charset=utf-8"""
+                    """serialization=json, text/plain; charset=utf-8"""
                 },
                 stream=True,
                 **http_request_kwargs,
@@ -473,6 +476,7 @@ class Schema:
     def __repr__(self) -> str:
         return f"Schema(definition={self.definition}, properties={self.properties})"[:1024]
 
+
 # ApiVersion was added to a previously GA'd version. However, newer libraries should not
 # accept ApiVersion enums and only take strings. Leaving this here for backwards compatibility.
 class ApiVersion(str, Enum, metaclass=CaseInsensitiveEnumMeta):
@@ -483,6 +487,7 @@ class ApiVersion(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     V2021_10 = "2021-10"
     V2022_10 = "2022-10"
     """This is the default version."""
+
 
 ###### Encoder Protocols ######
 

@@ -6,7 +6,7 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 import pytest
-from azure.mgmt.web.aio import WebSiteManagementClient
+from azure.mgmt.web.v2024_11_01.aio import WebSiteManagementClient
 
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer
 from devtools_testutils.aio import recorded_by_proxy_async
@@ -21,9 +21,9 @@ class TestWebSiteManagementCertificateRegistrationProviderOperationsAsync(AzureM
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_operations(self, resource_group):
+    async def test_certificate_registration_provider_list_operations(self, resource_group):
         response = self.client.certificate_registration_provider.list_operations(
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself

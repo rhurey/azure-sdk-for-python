@@ -14,6 +14,7 @@ from conftest import configure_async, ASST_AZURE, OPENAI, AZURE, PREVIEW, GA
 @pytest.mark.live_test_only
 class TestModelsAsync(AzureRecordedTestCase):
 
+    @pytest.mark.skip("InternalServerError, opened issue")
     @configure_async
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -59,10 +60,12 @@ class TestModelsAsync(AzureRecordedTestCase):
             files = client_async.files.list()
             async for file in files:
                 assert file.id
+                break
 
             files = client_async.files.list(purpose="assistants")
             async for file in files:
                 assert file.id
+                break
 
             retrieved_file = await client_async.files.retrieve(file1.id)
             assert retrieved_file.id

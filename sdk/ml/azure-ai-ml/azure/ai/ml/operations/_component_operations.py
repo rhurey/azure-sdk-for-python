@@ -2,6 +2,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # ---------------------------------------------------------
 
+import collections
+import hashlib
+
 # pylint: disable=protected-access,too-many-lines
 import time
 import types
@@ -24,11 +27,17 @@ from azure.ai.ml._scope_dependent_operations import (
 )
 from azure.ai.ml._telemetry import ActivityType, monitor_with_activity, monitor_with_telemetry_mixin
 from azure.ai.ml._utils._asset_utils import (
+    IgnoreFile,
     _archive_or_restore,
     _create_or_update_autoincrement,
+    _get_file_hash,
     _get_latest,
     _get_next_version_from_container,
     _resolve_label_to_asset,
+    create_catalog_files,
+    delete_two_catalog_files,
+    get_ignore_file,
+    get_upload_files_from_folder,
 )
 from azure.ai.ml._utils._azureml_polling import AzureMLPolling
 from azure.ai.ml._utils._endpoint_utils import polling_wait
@@ -97,7 +106,7 @@ class ComponentOperations(_ScopeDependentOperations):
         **kwargs: Dict,
     ) -> None:
         super(ComponentOperations, self).__init__(operation_scope, operation_config)
-        ops_logger.update_info(kwargs)
+        ops_logger.update_filter()
         self._version_operation = service_client.component_versions
         self._preflight_operation = preflight_operation
         self._container_operation = service_client.component_containers
@@ -282,7 +291,8 @@ class ComponentOperations(_ScopeDependentOperations):
 
         target_code_value = "./code"
         self._code_operations.download(
-            **extract_name_and_version(code), download_path=base_dir.joinpath(target_code_value)
+            **extract_name_and_version(code),
+            download_path=base_dir.joinpath(target_code_value),
         )
 
         setattr(component, component._get_code_field_name(), target_code_value)
@@ -311,7 +321,13 @@ class ComponentOperations(_ScopeDependentOperations):
 
     @experimental
     @monitor_with_telemetry_mixin(ops_logger, "Component.Download", ActivityType.PUBLICAPI)
-    def download(self, name: str, download_path: Union[PathLike, str] = ".", *, version: Optional[str] = None) -> None:
+    def download(
+        self,
+        name: str,
+        download_path: Union[PathLike, str] = ".",
+        *,
+        version: Optional[str] = None,
+    ) -> None:
         """Download the specified component and its dependencies to local. Local component can be used to create
         the component in another workspace or for offline development.
 
@@ -484,14 +500,20 @@ class ComponentOperations(_ScopeDependentOperations):
                 )
                 return component.version, component._to_rest_object()
         except ResourceNotFoundError as e:
-            logger.info("Failed to get component version, %s", e)
+            logger.info("Failed to get component version")
+            logger.debug("%s", e)
         except Exception as e:  # pylint: disable=W0718
-            logger.error("Failed to compare client_component_hash, %s", e)
+            logger.error("Failed to compare client_component_hash")
+            logger.debug("%s", e)
 
         return current_version, rest_component_resource
 
     def _create_or_update_component_version(
-        self, component: Component, name: str, version: Optional[str], rest_component_resource: Any
+        self,
+        component: Component,
+        name: str,
+        version: Optional[str],
+        rest_component_resource: Any,
     ) -> Any:
         try:
             if self._registry_name:
@@ -642,7 +664,7 @@ class ComponentOperations(_ScopeDependentOperations):
         )
 
         if not result:
-            component = self.get(name=component.name, version=component.version)
+            component = self.get(name=name, version=version)
         else:
             component = Component._from_rest_object(result)
 
@@ -651,6 +673,28 @@ class ComponentOperations(_ScopeDependentOperations):
             jobs_only=True,
         )
         return component
+
+    @experimental
+    def prepare_for_sign(self, component: Component) -> None:
+        ignore_file = IgnoreFile()
+
+        if isinstance(component, ComponentCodeMixin):
+            with component._build_code() as code:
+                delete_two_catalog_files(code.path)
+                ignore_file = get_ignore_file(code.path) if code._ignore_file is None else ignore_file
+                file_list = get_upload_files_from_folder(code.path, ignore_file=ignore_file)
+                json_stub = {}
+                json_stub["HashAlgorithm"] = "SHA256"
+                json_stub["CatalogItems"] = {}  # type: ignore
+
+                for file_path, file_name in sorted(file_list, key=lambda x: str(x[1]).lower()):
+                    file_hash = _get_file_hash(file_path, hashlib.sha256()).hexdigest().upper()
+                    json_stub["CatalogItems"][file_name] = file_hash  # type: ignore
+
+                json_stub["CatalogItems"] = collections.OrderedDict(  # type: ignore
+                    sorted(json_stub["CatalogItems"].items())  # type: ignore
+                )
+                create_catalog_files(code.path, json_stub)
 
     @monitor_with_telemetry_mixin(ops_logger, "Component.Archive", ActivityType.PUBLICAPI)
     def archive(
@@ -968,7 +1012,9 @@ class ComponentOperations(_ScopeDependentOperations):
 
     @classmethod
     def _divide_nodes_to_resolve_into_layers(
-        cls, component: PipelineComponent, extra_operations: List[Callable[[BaseNode, str], Any]]
+        cls,
+        component: PipelineComponent,
+        extra_operations: List[Callable[[BaseNode, str], Any]],
     ) -> List:
         """Traverse the pipeline component and divide nodes to resolve into layers. Note that all leaf nodes will be
         put in the last layer.
@@ -1029,7 +1075,8 @@ class ComponentOperations(_ScopeDependentOperations):
     def _get_workspace_key(self) -> str:
         try:
             workspace_rest = self._workspace_operations._operation.get(
-                resource_group_name=self._resource_group_name, workspace_name=self._workspace_name
+                resource_group_name=self._resource_group_name,
+                workspace_name=self._workspace_name,
             )
             return str(workspace_rest.workspace_id)
         except HttpResponseError:
@@ -1099,7 +1146,10 @@ class ComponentOperations(_ScopeDependentOperations):
             extra_operations=[
                 # no need to do this as we now keep the original component name for anonymous components
                 # self._set_default_display_name_for_anonymous_component_in_node,
-                partial(self._try_resolve_node_level_task_for_parallel_node, resolver=resolver),
+                partial(
+                    self._try_resolve_node_level_task_for_parallel_node,
+                    resolver=resolver,
+                ),
                 partial(self._try_resolve_environment_for_component, resolver=resolver),
                 partial(self._try_resolve_compute_for_node, resolver=resolver),
                 # should we resolve code here after we do extra operations concurrently?

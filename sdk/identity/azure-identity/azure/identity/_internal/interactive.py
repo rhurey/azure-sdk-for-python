@@ -224,7 +224,7 @@ class InteractiveCredential(MsalCredential, ABC):
 
             # this may be the first authentication, or the user may have authenticated a different identity
             self._auth_record = _build_auth_record(result)
-        except Exception as ex:  # pylint:disable=broad-except
+        except Exception as ex:
             _LOGGER.warning(
                 "%s.%s failed: %s",
                 self.__class__.__name__,
@@ -253,6 +253,7 @@ class InteractiveCredential(MsalCredential, ABC):
           for these scopes.
         :keyword str claims: additional claims required in the token, such as those provided by
           :func:`AuthenticationRequiredError.claims`
+        :return: An AuthenticationRecord containing the authenticated user's information.
         :rtype: ~azure.identity.AuthenticationRecord
         :raises ~azure.core.exceptions.ClientAuthenticationError: authentication failed. The error's ``message``
           attribute gives a reason.

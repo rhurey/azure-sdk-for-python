@@ -1,16 +1,19 @@
 # ---------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # ---------------------------------------------------------
-
+import os
+import posixpath
+import re
 import math
 import threading
-from typing import Any, List, Literal, Mapping, Type, TypeVar, Union, cast, get_args, get_origin
+from typing import Any, List, Literal, Mapping, Type, TypeVar, Tuple, Union, cast, get_args, get_origin
 
 import nltk
+from azure.storage.blob import ContainerClient
 from typing_extensions import NotRequired, Required, TypeGuard
-
+from azure.ai.evaluation._legacy._adapters._errors import MissingRequiredPackage
 from azure.ai.evaluation._constants import AZURE_OPENAI_TYPE, OPENAI_TYPE
-from azure.ai.evaluation._exceptions import ErrorBlame, ErrorCategory, EvaluationException
+from azure.ai.evaluation._exceptions import ErrorMessage, ErrorBlame, ErrorCategory, ErrorTarget, EvaluationException
 from azure.ai.evaluation._model_configurations import (
     AzureAIProject,
     AzureOpenAIModelConfiguration,
@@ -24,7 +27,7 @@ _nltk_data_download_lock = threading.Lock()
 T_TypedDict = TypeVar("T_TypedDict", bound=Mapping[Any, Any])
 
 
-def get_harm_severity_level(harm_score: int) -> Union[str, float]:
+def get_harm_severity_level(harm_score: Union[float, int]) -> Union[str, float]:
     """Generate harm severity level based on harm score.
 
     :param harm_score: The harm score to be evaluated.
@@ -48,13 +51,19 @@ def get_harm_severity_level(harm_score: int) -> Union[str, float]:
 
 def ensure_nltk_data_downloaded():
     """Download NLTK data packages if not already downloaded."""
+    nltk_data = [
+        ("wordnet", "corpora/wordnet.zip"),
+        ("perluniprops", "misc/perluniprops.zip"),
+        ("punkt", "tokenizers/punkt.zip"),
+        ("punkt_tab", "tokenizers/punkt_tab.zip"),
+    ]
+
     with _nltk_data_download_lock:
-        try:
-            from nltk.tokenize.nist import NISTTokenizer  # pylint: disable=unused-import
-        except LookupError:
-            nltk.download("perluniprops")
-            nltk.download("punkt")
-            nltk.download("punkt_tab")
+        for _id, resource_name in nltk_data:
+            try:
+                nltk.find(resource_name)
+            except LookupError:
+                nltk.download(_id)
 
 
 def nltk_tokenize(text: str) -> List[str]:
@@ -118,8 +127,25 @@ def construct_prompty_model_config(
     return prompty_model_config
 
 
+def is_onedp_project(azure_ai_project: AzureAIProject) -> bool:
+    """Check if the Azure AI project is an OneDP project.
+
+    :param azure_ai_project: The scope of the Azure AI project.
+    :type azure_ai_project: ~azure.ai.evaluation.AzureAIProject
+    :return: True if the Azure AI project is an OneDP project, False otherwise.
+    :rtype: bool
+    """
+    if isinstance(azure_ai_project, str):
+        return True
+    return False
+
+
 def validate_azure_ai_project(o: object) -> AzureAIProject:
     fields = {"subscription_id": str, "resource_group_name": str, "project_name": str}
+
+    # TODO : Add regex check for malformed project uri
+    if is_onedp_project(o):
+        return o
 
     if not isinstance(o, dict):
         msg = "The 'azure_ai_project' parameter must be a dictionary."
@@ -266,3 +292,432 @@ def _validate_typed_dict(o: object, t: Type[T_TypedDict]) -> T_TypedDict:
         validate_annotation(v, annotations[k])
 
     return cast(T_TypedDict, o)
+
+
+def check_score_is_valid(score: Union[str, float], min_score=1, max_score=5) -> bool:
+    """Check if the score is valid, i.e. is convertable to number and is in the range [min_score, max_score].
+
+    :param score: The score to check.
+    :type score: Union[str, float]
+    :param min_score: The minimum score. Default is 1.
+    :type min_score: int
+    :param max_score: The maximum score. Default is 5.
+    :type max_score: int
+    :return: True if the score is valid, False otherwise.
+    :rtype: bool
+    """
+    try:
+        numeric_score = float(score)
+    except (ValueError, TypeError):
+        return False
+
+    return min_score <= numeric_score <= max_score
+
+
+def parse_quality_evaluator_reason_score(llm_output: str, valid_score_range: str = "[1-5]") -> Tuple[float, str]:
+    """Parse the output of prompt-based quality evaluators that return a score and reason.
+
+    Current supported evaluators:
+        - Fluency
+        - Relevance
+        - Retrieval
+        - Groundedness
+        - Coherence
+        - ResponseCompleteness
+        - TaskAdherence
+
+    :param llm_output: The output of the prompt-based quality evaluator.
+    :type llm_output: str
+    :return: The score and reason.
+    :rtype: Tuple[float, str]
+    """
+    score = math.nan
+    reason = ""
+    if llm_output:
+        try:
+            score_pattern = rf"<S2>\D*?({valid_score_range}).*?</S2>"
+            reason_pattern = r"<S1>(.*?)</S1>"
+            score_match = re.findall(score_pattern, llm_output, re.DOTALL)
+            reason_match = re.findall(reason_pattern, llm_output, re.DOTALL)
+            if score_match:
+                score = float(score_match[0].strip())
+            if reason_match:
+                reason = reason_match[0].strip()
+        except ValueError as exc:
+            raise EvaluationException(
+                message=f"Failed to parse model output: \n{llm_output}",
+                internal_message="Failed to parse model output.",
+                category=ErrorCategory.FAILED_EXECUTION,
+                blame=ErrorBlame.SYSTEM_ERROR,
+            ) from exc
+
+    return score, reason
+
+
+def remove_optional_singletons(eval_class, singletons):
+    required_singletons = singletons.copy()
+    if hasattr(eval_class, "_OPTIONAL_PARAMS"):  # pylint: disable=protected-access
+        for param in eval_class._OPTIONAL_PARAMS:  # pylint: disable=protected-access
+            if param in singletons:
+                del required_singletons[param]
+    return required_singletons
+
+
+def retrieve_content_type(assistant_messages: List, metric: str) -> str:
+    """Get the content type for service payload.
+
+    :param assistant_messages: The list of messages to be annotated by evaluation service
+    :type assistant_messages: list
+    :param metric: A string representing the metric type
+    :type metric: str
+    :return: A text representing the content type. Example: 'text', or 'image'
+    :rtype: str
+    """
+    # Check if metric is "protected_material"
+    if metric == "protected_material":
+        return "image"
+
+    # Iterate through each message
+    for message in assistant_messages:
+        # Ensure "content" exists in the message and is iterable
+        if isinstance(message.get("content", []), list):
+            for content in message.get("content", []):
+                if content.get("type") == "image_url":
+                    return "image"
+    # Default return if no image was found
+    return "text"
+
+
+def validate_conversation(conversation):
+    def raise_exception(msg, target):
+        raise EvaluationException(
+            message=msg,
+            internal_message=msg,
+            target=target,
+            category=ErrorCategory.INVALID_VALUE,
+            blame=ErrorBlame.USER_ERROR,
+        )
+
+    if not conversation or "messages" not in conversation:
+        raise_exception(
+            "Attribute 'messages' is missing in the request",
+            ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+        )
+    messages = conversation["messages"]
+    if not isinstance(messages, list):
+        raise_exception(
+            "'messages' parameter must be a JSON-compatible list of chat messages",
+            ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+        )
+    expected_roles = {"user", "assistant", "system"}
+    image_found = False
+    assistant_message_count = 0
+    user_message_count = 0
+    for num, message in enumerate(messages, 1):
+        if not isinstance(message, dict):
+            try:
+                from azure.ai.inference.models import (
+                    ChatRequestMessage,
+                    UserMessage,
+                    AssistantMessage,
+                    SystemMessage,
+                    ImageContentItem,
+                )
+            except ImportError as ex:
+                raise MissingRequiredPackage(
+                    message="Please install 'azure-ai-inference' package to use SystemMessage, "
+                    "UserMessage or AssistantMessage."
+                ) from ex
+
+            if isinstance(message, ChatRequestMessage) and not isinstance(
+                message, (UserMessage, AssistantMessage, SystemMessage)
+            ):
+                raise_exception(
+                    f"Messages must be a strongly typed class of ChatRequestMessage. Message number: {num}",
+                    ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+                )
+            if isinstance(message, AssistantMessage):
+                assistant_message_count += 1
+            if isinstance(message, UserMessage):
+                user_message_count += 1
+            if isinstance(message.content, list) and any(
+                isinstance(item, ImageContentItem) for item in message.content
+            ):
+                image_found = True
+            continue
+        if message.get("role") not in expected_roles:
+            raise_exception(
+                f"Invalid role provided: {message.get('role')}. Message number: {num}",
+                ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+            )
+        if message.get("role") == "assistant":
+            assistant_message_count += 1
+        if message.get("role") == "user":
+            user_message_count += 1
+        content = message.get("content")
+        if not isinstance(content, (str, list)):
+            raise_exception(
+                f"Content in each turn must be a string or array. Message number: {num}",
+                ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+            )
+        if isinstance(content, list):
+            if any(item.get("type") == "image_url" and "url" in item.get("image_url", {}) for item in content):
+                image_found = True
+    if not image_found:
+        raise_exception(
+            "Message needs to have multi-modal input like images.",
+            ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+        )
+    if assistant_message_count == 0:
+        raise_exception(
+            "Assistant role required in one of the messages.",
+            ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+        )
+    if user_message_count == 0:
+        raise_exception(
+            "User role required in one of the messages.",
+            ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+        )
+    if assistant_message_count > 1:
+        raise_exception(
+            "Evaluators for multimodal conversations only support single turn. "
+            "User and assistant role expected as the only role in each message.",
+            ErrorTarget.CONTENT_SAFETY_CHAT_EVALUATOR,
+        )
+
+
+def _extract_text_from_content(content):
+    text = []
+    for msg in content:
+        if "text" in msg:
+            text.append(msg["text"])
+    return text
+
+
+def _get_conversation_history(query, include_system_messages=False):
+    all_user_queries = []
+    cur_user_query = []
+    all_agent_responses = []
+    cur_agent_response = []
+    system_message = None
+    for msg in query:
+        if not "role" in msg:
+            continue
+        if include_system_messages and msg["role"] == "system" and "content" in msg:
+            system_message = msg.get("content", "")
+        if msg["role"] == "user" and "content" in msg:
+            if cur_agent_response != []:
+                all_agent_responses.append(cur_agent_response)
+                cur_agent_response = []
+            text_in_msg = _extract_text_from_content(msg["content"])
+            if text_in_msg:
+                cur_user_query.append(text_in_msg)
+
+        if msg["role"] == "assistant" and "content" in msg:
+            if cur_user_query != []:
+                all_user_queries.append(cur_user_query)
+                cur_user_query = []
+            text_in_msg = _extract_text_from_content(msg["content"])
+            if text_in_msg:
+                cur_agent_response.append(text_in_msg)
+    if cur_user_query != []:
+        all_user_queries.append(cur_user_query)
+    if cur_agent_response != []:
+        all_agent_responses.append(cur_agent_response)
+
+    if len(all_user_queries) != len(all_agent_responses) + 1:
+        raise EvaluationException(
+            message=ErrorMessage.MALFORMED_CONVERSATION_HISTORY,
+            internal_message=ErrorMessage.MALFORMED_CONVERSATION_HISTORY,
+            target=ErrorTarget.CONVERSATION_HISTORY_PARSING,
+            category=ErrorCategory.INVALID_VALUE,
+            blame=ErrorBlame.USER_ERROR,
+        )
+    result = {"user_queries": all_user_queries, "agent_responses": all_agent_responses}
+    if include_system_messages:
+        result["system_message"] = system_message
+    return result
+
+
+def _pretty_format_conversation_history(conversation_history):
+    """Formats the conversation history for better readability."""
+    formatted_history = ""
+    if "system_message" in conversation_history and conversation_history["system_message"] is not None:
+        formatted_history += "SYSTEM_PROMPT:\n"
+        formatted_history += "  " + conversation_history["system_message"] + "\n\n"
+    for i, (user_query, agent_response) in enumerate(
+        zip(conversation_history["user_queries"], conversation_history["agent_responses"] + [None])
+    ):
+        formatted_history += f"User turn {i+1}:\n"
+        for msg in user_query:
+            formatted_history += "  " + "\n  ".join(msg)
+        formatted_history += "\n\n"
+        if agent_response:
+            formatted_history += f"Agent turn {i+1}:\n"
+            for msg in agent_response:
+                formatted_history += "  " + "\n  ".join(msg)
+            formatted_history += "\n\n"
+    return formatted_history
+
+
+def reformat_conversation_history(query, logger=None, include_system_messages=False):
+    """Reformats the conversation history to a more compact representation."""
+    try:
+        conversation_history = _get_conversation_history(query, include_system_messages=include_system_messages)
+        return _pretty_format_conversation_history(conversation_history)
+    except:
+        # If the conversation history cannot be parsed for whatever reason (e.g. the converter format changed), the original query is returned
+        # This is a fallback to ensure that the evaluation can still proceed. However the accuracy of the evaluation will be affected.
+        # From our tests the negative impact on IntentResolution is:
+        #   Higher intra model variance (0.142 vs 0.046)
+        #   Higher inter model variance (0.345 vs 0.607)
+        #   Lower percentage of mode in Likert scale (73.4% vs 75.4%)
+        #   Lower pairwise agreement between LLMs (85% vs 90% at the pass/fail level with threshold of 3)
+        if logger:
+            logger.warning(f"Conversation history could not be parsed, falling back to original query: {query}")
+        return query
+
+
+def _get_agent_response(agent_response_msgs, include_tool_messages=False):
+    """Extracts formatted agent response including text, and optionally tool calls/results."""
+    agent_response_text = []
+    tool_results = {}
+
+    # First pass: collect tool results
+    if include_tool_messages:
+        for msg in agent_response_msgs:
+            if msg.get("role") == "tool" and "tool_call_id" in msg:
+                for content in msg.get("content", []):
+                    if content.get("type") == "tool_result":
+                        result = content.get("tool_result")
+                        tool_results[msg["tool_call_id"]] = f"[TOOL_RESULT] {result}"
+
+    # Second pass: parse assistant messages and tool calls
+    for msg in agent_response_msgs:
+        if "role" in msg and msg.get("role") == "assistant" and "content" in msg:
+            text = _extract_text_from_content(msg["content"])
+            if text:
+                agent_response_text.extend(text)
+            if include_tool_messages:
+                for content in msg.get("content", []):
+                    # Todo: Verify if this is the correct way to handle tool calls
+                    if content.get("type") == "tool_call":
+                        if "tool_call" in content and "function" in content.get("tool_call", {}):
+                            tc = content.get("tool_call", {})
+                            func_name = tc.get("function", {}).get("name", "")
+                            args = tc.get("function", {}).get("arguments", {})
+                            tool_call_id = tc.get("id")
+                        else:
+                            tool_call_id = content.get("tool_call_id")
+                            func_name = content.get("name", "")
+                            args = content.get("arguments", {})
+                        args_str = ", ".join(f'{k}="{v}"' for k, v in args.items())
+                        call_line = f"[TOOL_CALL] {func_name}({args_str})"
+                        agent_response_text.append(call_line)
+                        if tool_call_id in tool_results:
+                            agent_response_text.append(tool_results[tool_call_id])
+
+    return agent_response_text
+
+
+def reformat_agent_response(response, logger=None, include_tool_messages=False):
+    try:
+        if response is None or response == []:
+            return ""
+        agent_response = _get_agent_response(response, include_tool_messages=include_tool_messages)
+        if agent_response == []:
+            # If no message could be extracted, likely the format changed, fallback to the original response in that case
+            if logger:
+                logger.warning(
+                    f"Empty agent response extracted, likely due to input schema change. Falling back to using the original response: {response}"
+                )
+            return response
+        return "\n".join(agent_response)
+    except:
+        # If the agent response cannot be parsed for whatever reason (e.g. the converter format changed), the original response is returned
+        # This is a fallback to ensure that the evaluation can still proceed. See comments on reformat_conversation_history for more details.
+        if logger:
+            logger.warning(f"Agent response could not be parsed, falling back to original response: {response}")
+        return response
+
+
+def reformat_tool_definitions(tool_definitions, logger=None):
+    try:
+        output_lines = ["TOOL_DEFINITIONS:"]
+        for tool in tool_definitions:
+            name = tool.get("name", "unnamed_tool")
+            desc = tool.get("description", "").strip()
+            params = tool.get("parameters", {}).get("properties", {})
+            param_names = ", ".join(params.keys()) if params else "no parameters"
+            output_lines.append(f"- {name}: {desc} (inputs: {param_names})")
+        return "\n".join(output_lines)
+    except Exception as e:
+        # If the tool definitions cannot be parsed for whatever reason, the original tool definitions are returned
+        # This is a fallback to ensure that the evaluation can still proceed. See comments on reformat_conversation_history for more details.
+        if logger:
+            logger.warning(
+                f"Tool definitions could not be parsed, falling back to original definitions: {tool_definitions}"
+            )
+        return tool_definitions
+
+
+def upload(path: str, container_client: ContainerClient, logger=None):
+    """Upload files or directories to Azure Blob Storage using a container client.
+
+    This function uploads a file or all files in a directory (recursively) to Azure Blob Storage.
+    When uploading a directory, the relative path structure is preserved in the blob container.
+
+    :param path: The local path to a file or directory to upload
+    :type path: str
+    :param container_client: The Azure Blob Container client to use for uploading
+    :type container_client: azure.storage.blob.ContainerClient
+    :param logger: Optional logger for debug output, defaults to None
+    :type logger: logging.Logger, optional
+    :raises EvaluationException: If the path doesn't exist or errors occur during upload
+    """
+
+    if not os.path.isdir(path) and not os.path.isfile(path):
+        raise EvaluationException(
+            message=f"Path '{path}' is not a directory or a file",
+            internal_message=f"Path '{path}' is not a directory or a file",
+            target=ErrorTarget.RAI_CLIENT,
+            category=ErrorCategory.INVALID_VALUE,
+            blame=ErrorBlame.SYSTEM_ERROR,
+        )
+
+    remote_paths = []
+    local_paths = []
+
+    if os.path.isdir(path):
+        for root, _, filenames in os.walk(path):
+            upload_path = ""
+            if root != path:
+                rel_path = os.path.relpath(root, path)
+                upload_path = posixpath.join(rel_path)
+            for f in filenames:
+                remote_file_path = posixpath.join(upload_path, f)
+                remote_paths.append(remote_file_path)
+                local_file_path = os.path.join(root, f)
+                local_paths.append(local_file_path)
+
+    if os.path.isfile(path):
+        remote_paths = [os.path.basename(path)]
+        local_paths = [path]
+
+    try:
+        # Open the file in binary read mode
+        for local, remote in zip(local_paths, remote_paths):
+            with open(local, "rb") as data:
+                # Upload the file to Azure Blob Storage
+                container_client.upload_blob(data=data, name=remote)
+            if logger:
+                logger.debug(f"File '{local}' uploaded successfully")
+
+    except Exception as e:
+        raise EvaluationException(
+            message=f"Error uploading file: {e}",
+            internal_message=f"Error uploading file: {e}",
+            target=ErrorTarget.RAI_CLIENT,
+            category=ErrorCategory.UPLOAD_ERROR,
+            blame=ErrorBlame.SYSTEM_ERROR,
+        )

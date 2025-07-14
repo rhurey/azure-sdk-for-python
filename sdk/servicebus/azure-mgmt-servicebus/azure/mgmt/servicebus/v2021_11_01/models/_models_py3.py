@@ -1,5 +1,5 @@
+# pylint: disable=line-too-long,useless-suppression,too-many-lines
 # coding=utf-8
-# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,25 +7,15 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
+from collections.abc import MutableMapping
 import datetime
-import sys
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Union
 
 from ... import _serialization
 
-if sys.version_info >= (3, 9):
-    from collections.abc import MutableMapping
-else:
-    from typing import MutableMapping  # type: ignore  # pylint: disable=ungrouped-imports
-if sys.version_info >= (3, 8):
-    from typing import Literal  # pylint: disable=no-name-in-module, ungrouped-imports
-else:
-    from typing_extensions import Literal  # type: ignore  # pylint: disable=ungrouped-imports
-
 if TYPE_CHECKING:
-    # pylint: disable=unused-import,ungrouped-imports
     from .. import models as _models
-JSON = MutableMapping[str, Any]  # pylint: disable=unsubscriptable-object
+JSON = MutableMapping[str, Any]
 
 
 class AccessKeys(_serialization.Model):
@@ -78,13 +68,13 @@ class AccessKeys(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.primary_connection_string = None
-        self.secondary_connection_string = None
-        self.alias_primary_connection_string = None
-        self.alias_secondary_connection_string = None
-        self.primary_key = None
-        self.secondary_key = None
-        self.key_name = None
+        self.primary_connection_string: Optional[str] = None
+        self.secondary_connection_string: Optional[str] = None
+        self.alias_primary_connection_string: Optional[str] = None
+        self.alias_secondary_connection_string: Optional[str] = None
+        self.primary_key: Optional[str] = None
+        self.secondary_key: Optional[str] = None
+        self.key_name: Optional[str] = None
 
 
 class Action(_serialization.Model):
@@ -165,10 +155,10 @@ class ProxyResource(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.id = None
-        self.name = None
-        self.type = None
-        self.location = None
+        self.id: Optional[str] = None
+        self.name: Optional[str] = None
+        self.type: Optional[str] = None
+        self.location: Optional[str] = None
 
 
 class ArmDisasterRecovery(ProxyResource):
@@ -242,12 +232,12 @@ class ArmDisasterRecovery(ProxyResource):
         :paramtype alternate_name: str
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.provisioning_state = None
-        self.pending_replication_operations_count = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.provisioning_state: Optional[Union[str, "_models.ProvisioningStateDR"]] = None
+        self.pending_replication_operations_count: Optional[int] = None
         self.partner_namespace = partner_namespace
         self.alternate_name = alternate_name
-        self.role = None
+        self.role: Optional[Union[str, "_models.RoleDisasterRecovery"]] = None
 
 
 class ArmDisasterRecoveryListResult(_serialization.Model):
@@ -278,13 +268,13 @@ class ArmDisasterRecoveryListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.value = value
-        self.next_link = None
+        self.next_link: Optional[str] = None
 
 
 class CheckNameAvailability(_serialization.Model):
     """Description of a Check Name availability request properties.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar name: The Name to check the namespace name availability and The namespace name can
      contain only letters, numbers, and hyphens. The namespace must start with a letter, and it must
@@ -354,7 +344,7 @@ class CheckNameAvailabilityResult(_serialization.Model):
         :paramtype reason: str or ~azure.mgmt.servicebus.v2021_11_01.models.UnavailableReason
         """
         super().__init__(**kwargs)
-        self.message = None
+        self.message: Optional[str] = None
         self.name_available = name_available
         self.reason = reason
 
@@ -551,8 +541,8 @@ class ErrorAdditionalInfo(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.type = None
-        self.info = None
+        self.type: Optional[str] = None
+        self.info: Optional[JSON] = None
 
 
 class ErrorResponse(_serialization.Model):
@@ -611,11 +601,11 @@ class ErrorResponseError(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.code = None
-        self.message = None
-        self.target = None
-        self.details = None
-        self.additional_info = None
+        self.code: Optional[str] = None
+        self.message: Optional[str] = None
+        self.target: Optional[str] = None
+        self.details: Optional[List["_models.ErrorResponse"]] = None
+        self.additional_info: Optional[List["_models.ErrorAdditionalInfo"]] = None
 
 
 class FailoverProperties(_serialization.Model):
@@ -686,8 +676,8 @@ class Identity(_serialization.Model):
          ~azure.mgmt.servicebus.v2021_11_01.models.UserAssignedIdentity]
         """
         super().__init__(**kwargs)
-        self.principal_id = None
-        self.tenant_id = None
+        self.principal_id: Optional[str] = None
+        self.tenant_id: Optional[str] = None
         self.type = type
         self.user_assigned_identities = user_assigned_identities
 
@@ -775,11 +765,11 @@ class MessageCountDetails(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.active_message_count = None
-        self.dead_letter_message_count = None
-        self.scheduled_message_count = None
-        self.transfer_message_count = None
-        self.transfer_dead_letter_message_count = None
+        self.active_message_count: Optional[int] = None
+        self.dead_letter_message_count: Optional[int] = None
+        self.scheduled_message_count: Optional[int] = None
+        self.transfer_message_count: Optional[int] = None
+        self.transfer_dead_letter_message_count: Optional[int] = None
 
 
 class MigrationConfigListResult(_serialization.Model):
@@ -810,7 +800,7 @@ class MigrationConfigListResult(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.value = value
-        self.next_link = None
+        self.next_link: Optional[str] = None
 
 
 class MigrationConfigProperties(ProxyResource):
@@ -879,12 +869,12 @@ class MigrationConfigProperties(ProxyResource):
         :paramtype post_migration_name: str
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.provisioning_state = None
-        self.pending_replication_operations_count = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.provisioning_state: Optional[str] = None
+        self.pending_replication_operations_count: Optional[int] = None
         self.target_namespace = target_namespace
         self.post_migration_name = post_migration_name
-        self.migration_state = None
+        self.migration_state: Optional[str] = None
 
 
 class NetworkRuleSet(ProxyResource):
@@ -970,7 +960,7 @@ class NetworkRuleSet(ProxyResource):
          ~azure.mgmt.servicebus.v2021_11_01.models.PublicNetworkAccessFlag
         """
         super().__init__(**kwargs)
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
         self.trusted_service_access_enabled = trusted_service_access_enabled
         self.default_action = default_action
         self.virtual_network_rules = virtual_network_rules
@@ -1123,7 +1113,7 @@ class Operation(_serialization.Model):
         :paramtype properties: JSON
         """
         super().__init__(**kwargs)
-        self.name = None
+        self.name: Optional[str] = None
         self.is_data_action = is_data_action
         self.display = display
         self.origin = origin
@@ -1162,10 +1152,10 @@ class OperationDisplay(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.provider = None
-        self.resource = None
-        self.operation = None
-        self.description = None
+        self.provider: Optional[str] = None
+        self.resource: Optional[str] = None
+        self.operation: Optional[str] = None
+        self.description: Optional[str] = None
 
 
 class OperationListResult(_serialization.Model):
@@ -1194,8 +1184,8 @@ class OperationListResult(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.value = None
-        self.next_link = None
+        self.value: Optional[List["_models.Operation"]] = None
+        self.next_link: Optional[str] = None
 
 
 class PrivateEndpoint(_serialization.Model):
@@ -1288,7 +1278,7 @@ class PrivateEndpointConnection(ProxyResource):
          ~azure.mgmt.servicebus.v2021_11_01.models.EndPointProvisioningState
         """
         super().__init__(**kwargs)
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
         self.private_endpoint = private_endpoint
         self.private_link_service_connection_state = private_link_service_connection_state
         self.provisioning_state = provisioning_state
@@ -1422,7 +1412,7 @@ class RegenerateAccessKeyParameters(_serialization.Model):
     """Parameters supplied to the Regenerate Authorization Rule operation, specifies which key needs
     to be reset.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar key_type: The access key to regenerate. Required. Known values are: "PrimaryKey" and
      "SecondaryKey".
@@ -1483,9 +1473,9 @@ class Resource(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.id = None
-        self.name = None
-        self.type = None
+        self.id: Optional[str] = None
+        self.name: Optional[str] = None
+        self.type: Optional[str] = None
 
 
 class ResourceNamespacePatch(Resource):
@@ -1602,7 +1592,7 @@ class Rule(ProxyResource):
         :paramtype correlation_filter: ~azure.mgmt.servicebus.v2021_11_01.models.CorrelationFilter
         """
         super().__init__(**kwargs)
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
         self.action = action
         self.filter_type = filter_type
         self.sql_filter = sql_filter
@@ -1683,7 +1673,7 @@ class SBAuthorizationRule(ProxyResource):
         :paramtype rights: list[str or ~azure.mgmt.servicebus.v2021_11_01.models.AccessRights]
         """
         super().__init__(**kwargs)
-        self.system_data = None
+        self.system_data: Optional["_models.SystemData"] = None
         self.rights = rights
 
 
@@ -1771,7 +1761,7 @@ class TrackedResource(Resource):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Resource Id.
     :vartype id: str
@@ -1812,12 +1802,12 @@ class TrackedResource(Resource):
         self.tags = tags
 
 
-class SBNamespace(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class SBNamespace(TrackedResource):
     """Description of a namespace resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Resource Id.
     :vartype id: str
@@ -1941,13 +1931,13 @@ class SBNamespace(TrackedResource):  # pylint: disable=too-many-instance-attribu
         super().__init__(location=location, tags=tags, **kwargs)
         self.sku = sku
         self.identity = identity
-        self.system_data = None
-        self.provisioning_state = None
-        self.status = None
-        self.created_at = None
-        self.updated_at = None
-        self.service_bus_endpoint = None
-        self.metric_id = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.provisioning_state: Optional[str] = None
+        self.status: Optional[str] = None
+        self.created_at: Optional[datetime.datetime] = None
+        self.updated_at: Optional[datetime.datetime] = None
+        self.service_bus_endpoint: Optional[str] = None
+        self.metric_id: Optional[str] = None
         self.zone_redundant = zone_redundant
         self.encryption = encryption
         self.private_endpoint_connections = private_endpoint_connections
@@ -1985,7 +1975,7 @@ class SBNamespaceListResult(_serialization.Model):
         self.next_link = next_link
 
 
-class SBNamespaceUpdateParameters(ResourceNamespacePatch):  # pylint: disable=too-many-instance-attributes
+class SBNamespaceUpdateParameters(ResourceNamespacePatch):
     """Description of a namespace resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -2099,19 +2089,19 @@ class SBNamespaceUpdateParameters(ResourceNamespacePatch):  # pylint: disable=to
         super().__init__(location=location, tags=tags, **kwargs)
         self.sku = sku
         self.identity = identity
-        self.provisioning_state = None
-        self.status = None
-        self.created_at = None
-        self.updated_at = None
-        self.service_bus_endpoint = None
-        self.metric_id = None
+        self.provisioning_state: Optional[str] = None
+        self.status: Optional[str] = None
+        self.created_at: Optional[datetime.datetime] = None
+        self.updated_at: Optional[datetime.datetime] = None
+        self.service_bus_endpoint: Optional[str] = None
+        self.metric_id: Optional[str] = None
         self.encryption = encryption
         self.private_endpoint_connections = private_endpoint_connections
         self.disable_local_auth = disable_local_auth
         self.alternate_name = alternate_name
 
 
-class SBQueue(ProxyResource):  # pylint: disable=too-many-instance-attributes
+class SBQueue(ProxyResource):
     """Description of queue Resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -2313,13 +2303,13 @@ class SBQueue(ProxyResource):  # pylint: disable=too-many-instance-attributes
         :paramtype forward_dead_lettered_messages_to: str
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.count_details = None
-        self.created_at = None
-        self.updated_at = None
-        self.accessed_at = None
-        self.size_in_bytes = None
-        self.message_count = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.count_details: Optional["_models.MessageCountDetails"] = None
+        self.created_at: Optional[datetime.datetime] = None
+        self.updated_at: Optional[datetime.datetime] = None
+        self.accessed_at: Optional[datetime.datetime] = None
+        self.size_in_bytes: Optional[int] = None
+        self.message_count: Optional[int] = None
         self.lock_duration = lock_duration
         self.max_size_in_megabytes = max_size_in_megabytes
         self.max_message_size_in_kilobytes = max_message_size_in_kilobytes
@@ -2371,7 +2361,7 @@ class SBQueueListResult(_serialization.Model):
 class SBSku(_serialization.Model):
     """SKU of the namespace.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar name: Name of this SKU. Required. Known values are: "Basic", "Standard", and "Premium".
     :vartype name: str or ~azure.mgmt.servicebus.v2021_11_01.models.SkuName
@@ -2418,7 +2408,7 @@ class SBSku(_serialization.Model):
         self.capacity = capacity
 
 
-class SBSubscription(ProxyResource):  # pylint: disable=too-many-instance-attributes
+class SBSubscription(ProxyResource):
     """Description of subscription resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -2596,12 +2586,12 @@ class SBSubscription(ProxyResource):  # pylint: disable=too-many-instance-attrib
          ~azure.mgmt.servicebus.v2021_11_01.models.SBClientAffineProperties
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.message_count = None
-        self.created_at = None
-        self.accessed_at = None
-        self.updated_at = None
-        self.count_details = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.message_count: Optional[int] = None
+        self.created_at: Optional[datetime.datetime] = None
+        self.accessed_at: Optional[datetime.datetime] = None
+        self.updated_at: Optional[datetime.datetime] = None
+        self.count_details: Optional["_models.MessageCountDetails"] = None
         self.lock_duration = lock_duration
         self.requires_session = requires_session
         self.default_message_time_to_live = default_message_time_to_live
@@ -2648,7 +2638,7 @@ class SBSubscriptionListResult(_serialization.Model):
         self.next_link = next_link
 
 
-class SBTopic(ProxyResource):  # pylint: disable=too-many-instance-attributes
+class SBTopic(ProxyResource):
     """Description of topic resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -2808,13 +2798,13 @@ class SBTopic(ProxyResource):  # pylint: disable=too-many-instance-attributes
         :paramtype enable_express: bool
         """
         super().__init__(**kwargs)
-        self.system_data = None
-        self.size_in_bytes = None
-        self.created_at = None
-        self.updated_at = None
-        self.accessed_at = None
-        self.subscription_count = None
-        self.count_details = None
+        self.system_data: Optional["_models.SystemData"] = None
+        self.size_in_bytes: Optional[int] = None
+        self.created_at: Optional[datetime.datetime] = None
+        self.updated_at: Optional[datetime.datetime] = None
+        self.accessed_at: Optional[datetime.datetime] = None
+        self.subscription_count: Optional[int] = None
+        self.count_details: Optional["_models.MessageCountDetails"] = None
         self.default_message_time_to_live = default_message_time_to_live
         self.max_size_in_megabytes = max_size_in_megabytes
         self.max_message_size_in_kilobytes = max_message_size_in_kilobytes
@@ -2916,42 +2906,11 @@ class SqlRuleAction(Action):
     :vartype requires_preprocessing: bool
     """
 
-    _attribute_map = {
-        "sql_expression": {"key": "sqlExpression", "type": "str"},
-        "compatibility_level": {"key": "compatibilityLevel", "type": "int"},
-        "requires_preprocessing": {"key": "requiresPreprocessing", "type": "bool"},
-    }
-
-    def __init__(
-        self,
-        *,
-        sql_expression: Optional[str] = None,
-        compatibility_level: Optional[int] = None,
-        requires_preprocessing: bool = True,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword sql_expression: SQL expression. e.g. MyProperty='ABC'.
-        :paramtype sql_expression: str
-        :keyword compatibility_level: This property is reserved for future use. An integer value
-         showing the compatibility level, currently hard-coded to 20.
-        :paramtype compatibility_level: int
-        :keyword requires_preprocessing: Value that indicates whether the rule action requires
-         preprocessing.
-        :paramtype requires_preprocessing: bool
-        """
-        super().__init__(
-            sql_expression=sql_expression,
-            compatibility_level=compatibility_level,
-            requires_preprocessing=requires_preprocessing,
-            **kwargs
-        )
-
 
 class Subnet(_serialization.Model):
     """Properties supplied for Subnet.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Resource ID of Virtual Network Subnet. Required.
     :vartype id: str
@@ -3063,8 +3022,8 @@ class UserAssignedIdentity(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.principal_id = None
-        self.client_id = None
+        self.principal_id: Optional[str] = None
+        self.client_id: Optional[str] = None
 
 
 class UserAssignedIdentityProperties(_serialization.Model):

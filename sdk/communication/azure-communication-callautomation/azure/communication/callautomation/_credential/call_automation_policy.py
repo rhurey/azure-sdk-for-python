@@ -26,12 +26,11 @@ class CallAutomationHMACCredentialsPolicy(SansIOHTTPPolicy):
 
     def __init__(
         self,
-        host,  # type: str
-        acs_url,  # type: str
-        access_key,  # type: Union[str, AzureKeyCredential]
-        decode_url=False,  # type: bool
-    ):
-        # type: (...) -> None
+        host: str,
+        acs_url: str,
+        access_key:  Union[str, AzureKeyCredential],
+        decode_url: bool = False,
+    ) -> None:
         super(CallAutomationHMACCredentialsPolicy, self).__init__()
 
         if host.startswith("https://"):
@@ -44,17 +43,13 @@ class CallAutomationHMACCredentialsPolicy(SansIOHTTPPolicy):
         self._decode_url = decode_url
         self._acs_url = acs_url
 
-    def _compute_hmac(
-        self, value  # type: str
-    ):
+    def _compute_hmac(self, value: str) -> str:
         if isinstance(self._access_key, AzureKeyCredential):
             decoded_secret = base64.b64decode(self._access_key.key)
         else:
             decoded_secret = base64.b64decode(self._access_key)
 
-        digest = hmac.new(
-            decoded_secret, value.encode("utf-8"), hashlib.sha256
-        ).digest()
+        digest = hmac.new(decoded_secret, value.encode("utf-8"), hashlib.sha256).digest()
 
         return base64.b64encode(digest).decode("utf-8")
 
@@ -104,22 +99,10 @@ class CallAutomationHMACCredentialsPolicy(SansIOHTTPPolicy):
         utc_now = get_current_utc_time()
         if request.http_request.body is None:
             request.http_request.body = ""
-        content_digest = hashlib.sha256(
-            (request.http_request.body.encode("utf-8"))
-        ).digest()
+        content_digest = hashlib.sha256((request.http_request.body.encode("utf-8"))).digest()
         content_hash = base64.b64encode(content_digest).decode("utf-8")
 
-        string_to_sign = (
-            verb
-            + "\n"
-            + query_url
-            + "\n"
-            + utc_now
-            + ";"
-            + parsed_acs_url.hostname
-            + ";"
-            + content_hash
-        )
+        string_to_sign = verb + "\n" + query_url + "\n" + utc_now + ";" + parsed_acs_url.hostname + ";" + content_hash
 
         signature = self._compute_hmac(string_to_sign)
 
@@ -128,10 +111,7 @@ class CallAutomationHMACCredentialsPolicy(SansIOHTTPPolicy):
             "x-ms-date": utc_now,
             "x-ms-content-sha256": content_hash,
             "x-ms-return-client-request-id": "true",
-            "Authorization": "HMAC-SHA256 SignedHeaders="
-            + signed_headers
-            + "&Signature="
-            + signature,
+            "Authorization": "HMAC-SHA256 SignedHeaders=" + signed_headers + "&Signature=" + signature,
         }
 
         request.http_request.headers.update(signature_header)

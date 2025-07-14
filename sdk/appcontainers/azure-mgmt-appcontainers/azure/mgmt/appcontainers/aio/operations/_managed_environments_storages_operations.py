@@ -1,4 +1,3 @@
-# pylint: disable=too-many-lines,too-many-statements
 # coding=utf-8
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -8,7 +7,7 @@
 # --------------------------------------------------------------------------
 from io import IOBase
 import sys
-from typing import Any, Callable, Dict, IO, Optional, Type, TypeVar, Union, overload
+from typing import Any, Callable, Dict, IO, Optional, TypeVar, Union, overload
 
 from azure.core.exceptions import (
     ClientAuthenticationError,
@@ -31,12 +30,11 @@ from ...operations._managed_environments_storages_operations import (
     build_get_request,
     build_list_request,
 )
-from .._vendor import ContainerAppsAPIClientMixinABC
 
 if sys.version_info >= (3, 9):
     from collections.abc import MutableMapping
 else:
-    from typing import MutableMapping  # type: ignore  # pylint: disable=ungrouped-imports
+    from typing import MutableMapping  # type: ignore
 T = TypeVar("T")
 ClsType = Optional[Callable[[PipelineResponse[HttpRequest, AsyncHttpResponse], T, Dict[str, Any]], Any]]
 
@@ -77,7 +75,7 @@ class ManagedEnvironmentsStoragesOperations:
         :rtype: ~azure.mgmt.appcontainers.models.ManagedEnvironmentStoragesCollection
         :raises ~azure.core.exceptions.HttpResponseError:
         """
-        error_map: MutableMapping[int, Type[HttpResponseError]] = {
+        error_map: MutableMapping = {
             401: ClientAuthenticationError,
             404: ResourceNotFoundError,
             409: ResourceExistsError,
@@ -139,7 +137,7 @@ class ManagedEnvironmentsStoragesOperations:
         :rtype: ~azure.mgmt.appcontainers.models.ManagedEnvironmentStorage
         :raises ~azure.core.exceptions.HttpResponseError:
         """
-        error_map: MutableMapping[int, Type[HttpResponseError]] = {
+        error_map: MutableMapping = {
             401: ClientAuthenticationError,
             404: ResourceNotFoundError,
             409: ResourceExistsError,
@@ -274,7 +272,7 @@ class ManagedEnvironmentsStoragesOperations:
         :rtype: ~azure.mgmt.appcontainers.models.ManagedEnvironmentStorage
         :raises ~azure.core.exceptions.HttpResponseError:
         """
-        error_map: MutableMapping[int, Type[HttpResponseError]] = {
+        error_map: MutableMapping = {
             401: ClientAuthenticationError,
             404: ResourceNotFoundError,
             409: ResourceExistsError,
@@ -331,9 +329,7 @@ class ManagedEnvironmentsStoragesOperations:
         return deserialized  # type: ignore
 
     @distributed_trace_async
-    async def delete(  # pylint: disable=inconsistent-return-statements
-        self, resource_group_name: str, environment_name: str, storage_name: str, **kwargs: Any
-    ) -> None:
+    async def delete(self, resource_group_name: str, environment_name: str, storage_name: str, **kwargs: Any) -> None:
         """Delete storage for a managedEnvironment.
 
         Delete storage for a managedEnvironment.
@@ -349,7 +345,7 @@ class ManagedEnvironmentsStoragesOperations:
         :rtype: None
         :raises ~azure.core.exceptions.HttpResponseError:
         """
-        error_map: MutableMapping[int, Type[HttpResponseError]] = {
+        error_map: MutableMapping = {
             401: ClientAuthenticationError,
             404: ResourceNotFoundError,
             409: ResourceExistsError,

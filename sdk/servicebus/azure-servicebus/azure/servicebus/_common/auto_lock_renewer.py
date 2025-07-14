@@ -26,13 +26,13 @@ if TYPE_CHECKING:
 _log = logging.getLogger(__name__)
 
 SHORT_RENEW_OFFSET = 0.5  # Seconds that if a renew period is longer than lock duration + offset, it's "too long"
-SHORT_RENEW_SCALING_FACTOR = (
-    0.75  # In this situation we need a "Short renew" and should scale by this factor.
-)
+SHORT_RENEW_SCALING_FACTOR = 0.75  # In this situation we need a "Short renew" and should scale by this factor.
 
 
 class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
     """Auto renew locks for messages and sessions using a background thread pool.
+    When handling multiple messages or sessions concurrently,
+    set `max_workers` high or pass a ThreadPoolExecutor with sufficient `max_workers`.
 
     :param max_lock_renewal_duration: A time in seconds that locks registered to this renewer
      should be maintained for. Default value is 300 (5 minutes).
@@ -73,24 +73,6 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
         executor: Optional[ThreadPoolExecutor] = None,
         max_workers: Optional[int] = None,
     ) -> None:
-        """Auto renew locks for messages and sessions using a background thread pool. It is recommended
-        setting max_worker to a large number or passing ThreadPoolExecutor of large max_workers number when
-        AutoLockRenewer is supposed to deal with multiple messages or sessions simultaneously.
-
-        :param max_lock_renewal_duration: A time in seconds that locks registered to this renewer
-         should be maintained for. Default value is 300 (5 minutes).
-        :type max_lock_renewal_duration: float
-        :param on_lock_renew_failure: A callback may be specified to be called when the lock is lost on the renewable
-         that is being registered. Default value is None (no callback).
-        :type on_lock_renew_failure: Optional[LockRenewFailureCallback]
-        :param executor: A user-specified thread pool. This cannot be combined with
-         setting `max_workers`.
-        :type executor: Optional[~concurrent.futures.ThreadPoolExecutor]
-        :param max_workers: Specify the maximum workers in the thread pool. If not
-         specified the number used will be derived from the core count of the environment.
-         This cannot be combined with `executor`.
-        :type max_workers: Optional[int]
-        """
         self._executor = executor or ThreadPoolExecutor(max_workers=max_workers)
         # None indicates it's unknown whether the provided executor has max workers > 1
         self._is_max_workers_greater_than_one = None if executor else (max_workers is None or max_workers > 1)
@@ -108,8 +90,7 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
     def __enter__(self) -> "AutoLockRenewer":
         if self._shutdown.is_set():
             raise ServiceBusError(
-                "The AutoLockRenewer has already been shutdown. Please create a new instance for"
-                " auto lock renewing."
+                "The AutoLockRenewer has already been shutdown. Please create a new instance for auto lock renewing."
             )
 
         self._init_workers()
@@ -187,20 +168,12 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
         renew_period = renew_period_override or self._renew_period
         try:
             if self._renewable(renewable):
-                if (utc_now() - starttime) >= datetime.timedelta(
-                    seconds=max_lock_renewal_duration
-                ):
-                    _log.debug(
-                        "Reached max auto lock renew duration - letting lock expire."
-                    )
+                if (utc_now() - starttime) >= datetime.timedelta(seconds=max_lock_renewal_duration):
+                    _log.debug("Reached max auto lock renew duration - letting lock expire.")
                     raise AutoLockRenewTimeout(
-                        "Auto-renew period ({} seconds) elapsed.".format(
-                            max_lock_renewal_duration
-                        )
+                        "Auto-renew period ({} seconds) elapsed.".format(max_lock_renewal_duration)
                     )
-                if (renewable.locked_until_utc - utc_now()) <= datetime.timedelta(
-                    seconds=renew_period
-                ):
+                if (renewable.locked_until_utc - utc_now()) <= datetime.timedelta(seconds=renew_period):
                     _log.debug(
                         "%r seconds or less until lock expires - auto renewing.",
                         renew_period,
@@ -211,7 +184,6 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
                     except AttributeError:
                         # Renewable is a message
                         receiver.renew_message_lock(renewable)  # type: ignore
-                time.sleep(self._sleep_time)
                 # enqueue a new task, keeping renewing the renewable
                 if self._renewable(renewable):
                     self._renew_tasks.put(
@@ -221,7 +193,7 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
                             starttime,
                             max_lock_renewal_duration,
                             on_lock_renew_failure,
-                            renew_period_override
+                            renew_period_override,
                         )
                     )
             clean_shutdown = not renewable._lock_expired
@@ -268,8 +240,7 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
             )
         if self._shutdown.is_set():
             raise ServiceBusError(
-                "The AutoLockRenewer has already been shutdown. Please create a new instance for"
-                " auto lock renewing."
+                "The AutoLockRenewer has already been shutdown. Please create a new instance for auto lock renewing."
             )
         if renewable.locked_until_utc is None:
             raise ValueError(
@@ -284,17 +255,13 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
         time_until_expiry = get_renewable_lock_duration(renewable)
         renew_period_override = None
         # Default is 10 seconds, but let's leave ourselves a small margin of error because clock skew is a real problem
-        if time_until_expiry <= datetime.timedelta(
-            seconds=self._renew_period + SHORT_RENEW_OFFSET
-        ):
-            renew_period_override = (
-                time_until_expiry.seconds * SHORT_RENEW_SCALING_FACTOR
-            )
+        if time_until_expiry <= datetime.timedelta(seconds=self._renew_period + SHORT_RENEW_OFFSET):
+            renew_period_override = time_until_expiry.seconds * SHORT_RENEW_SCALING_FACTOR
 
         _log.debug(
             "Running lock auto-renew for %r for %r seconds",
             renewable,
-            max_lock_renewal_duration or self._max_lock_renewal_duration
+            max_lock_renewal_duration or self._max_lock_renewal_duration,
         )
 
         self._init_workers()
@@ -306,7 +273,7 @@ class AutoLockRenewer(object):  # pylint:disable=too-many-instance-attributes
                 starttime,
                 max_lock_renewal_duration or self._max_lock_renewal_duration,
                 on_lock_renew_failure or self._on_lock_renew_failure,
-                renew_period_override
+                renew_period_override,
             )
         )
 

@@ -1144,7 +1144,7 @@ class TestFileSystemAsync(AsyncStorageRecordedTestCase):
         )
         sas_directory_client = FileSystemClient(self.dsc.url, file_system_name,
                                                 credential=token)
-        paths = list()
+        paths = []
         async for path in sas_directory_client.get_paths():
             paths.append(path)
 
@@ -1256,6 +1256,28 @@ class TestFileSystemAsync(AsyncStorageRecordedTestCase):
         # Will not raise ClientAuthenticationError despite bad audience due to Bearer Challenge
         await fsc.exists()
         await fsc.create_directory('testdir22')
+
+    @DataLakePreparer()
+    @recorded_by_proxy_async
+    async def test_get_and_set_access_control_oauth(self, **kwargs):
+        datalake_storage_account_name = kwargs.pop("datalake_storage_account_name")
+
+        # Arrange
+        token_credential = self.get_credential(DataLakeServiceClient, is_async=True)
+        dsc = DataLakeServiceClient(
+            self.account_url(datalake_storage_account_name, 'dfs'),
+            token_credential
+        )
+        file_system = await dsc.create_file_system(self.get_resource_name(TEST_FILE_SYSTEM_PREFIX))
+        directory_client = file_system._get_root_directory_client()
+
+        # Act
+        acl = 'user::rwx,group::r-x,other::rwx'
+        await directory_client.set_access_control(acl=acl)
+        access_control = await directory_client.get_access_control()
+
+        # Assert
+        assert acl == access_control['acl']
 
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':

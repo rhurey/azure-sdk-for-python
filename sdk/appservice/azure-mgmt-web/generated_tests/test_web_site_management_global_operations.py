@@ -6,7 +6,7 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 import pytest
-from azure.mgmt.web import WebSiteManagementClient
+from azure.mgmt.web.v2024_11_01 import WebSiteManagementClient
 
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer, recorded_by_proxy
 
@@ -20,10 +20,10 @@ class TestWebSiteManagementGlobalOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_deleted_web_app(self, resource_group):
+    def test_global_operations_get_deleted_web_app(self, resource_group):
         response = self.client.global_operations.get_deleted_web_app(
             deleted_site_id="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -31,10 +31,10 @@ class TestWebSiteManagementGlobalOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_deleted_web_app_snapshots(self, resource_group):
+    def test_global_operations_get_deleted_web_app_snapshots(self, resource_group):
         response = self.client.global_operations.get_deleted_web_app_snapshots(
             deleted_site_id="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -42,11 +42,11 @@ class TestWebSiteManagementGlobalOperations(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_subscription_operation_with_async_response(self, resource_group):
+    def test_global_operations_get_subscription_operation_with_async_response(self, resource_group):
         response = self.client.global_operations.get_subscription_operation_with_async_response(
             location="str",
             operation_id="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself

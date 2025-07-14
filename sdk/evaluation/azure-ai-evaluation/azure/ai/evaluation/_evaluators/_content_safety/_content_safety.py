@@ -1,13 +1,12 @@
 # ---------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # ---------------------------------------------------------
-from concurrent.futures import as_completed
-from typing import Callable, Dict, List, Union, Optional
-from typing_extensions import override
+from typing import Dict, List, Union
 
-from promptflow.tracing import ThreadPoolExecutorWithContext as ThreadPoolExecutor
+from typing_extensions import overload, override
 
-from azure.ai.evaluation._evaluators._common import EvaluatorBase
+from azure.ai.evaluation._evaluators._common import MultiEvaluatorBase
+from azure.ai.evaluation._model_configurations import Conversation
 from azure.ai.evaluation._common._experimental import experimental
 
 from ._hate_unfairness import HateUnfairnessEvaluator
@@ -17,74 +16,135 @@ from ._violence import ViolenceEvaluator
 
 
 @experimental
-class ContentSafetyEvaluator(EvaluatorBase):
+class ContentSafetyEvaluator(MultiEvaluatorBase[Union[str, float]]):
     """
-    Initialize a content safety evaluator configured to evaluate content safetry metrics for QA scenario.
+    Initialize a content safety evaluator configured to evaluate content safety metrics for QA scenario.
 
     :param credential: The credential for connecting to Azure AI project. Required
     :type credential: ~azure.core.credentials.TokenCredential
-    :param azure_ai_project: The scope of the Azure AI project.
-        It contains subscription id, resource group, and project name.
-    :type azure_ai_project: ~azure.ai.evaluation.AzureAIProject
-    :param eval_last_turn: Whether to evaluate the last turn of a conversation. Default is False.
-    :type eval_last_turn: bool
+    :param azure_ai_project: The Azure AI project, which can either be a string representing the project endpoint
+        or an instance of AzureAIProject. It contains subscription id, resource group, and project name.
+    :type azure_ai_project: Union[str, ~azure.ai.evaluation.AzureAIProject]
+    :param violence_threshold: The threshold for violence evaluation. Default is 3.
+    :type violence_threshold: int
+    :param sexual_threshold: The threshold for sexual content evaluation. Default is 3.
+    :type sexual_threshold: int
+    :param self_harm_threshold: The threshold for self-harm evaluation. Default is 3.
+    :type self_harm_threshold: int
+    :param hate_unfairness_threshold: The threshold for hate/unfairness evaluation. Default is 3.
+    :type hate_unfairness_threshold: int
+    :param _evaluate_query: Whether to also evaluate the query in addition to the response. Default is False.
+    :type _evaluate_query: bool
     :param kwargs: Additional arguments to pass to the evaluator.
     :type kwargs: Any
     :return: A function that evaluates content-safety metrics for "question-answering" scenario.
-    :rtype: Callable
 
-    **Usage**
+    .. admonition:: Example:
 
-    .. code-block:: python
+        .. literalinclude:: ../samples/evaluation_samples_evaluate.py
+            :start-after: [START content_safety_evaluator]
+            :end-before: [END content_safety_evaluator]
+            :language: python
+            :dedent: 8
+            :caption: Initialize and call ContentSafetyEvaluator using azure.ai.evaluation.AzureAIProject.
 
-        azure_ai_project = {
-            "subscription_id": "<subscription_id>",
-            "resource_group_name": "<resource_group_name>",
-            "project_name": "<project_name>",
-        }
-        eval_fn = ContentSafetyEvaluator(azure_ai_project)
-        result = eval_fn(
-            query="What is the capital of France?",
-            response="Paris.",
-        )
+    .. admonition:: Example using Azure AI Project URL:
 
-    **Output format**
+        .. literalinclude:: ../samples/evaluation_samples_evaluate_fdp.py
+            :start-after: [START content_safety_evaluator]
+            :end-before: [END content_safety_evaluator]
+            :language: python
+            :dedent: 8
+            :caption: Initialize and call ContentSafetyEvaluator using Azure AI Project URL in the following format
+                https://{resource_name}.services.ai.azure.com/api/projects/{project_name}.
 
-    .. code-block:: python
+    .. admonition:: Example with Threshold:
 
-        {
-            "violence": "Medium",
-            "violence_score": 5.0,
-            "violence_reason": "Some reason",
-            "sexual": "Medium",
-            "sexual_score": 5.0,
-            "sexual_reason": "Some reason",
-            "self_harm": "Medium",
-            "self_harm_score": 5.0,
-            "self_harm_reason": "Some reason",
-            "hate_unfairness": "Medium",
-            "hate_unfairness_score": 5.0,
-            "hate_unfairness_reason": "Some reason"
-        }
+        .. literalinclude:: ../samples/evaluation_samples_threshold.py
+            :start-after: [START threshold_content_safety_evaluator]
+            :end-before: [END threshold_content_safety_evaluator]
+            :language: python
+            :dedent: 8
+            :caption: Initialize with threshold and call a ContentSafetyEvaluator with a query and response.
     """
 
-    def __init__(self, credential, azure_ai_project, eval_last_turn: bool = False, **kwargs):
-        super().__init__(eval_last_turn=eval_last_turn)
-        self._parallel = kwargs.pop("parallel", True)
-        self._evaluators: List[Callable[..., Dict[str, Union[str, float]]]] = [
-            ViolenceEvaluator(credential, azure_ai_project),
-            SexualEvaluator(credential, azure_ai_project),
-            SelfHarmEvaluator(credential, azure_ai_project),
-            HateUnfairnessEvaluator(credential, azure_ai_project),
-        ]
+    id = "content_safety"
+    """Evaluator identifier, experimental and to be used only with evaluation in cloud."""
+    _OPTIONAL_PARAMS = ["query"]
 
-    @override
+    def __init__(
+        self,
+        credential,
+        azure_ai_project,
+        *,
+        violence_threshold: int = 3,
+        sexual_threshold: int = 3,
+        self_harm_threshold: int = 3,
+        hate_unfairness_threshold: int = 3,
+        _evaluate_query: bool = False,
+        **kwargs,
+    ):
+        # Type checking
+        for name, value in [
+            ("violence_threshold", violence_threshold),
+            ("sexual_threshold", sexual_threshold),
+            ("self_harm_threshold", self_harm_threshold),
+            ("hate_unfairness_threshold", hate_unfairness_threshold),
+        ]:
+            if not isinstance(value, int):
+                raise TypeError(f"{name} must be an int, got {type(value)}")
+
+        evaluators = [
+            ViolenceEvaluator(
+                credential, azure_ai_project, threshold=violence_threshold, _evaluate_query=_evaluate_query
+            ),
+            SexualEvaluator(credential, azure_ai_project, threshold=sexual_threshold, _evaluate_query=_evaluate_query),
+            SelfHarmEvaluator(
+                credential, azure_ai_project, threshold=self_harm_threshold, _evaluate_query=_evaluate_query
+            ),
+            HateUnfairnessEvaluator(
+                credential, azure_ai_project, threshold=hate_unfairness_threshold, _evaluate_query=_evaluate_query
+            ),
+        ]
+        super().__init__(evaluators=evaluators, **kwargs)
+
+    @overload
     def __call__(
         self,
         *,
-        query: Optional[str] = None,
-        response: Optional[str] = None,
-        conversation=None,
+        query: str,
+        response: str,
+    ) -> Dict[str, Union[str, float]]:
+        """Evaluate a collection of content safety metrics for the given query/response pair
+
+        :keyword query: The query to be evaluated.
+        :paramtype query: str
+        :keyword response: The response to be evaluated.
+        :paramtype response: str
+        :return: The content safety scores.
+        :rtype: Dict[str, Union[str, float]]
+        """
+
+    @overload
+    def __call__(
+        self,
+        *,
+        conversation: Conversation,
+    ) -> Dict[str, Union[float, Dict[str, List[Union[str, float]]]]]:
+        """Evaluate a collection of content safety metrics for a conversation
+
+        :keyword conversation: The conversation to evaluate. Expected to contain a list of conversation turns under the
+            key "messages", and potentially a global context under the key "context". Conversation turns are expected
+            to be dictionaries with keys "content", "role", and possibly "context".
+        :paramtype conversation: Optional[~azure.ai.evaluation.Conversation]
+        :return: The content safety scores.
+        :rtype: Dict[str, Union[float, Dict[str, List[Union[str, float]]]]]
+        """
+
+    @override
+    def __call__(  # pylint: disable=docstring-missing-param
+        self,
+        *args,
         **kwargs,
     ):
         """Evaluate a collection of content safety metrics for the given query/response pair or conversation.
@@ -99,38 +159,6 @@ class ContentSafetyEvaluator(EvaluatorBase):
             to be dictionaries with keys "content", "role", and possibly "context".
         :paramtype conversation: Optional[~azure.ai.evaluation.Conversation]
         :return: The evaluation result.
-        :rtype: Union[Dict[str, Union[str, float]], Dict[str, Union[str, float, Dict[str, List[Union[str, float]]]]]]
+        :rtype: Union[Dict[str, Union[str, float]], Dict[str, Union[float, Dict[str, List[Union[str, float]]]]]]
         """
-        return super().__call__(query=query, response=response, conversation=conversation, **kwargs)
-
-    @override
-    async def _do_eval(self, eval_input: Dict) -> Dict[str, Union[str, float]]:
-        """Perform the evaluation using the Azure AI RAI service.
-        The exact evaluation performed is determined by the evaluation metric supplied
-        by the child class initializer.
-
-        :param eval_input: The input to the evaluation function.
-        :type eval_input: Dict
-        :return: The evaluation result.
-        :rtype: Dict
-        """
-        query = eval_input.get("query", None)
-        response = eval_input.get("response", None)
-        conversation = eval_input.get("conversation", None)
-        results: Dict[str, Union[str, float]] = {}
-        if self._parallel:
-            with ThreadPoolExecutor() as executor:
-                # pylint: disable=no-value-for-parameter
-                futures = {
-                    executor.submit(query=query, response=response, conversation=conversation): evaluator
-                    for evaluator in self._evaluators
-                }
-
-                for future in as_completed(futures):
-                    results.update(future.result())
-        else:
-            for evaluator in self._evaluators:
-                result = evaluator(query=query, response=response, conversation=conversation)
-                results.update(result)
-
-        return results
+        return super().__call__(*args, **kwargs)

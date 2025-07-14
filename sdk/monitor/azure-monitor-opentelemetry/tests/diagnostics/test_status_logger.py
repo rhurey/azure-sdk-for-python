@@ -8,10 +8,7 @@ import os
 from json import loads
 from unittest.mock import patch
 
-from azure.monitor.opentelemetry._diagnostics.status_logger import (
-    AzureStatusLogger,
-    _get_status_logger_file_name
-)
+from azure.monitor.opentelemetry._diagnostics.status_logger import AzureStatusLogger, _get_status_logger_file_name
 
 TEST_MACHINE_NAME = "TEST_MACHINE_NAME"
 TEST_PID = 321
@@ -53,8 +50,8 @@ def set_up(file_path, is_diagnostics_enabled=True):
         TEST_VERSION,
     ).start()
     patch(
-        "azure.monitor.opentelemetry._diagnostics.status_logger._IS_DIAGNOSTICS_ENABLED",
-        is_diagnostics_enabled,
+        "azure.monitor.opentelemetry._diagnostics.status_logger._is_diagnostics_enabled",
+        return_value=is_diagnostics_enabled,
     ).start()
     patch(
         "azure.monitor.opentelemetry._diagnostics.status_logger.getpid",
@@ -118,7 +115,9 @@ class TestStatusLogger:
         set_up(temp_file_path, is_diagnostics_enabled=True)
         AzureStatusLogger.log_status(True, reason=MESSAGE1)
         AzureStatusLogger.log_status(False, reason=MESSAGE2, sdk_present=True)
-        check_file_for_messages(agent_initialized_successfully=False, file_path=temp_file_path, reason=MESSAGE2, sdk_present=True)
+        check_file_for_messages(
+            agent_initialized_successfully=False, file_path=temp_file_path, reason=MESSAGE2, sdk_present=True
+        )
 
     def test_disabled_log_status_success(self, temp_file_path):
         set_up(temp_file_path, is_diagnostics_enabled=False)

@@ -9,11 +9,15 @@ package_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 test_folder = os.path.join(
     os.path.dirname(__file__),
 )
+scenarios_folder = os.path.join(os.path.dirname(__file__), "integration", "scenarios")
+metapackage_scenario = os.path.join(scenarios_folder, "setup_py_metapackage")
+pyproject_scenario = os.path.join(scenarios_folder, "pyproject_project_def")
+pyproject_extension_scenario = os.path.join(scenarios_folder, "pyproject_project_def_with_extension")
 
 
 def test_parse_require():
     test_scenarios = [
-        ("ConfigArgParse>=0.12.0", "configargparse", ">=0.12.0"),
+        ("ConfigArgParse>=0.12.0", "ConfigArgParse", ">=0.12.0"),
         ("msrest>=0.6.10", "msrest", ">=0.6.10"),
         ("azure-core<2.0.0,>=1.2.2", "azure-core", "<2.0.0,>=1.2.2"),
         ("msrest==0.6.10", "msrest", "==0.6.10"),
@@ -27,10 +31,10 @@ def test_parse_require():
 
     for scenario in test_scenarios:
         result = parse_require(scenario[0])
-        assert result.key is not None
+        assert result.name is not None
         if scenario[2] is not None:
             assert len(result.specifier) != 0
-        assert result.key == scenario[1]
+        assert result.name == scenario[1]
         assert str(result.specifier) == (scenario[2] or "")
 
 
@@ -40,7 +44,7 @@ def test_parse_require_with_no_spec():
     for scenario in spec_scenarios:
         result = parse_require(scenario)
 
-        assert result.key == scenario.replace("_", "-")
+        assert result.name == scenario
         assert len(result.specifier) == 0
 
 
@@ -121,6 +125,7 @@ setup(
     assert result.classifiers[0] == "Development Status :: 5 - Production/Stable"
     assert result.classifiers[5] == "Programming Language :: Python :: 3.8"
     assert result.keywords[0] == "azure sdk"
+    assert result.is_metapackage == False
     assert len(result.keywords) == 2
 
 
@@ -202,5 +207,130 @@ setup(
     assert result.classifiers[5] == "Programming Language :: Python :: 3.8"
     assert result.ext_package == "azure.storage.extensions"
     assert result.ext_modules is not None
+    assert result.is_pyproject == False
+    assert result.is_metapackage == False
     assert len(result.ext_modules) == 1
     assert str(type(result.ext_modules[0])) == "<class 'setuptools.extension.Extension'>"
+
+
+def test_metapackage_detection():
+    parsed_project = ParsedSetup.from_path(metapackage_scenario)
+    assert parsed_project.is_metapackage == True
+    assert parsed_project.name == "azure-keyvault"
+
+
+def test_parse_pyproject():
+    # ensure that we can parse from a folder and a specific file
+    parsed_project = ParsedSetup.from_path(pyproject_scenario)
+
+    assert parsed_project.name == "azure-keyvault-keys"
+    assert parsed_project.version == "0.0.1"
+    assert parsed_project.requires == [
+        "azure-common~=1.1",
+        "azure-core<2.0.0,>=1.24.0",
+        "cryptography>=2.1.4",
+        "isodate>=0.6.1",
+        "typing-extensions>=4.0.1",
+    ]
+    assert parsed_project.python_requires == ">=3.7"
+    assert parsed_project.is_new_sdk == True
+    assert parsed_project.is_pyproject == True
+    assert parsed_project.package_data == {"py.typed": ["py.typed"]}
+    assert parsed_project.include_package_data == True
+    assert parsed_project.folder == pyproject_scenario
+    assert parsed_project.is_metapackage == False
+    assert parsed_project.namespace == "azure.keyvault.keys"
+
+
+def test_parse_pyproject_extensions():
+    # ensure that we can parse from a folder and a specific file
+    parsed_project = ParsedSetup.from_path(pyproject_extension_scenario)
+
+    assert parsed_project.name == "azure-keyvault-keys"
+    assert parsed_project.version == "0.0.1b1"
+    assert parsed_project.requires == [
+        "azure-common~=1.1",
+        "azure-core<2.0.0,>=1.24.0",
+        "cryptography>=2.1.4",
+        "isodate>=0.6.1",
+        "typing-extensions>=4.0.1",
+    ]
+    assert parsed_project.python_requires == ">=3.8"
+    assert parsed_project.is_new_sdk == True
+    assert parsed_project.is_pyproject == True
+    assert parsed_project.package_data == {"py.typed": ["py.typed"]}
+    assert parsed_project.include_package_data == True
+    assert parsed_project.folder == pyproject_extension_scenario
+    assert parsed_project.namespace == "azure.keyvault.keys"
+    assert parsed_project.ext_package == "azure.keyvault.keys"
+    assert parsed_project.ext_modules is not None
+    assert parsed_project.is_metapackage == False
+    assert len(parsed_project.ext_modules) == 1
+    assert str(type(parsed_project.ext_modules[0])) == "<class 'setuptools.extension.Extension'>"
+
+
+def test_namespace_discovery_eventhub_checkpointstoreblob():
+    """Test that namespace discovery works for azure-eventhub-checkpointstoreblob"""
+    eventhub_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "..", "sdk", "eventhub", "azure-eventhub-checkpointstoreblob"
+    )
+    
+    # Check if the path exists (it should in the Azure SDK repo)
+    if os.path.exists(eventhub_path):
+        parsed_project = ParsedSetup.from_path(eventhub_path)
+        
+        assert parsed_project.name == "azure-eventhub-checkpointstoreblob"
+        assert parsed_project.namespace == "azure.eventhub.extensions.checkpointstoreblob"
+    else:
+        pytest.skip("azure-eventhub-checkpointstoreblob not found in repository")
+
+
+def test_namespace_discovery_fallback():
+    """Test that namespace discovery falls back to simple replacement when no packages found"""
+    # This tests the fallback behavior when no actual package structure is found
+    from ci_tools.parsing.parse_functions import discover_namespace
+    
+    # Test with non-existent path
+    result = discover_namespace("/non/existent/path")
+    assert result is None
+
+
+def test_namespace_discovery_with_extension_only():
+    """Test namespace discovery logic with extension-only __init__.py files"""
+    from ci_tools.parsing.parse_functions import _set_root_namespace
+    import tempfile
+    import os
+    
+    # Create a temporary __init__.py file with only extension content
+    with tempfile.NamedTemporaryFile(mode='w', suffix='__init__.py', delete=False) as f:
+        f.write('# comment\n')
+        f.write('__path__ = __import__("pkgutil").extend_path(__path__, __name__)\n')
+        temp_file = f.name
+    
+    try:
+        result = _set_root_namespace(temp_file, "test.module")
+        # Should return None because it only contains extension logic
+        assert result is None
+    finally:
+        os.unlink(temp_file)
+
+
+def test_namespace_discovery_with_substantial_content():
+    """Test namespace discovery logic with substantial __init__.py content"""
+    from ci_tools.parsing.parse_functions import _set_root_namespace
+    import tempfile
+    import os
+    
+    # Create a temporary __init__.py file with substantial content
+    with tempfile.NamedTemporaryFile(mode='w', suffix='__init__.py', delete=False) as f:
+        f.write('# comment\n')
+        f.write('from ._version import VERSION\n')
+        f.write('__version__ = VERSION\n')
+        temp_file = f.name
+    
+    try:
+        result = _set_root_namespace(temp_file, "test.module")
+        # Should return the module name because it contains substantial content
+        assert result == "test.module"
+    finally:
+        os.unlink(temp_file)

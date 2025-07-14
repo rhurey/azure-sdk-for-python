@@ -37,6 +37,7 @@ from azure.storage.filedatalake import (
 from devtools_testutils import recorded_by_proxy
 from devtools_testutils.storage import StorageRecordedTestCase
 from settings.testcase import DataLakePreparer
+from test_helpers import MockStorageTransport, ProgressTracker
 
 # ------------------------------------------------------------------------------
 
@@ -1188,12 +1189,17 @@ class TestFile(StorageRecordedTestCase):
             content_disposition='inline')
         expiry_time = self.get_datetime_variable(variables, 'expiry_time', datetime.utcnow() + timedelta(hours=1))
         file_client = directory_client.create_file("newfile", metadata=metadata, content_settings=content_settings)
+
+        # Act / Assert
         file_client.set_file_expiry("Absolute", expires_on=expiry_time)
         properties = file_client.get_file_properties()
-
-        # Assert
         assert properties
         assert properties.expiry_time is not None
+
+        file_client.set_file_expiry("NeverExpire")
+        properties = file_client.get_file_properties()
+        assert properties
+        assert properties.expiry_time is None
 
         return variables
 
@@ -1633,6 +1639,85 @@ class TestFile(StorageRecordedTestCase):
         fc.get_file_properties()
         fc.upload_data(data, overwrite=True)
 
+    @DataLakePreparer()
+    def test_mock_transport_no_content_validation(self, **kwargs):
+        datalake_storage_account_name = kwargs.pop("datalake_storage_account_name")
+        datalake_storage_account_key = kwargs.pop("datalake_storage_account_key")
+
+        transport = MockStorageTransport()
+        file_client = DataLakeFileClient(
+            self.account_url(datalake_storage_account_name, 'dfs'),
+            "filesystem/",
+            "dir/file.txt",
+            credential=datalake_storage_account_key,
+            transport=transport,
+            retry_total=0
+        )
+
+        data = file_client.download_file()
+        assert data is not None
+
+        props = file_client.get_file_properties()
+        assert props is not None
+
+        data = b"Hello World!"
+        resp = file_client.upload_data(data, overwrite=True)
+        assert resp is not None
+
+        file_data = file_client.download_file().read()
+        assert file_data == b"Hello World!"  # data is fixed by mock transport
+
+        resp = file_client.delete_file()
+        assert resp is not None
+
+    @DataLakePreparer()
+    def test_mock_transport_with_content_validation(self, **kwargs):
+        datalake_storage_account_name = kwargs.pop("datalake_storage_account_name")
+        datalake_storage_account_key = kwargs.pop("datalake_storage_account_key")
+
+        transport = MockStorageTransport()
+        file_client = DataLakeFileClient(
+            self.account_url(datalake_storage_account_name, 'dfs'),
+            "filesystem/",
+            "dir/file.txt",
+            credential=datalake_storage_account_key,
+            transport=transport,
+            retry_total=0
+        )
+
+        data = b"Hello World!"
+        resp = file_client.upload_data(data, overwrite=True, validate_content=True)
+        assert resp is not None
+
+        file_data = file_client.download_file(validate_content=True).read()
+        assert file_data == b"Hello World!"  # data is fixed by mock transport
+
+    @DataLakePreparer()
+    @recorded_by_proxy
+    def test_progress_hook_upload_data(self, **kwargs):
+        datalake_storage_account_name = kwargs.pop("datalake_storage_account_name")
+        datalake_storage_account_key = kwargs.pop("datalake_storage_account_key")
+
+        # Arrange
+        self._setUp(datalake_storage_account_name, datalake_storage_account_key)
+        file_client = self._create_file_and_return_client(
+            directory=self._get_directory_reference(),
+            file=self._get_file_reference()
+        )
+        data = self.get_random_bytes(8 * 1024)
+        progress = ProgressTracker(len(data), 1024)
+
+        # Act
+        file_client.upload_data(
+            data,
+            overwrite=True,
+            progress_hook=progress.assert_progress,
+            max_concurrency=1,
+            chunk_size=1024
+        )
+
+        # Assert
+        progress.assert_complete()
 
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':

@@ -21,11 +21,11 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_by_net_app_account(self, resource_group):
+    async def test_volume_groups_list_by_net_app_account(self, resource_group):
         response = self.client.volume_groups.list_by_net_app_account(
             resource_group_name=resource_group.name,
             account_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -33,12 +33,12 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get(self, resource_group):
+    async def test_volume_groups_get(self, resource_group):
         response = await self.client.volume_groups.get(
             resource_group_name=resource_group.name,
             account_name="str",
             volume_group_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01-preview",
         )
 
         # please add some check logic here by yourself
@@ -46,7 +46,7 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_create(self, resource_group):
+    async def test_volume_groups_begin_create(self, resource_group):
         response = await (
             await self.client.volume_groups.begin_create(
                 resource_group_name=resource_group.name,
@@ -70,6 +70,7 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
                             "creationToken": "str",
                             "subnetId": "str",
                             "usageThreshold": 107374182400,
+                            "acceptGrowCapacityPoolForShortTermCloneSplit": "str",
                             "actualThroughputMibps": 0.0,
                             "avsDataStore": "Disabled",
                             "backupId": "str",
@@ -78,13 +79,20 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
                             "cloneProgress": 0,
                             "coolAccess": False,
                             "coolAccessRetrievalPolicy": "str",
+                            "coolAccessTieringPolicy": "str",
                             "coolnessPeriod": 0,
                             "dataProtection": {
                                 "backup": {"backupPolicyId": "str", "backupVaultId": "str", "policyEnforced": bool},
                                 "replication": {
-                                    "remoteVolumeResourceId": "str",
+                                    "destinationReplications": [
+                                        {"region": "str", "replicationType": "str", "resourceId": "str", "zone": "str"}
+                                    ],
                                     "endpointType": "str",
+                                    "externalReplicationSetupInfo": "str",
+                                    "externalReplicationSetupStatus": "str",
+                                    "remotePath": {"externalHostName": "str", "serverName": "str", "volumeName": "str"},
                                     "remoteVolumeRegion": "str",
+                                    "remoteVolumeResourceId": "str",
                                     "replicationId": "str",
                                     "replicationSchedule": "str",
                                 },
@@ -95,6 +103,7 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
                             "defaultGroupQuotaInKiBs": 0,
                             "defaultUserQuotaInKiBs": 0,
                             "deleteBaseSnapshot": bool,
+                            "effectiveNetworkFeatures": "Basic",
                             "enableSubvolumes": "Disabled",
                             "encrypted": bool,
                             "encryptionKeySource": "Microsoft.NetApp",
@@ -122,12 +131,15 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
                             "fileAccessLogs": "Disabled",
                             "fileSystemId": "str",
                             "id": "str",
+                            "inheritedSizeInBytes": 0,
                             "isDefaultQuotaEnabled": False,
                             "isLargeVolume": False,
                             "isRestoring": bool,
                             "kerberosEnabled": False,
                             "keyVaultPrivateEndpointResourceId": "str",
+                            "language": "str",
                             "ldapEnabled": False,
+                            "ldapServerType": "str",
                             "maximumNumberOfFiles": 0,
                             "mountTargets": [
                                 {
@@ -167,7 +179,7 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
                         }
                     ],
                 },
-                api_version="2024-03-01",
+                api_version="2025-01-01-preview",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -176,13 +188,13 @@ class TestNetAppManagementVolumeGroupsOperationsAsync(AzureMgmtRecordedTestCase)
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_delete(self, resource_group):
+    async def test_volume_groups_begin_delete(self, resource_group):
         response = await (
             await self.client.volume_groups.begin_delete(
                 resource_group_name=resource_group.name,
                 account_name="str",
                 volume_group_name="str",
-                api_version="2024-03-01",
+                api_version="2025-01-01-preview",
             )
         ).result()  # call '.result()' to poll until service return final result
 

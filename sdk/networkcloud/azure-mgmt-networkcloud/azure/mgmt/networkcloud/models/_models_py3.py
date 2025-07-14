@@ -1,5 +1,5 @@
+# pylint: disable=line-too-long,useless-suppression,too-many-lines
 # coding=utf-8
-# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -10,17 +10,16 @@
 import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
-from .. import _serialization
+from .._utils import serialization as _serialization
 
 if TYPE_CHECKING:
-    # pylint: disable=unused-import,ungrouped-imports
     from .. import models as _models
 
 
 class AadConfiguration(_serialization.Model):
     """AadConfiguration represents the Azure Active Directory Integration properties.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar admin_group_object_ids: The list of Azure Active Directory group object IDs that will
      have an administrative role on the Kubernetes cluster. Required.
@@ -49,7 +48,7 @@ class AdministrativeCredentials(_serialization.Model):
     """AdministrativeCredentials represents the admin credentials for the device requiring
     password-based authentication.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar password: The password of the administrator of the device used during initialization.
      Required.
@@ -123,10 +122,33 @@ class AdministratorConfiguration(_serialization.Model):
         self.ssh_public_keys = ssh_public_keys
 
 
+class AdministratorConfigurationPatch(_serialization.Model):
+    """AdministratorConfigurationPatch represents the patching capabilities for the administrator
+    configuration.
+
+    :ivar ssh_public_keys: SshPublicKey represents the public key used to authenticate with a
+     resource through SSH.
+    :vartype ssh_public_keys: list[~azure.mgmt.networkcloud.models.SshPublicKey]
+    """
+
+    _attribute_map = {
+        "ssh_public_keys": {"key": "sshPublicKeys", "type": "[SshPublicKey]"},
+    }
+
+    def __init__(self, *, ssh_public_keys: Optional[List["_models.SshPublicKey"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword ssh_public_keys: SshPublicKey represents the public key used to authenticate with a
+         resource through SSH.
+        :paramtype ssh_public_keys: list[~azure.mgmt.networkcloud.models.SshPublicKey]
+        """
+        super().__init__(**kwargs)
+        self.ssh_public_keys = ssh_public_keys
+
+
 class AgentOptions(_serialization.Model):
     """AgentOptions are configurations that will be applied to each agent in an agent pool.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar hugepages_count: The number of hugepages to allocate. Required.
     :vartype hugepages_count: int
@@ -193,10 +215,10 @@ class Resource(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.id = None
-        self.name = None
-        self.type = None
-        self.system_data = None
+        self.id: Optional[str] = None
+        self.name: Optional[str] = None
+        self.type: Optional[str] = None
+        self.system_data: Optional["_models.SystemData"] = None
 
 
 class TrackedResource(Resource):
@@ -205,7 +227,7 @@ class TrackedResource(Resource):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -253,12 +275,12 @@ class TrackedResource(Resource):
         self.location = location
 
 
-class AgentPool(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class AgentPool(TrackedResource):
     """AgentPool represents the agent pool of Kubernetes cluster.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -275,6 +297,8 @@ class AgentPool(TrackedResource):  # pylint: disable=too-many-instance-attribute
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
     :ivar administrator_configuration: The administrator credentials to be used for the nodes in
@@ -326,6 +350,7 @@ class AgentPool(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "count": {"required": True},
         "detailed_status": {"readonly": True},
         "detailed_status_message": {"readonly": True},
@@ -342,6 +367,7 @@ class AgentPool(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "administrator_configuration": {
             "key": "properties.administratorConfiguration",
@@ -424,18 +450,19 @@ class AgentPool(TrackedResource):  # pylint: disable=too-many-instance-attribute
         :paramtype vm_sku_name: str
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.administrator_configuration = administrator_configuration
         self.agent_options = agent_options
         self.attached_network_configuration = attached_network_configuration
         self.availability_zones = availability_zones
         self.count = count
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.kubernetes_version = None
+        self.detailed_status: Optional[Union[str, "_models.AgentPoolDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.kubernetes_version: Optional[str] = None
         self.labels = labels
         self.mode = mode
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.AgentPoolProvisioningState"]] = None
         self.taints = taints
         self.upgrade_settings = upgrade_settings
         self.vm_sku_name = vm_sku_name
@@ -444,7 +471,7 @@ class AgentPool(TrackedResource):  # pylint: disable=too-many-instance-attribute
 class AgentPoolConfiguration(_serialization.Model):
     """AgentPoolConfiguration specifies the configuration of a pool of nodes.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar administrator_configuration: The administrator credentials to be used for the nodes in
      this agent pool.
@@ -597,6 +624,10 @@ class AgentPoolPatchParameters(_serialization.Model):
 
     :ivar tags: The Azure resource tags that will replace the existing ones.
     :vartype tags: dict[str, str]
+    :ivar administrator_configuration: The configuration of administrator credentials for the
+     control plane nodes.
+    :vartype administrator_configuration:
+     ~azure.mgmt.networkcloud.models.NodePoolAdministratorConfigurationPatch
     :ivar count: The number of virtual machines that use this configuration.
     :vartype count: int
     :ivar upgrade_settings: The configuration of the agent pool.
@@ -605,6 +636,10 @@ class AgentPoolPatchParameters(_serialization.Model):
 
     _attribute_map = {
         "tags": {"key": "tags", "type": "{str}"},
+        "administrator_configuration": {
+            "key": "properties.administratorConfiguration",
+            "type": "NodePoolAdministratorConfigurationPatch",
+        },
         "count": {"key": "properties.count", "type": "int"},
         "upgrade_settings": {"key": "properties.upgradeSettings", "type": "AgentPoolUpgradeSettings"},
     }
@@ -613,6 +648,7 @@ class AgentPoolPatchParameters(_serialization.Model):
         self,
         *,
         tags: Optional[Dict[str, str]] = None,
+        administrator_configuration: Optional["_models.NodePoolAdministratorConfigurationPatch"] = None,
         count: Optional[int] = None,
         upgrade_settings: Optional["_models.AgentPoolUpgradeSettings"] = None,
         **kwargs: Any
@@ -620,6 +656,10 @@ class AgentPoolPatchParameters(_serialization.Model):
         """
         :keyword tags: The Azure resource tags that will replace the existing ones.
         :paramtype tags: dict[str, str]
+        :keyword administrator_configuration: The configuration of administrator credentials for the
+         control plane nodes.
+        :paramtype administrator_configuration:
+         ~azure.mgmt.networkcloud.models.NodePoolAdministratorConfigurationPatch
         :keyword count: The number of virtual machines that use this configuration.
         :paramtype count: int
         :keyword upgrade_settings: The configuration of the agent pool.
@@ -627,6 +667,7 @@ class AgentPoolPatchParameters(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.tags = tags
+        self.administrator_configuration = administrator_configuration
         self.count = count
         self.upgrade_settings = upgrade_settings
 
@@ -634,27 +675,101 @@ class AgentPoolPatchParameters(_serialization.Model):
 class AgentPoolUpgradeSettings(_serialization.Model):
     """AgentPoolUpgradeSettings specifies the upgrade settings for an agent pool.
 
+    :ivar drain_timeout: The maximum time in seconds that is allowed for a node drain to complete
+     before proceeding with the upgrade of the agent pool. If not specified during creation, a value
+     of 1800 seconds is used.
+    :vartype drain_timeout: int
     :ivar max_surge: The maximum number or percentage of nodes that are surged during upgrade. This
      can either be set to an integer (e.g. '5') or a percentage (e.g. '50%'). If a percentage is
      specified, it is the percentage of the total agent pool size at the time of the upgrade. For
-     percentages, fractional nodes are rounded up. If not specified, the default is 1.
+     percentages, fractional nodes are rounded up. If not specified during creation, a value of 1 is
+     used. One of MaxSurge and MaxUnavailable must be greater than 0.
     :vartype max_surge: str
+    :ivar max_unavailable: The maximum number or percentage of nodes that can be unavailable during
+     upgrade. This can either be set to an integer (e.g. '5') or a percentage (e.g. '50%'). If a
+     percentage is specified, it is the percentage of the total agent pool size at the time of the
+     upgrade. For percentages, fractional nodes are rounded up. If not specified during creation, a
+     value of 0 is used. One of MaxSurge and MaxUnavailable must be greater than 0.
+    :vartype max_unavailable: str
     """
 
-    _attribute_map = {
-        "max_surge": {"key": "maxSurge", "type": "str"},
+    _validation = {
+        "drain_timeout": {"maximum": 86400, "minimum": 60},
     }
 
-    def __init__(self, *, max_surge: str = "1", **kwargs: Any) -> None:
+    _attribute_map = {
+        "drain_timeout": {"key": "drainTimeout", "type": "int"},
+        "max_surge": {"key": "maxSurge", "type": "str"},
+        "max_unavailable": {"key": "maxUnavailable", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        drain_timeout: Optional[int] = None,
+        max_surge: Optional[str] = None,
+        max_unavailable: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
         """
+        :keyword drain_timeout: The maximum time in seconds that is allowed for a node drain to
+         complete before proceeding with the upgrade of the agent pool. If not specified during
+         creation, a value of 1800 seconds is used.
+        :paramtype drain_timeout: int
         :keyword max_surge: The maximum number or percentage of nodes that are surged during upgrade.
          This can either be set to an integer (e.g. '5') or a percentage (e.g. '50%'). If a percentage
          is specified, it is the percentage of the total agent pool size at the time of the upgrade. For
-         percentages, fractional nodes are rounded up. If not specified, the default is 1.
+         percentages, fractional nodes are rounded up. If not specified during creation, a value of 1 is
+         used. One of MaxSurge and MaxUnavailable must be greater than 0.
         :paramtype max_surge: str
+        :keyword max_unavailable: The maximum number or percentage of nodes that can be unavailable
+         during upgrade. This can either be set to an integer (e.g. '5') or a percentage (e.g. '50%').
+         If a percentage is specified, it is the percentage of the total agent pool size at the time of
+         the upgrade. For percentages, fractional nodes are rounded up. If not specified during
+         creation, a value of 0 is used. One of MaxSurge and MaxUnavailable must be greater than 0.
+        :paramtype max_unavailable: str
         """
         super().__init__(**kwargs)
+        self.drain_timeout = drain_timeout
         self.max_surge = max_surge
+        self.max_unavailable = max_unavailable
+
+
+class AnalyticsOutputSettings(_serialization.Model):
+    """AnalyticsOutputSettings represents the settings for the log analytics workspace used for output
+    of logs from this cluster.
+
+    :ivar analytics_workspace_id: The resource ID of the analytics workspace that is to be used by
+     the specified identity.
+    :vartype analytics_workspace_id: str
+    :ivar associated_identity: The selection of the managed identity to use with this analytics
+     workspace. The identity type must be either system assigned or user assigned.
+    :vartype associated_identity: ~azure.mgmt.networkcloud.models.IdentitySelector
+    """
+
+    _attribute_map = {
+        "analytics_workspace_id": {"key": "analyticsWorkspaceId", "type": "str"},
+        "associated_identity": {"key": "associatedIdentity", "type": "IdentitySelector"},
+    }
+
+    def __init__(
+        self,
+        *,
+        analytics_workspace_id: Optional[str] = None,
+        associated_identity: Optional["_models.IdentitySelector"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword analytics_workspace_id: The resource ID of the analytics workspace that is to be used
+         by the specified identity.
+        :paramtype analytics_workspace_id: str
+        :keyword associated_identity: The selection of the managed identity to use with this analytics
+         workspace. The identity type must be either system assigned or user assigned.
+        :paramtype associated_identity: ~azure.mgmt.networkcloud.models.IdentitySelector
+        """
+        super().__init__(**kwargs)
+        self.analytics_workspace_id = analytics_workspace_id
+        self.associated_identity = associated_identity
 
 
 class AttachedNetworkConfiguration(_serialization.Model):
@@ -724,16 +839,16 @@ class AvailableUpgrade(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.availability_lifecycle = None
-        self.version = None
+        self.availability_lifecycle: Optional[Union[str, "_models.AvailabilityLifecycle"]] = None
+        self.version: Optional[str] = None
 
 
-class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class BareMetalMachine(TrackedResource):
     """BareMetalMachine represents the physical machine in the rack.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -750,6 +865,8 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -791,10 +908,16 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
     :vartype kubernetes_node_name: str
     :ivar kubernetes_version: The version of Kubernetes running on this machine.
     :vartype kubernetes_version: str
+    :ivar machine_cluster_version: The cluster version that has been applied to this machine during
+     deployment or a version update.
+    :vartype machine_cluster_version: str
     :ivar machine_details: The custom details provided by the customer. Required.
     :vartype machine_details: str
     :ivar machine_name: The OS-level hostname assigned to this machine. Required.
     :vartype machine_name: str
+    :ivar machine_roles: The list of roles that are assigned to the cluster node running on this
+     machine.
+    :vartype machine_roles: list[str]
     :ivar machine_sku_id: The unique internal identifier of the bare metal machine SKU. Required.
     :vartype machine_sku_id: str
     :ivar oam_ipv4_address: The IPv4 address that is assigned to the bare metal machine during the
@@ -820,6 +943,10 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
     :ivar ready_state: The indicator of whether the bare metal machine is ready to receive
      workloads. Known values are: "True" and "False".
     :vartype ready_state: str or ~azure.mgmt.networkcloud.models.BareMetalMachineReadyState
+    :ivar runtime_protection_status: The runtime protection status of the bare metal machine.
+    :vartype runtime_protection_status: ~azure.mgmt.networkcloud.models.RuntimeProtectionStatus
+    :ivar secret_rotation_status: The list of statuses that represent secret rotation activity.
+    :vartype secret_rotation_status: list[~azure.mgmt.networkcloud.models.SecretRotationStatus]
     :ivar serial_number: The serial number of the bare metal machine. Required.
     :vartype serial_number: str
     :ivar service_tag: The discovered value of the machine's service tag.
@@ -836,6 +963,7 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "associated_resource_ids": {"readonly": True},
         "bmc_connection_string": {"required": True},
@@ -853,6 +981,7 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         "kubernetes_version": {"readonly": True},
         "machine_details": {"required": True, "max_length": 256},
         "machine_name": {"required": True, "pattern": r"^([a-zA-Z0-9][a-zA-Z0-9]{0,62}[a-zA-Z0-9])$"},
+        "machine_roles": {"readonly": True},
         "machine_sku_id": {"required": True},
         "oam_ipv4_address": {"readonly": True},
         "oam_ipv6_address": {"readonly": True},
@@ -862,6 +991,8 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         "rack_id": {"required": True},
         "rack_slot": {"required": True, "maximum": 256, "minimum": 1},
         "ready_state": {"readonly": True},
+        "runtime_protection_status": {"readonly": True},
+        "secret_rotation_status": {"readonly": True},
         "serial_number": {"required": True, "max_length": 64, "min_length": 1},
         "service_tag": {"readonly": True},
         "virtual_machines_associated_ids": {"readonly": True},
@@ -874,6 +1005,7 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "associated_resource_ids": {"key": "properties.associatedResourceIds", "type": "[str]"},
         "bmc_connection_string": {"key": "properties.bmcConnectionString", "type": "str"},
@@ -892,8 +1024,10 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         "hybrid_aks_clusters_associated_ids": {"key": "properties.hybridAksClustersAssociatedIds", "type": "[str]"},
         "kubernetes_node_name": {"key": "properties.kubernetesNodeName", "type": "str"},
         "kubernetes_version": {"key": "properties.kubernetesVersion", "type": "str"},
+        "machine_cluster_version": {"key": "properties.machineClusterVersion", "type": "str"},
         "machine_details": {"key": "properties.machineDetails", "type": "str"},
         "machine_name": {"key": "properties.machineName", "type": "str"},
+        "machine_roles": {"key": "properties.machineRoles", "type": "[str]"},
         "machine_sku_id": {"key": "properties.machineSkuId", "type": "str"},
         "oam_ipv4_address": {"key": "properties.oamIpv4Address", "type": "str"},
         "oam_ipv6_address": {"key": "properties.oamIpv6Address", "type": "str"},
@@ -903,6 +1037,8 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         "rack_id": {"key": "properties.rackId", "type": "str"},
         "rack_slot": {"key": "properties.rackSlot", "type": "int"},
         "ready_state": {"key": "properties.readyState", "type": "str"},
+        "runtime_protection_status": {"key": "properties.runtimeProtectionStatus", "type": "RuntimeProtectionStatus"},
+        "secret_rotation_status": {"key": "properties.secretRotationStatus", "type": "[SecretRotationStatus]"},
         "serial_number": {"key": "properties.serialNumber", "type": "str"},
         "service_tag": {"key": "properties.serviceTag", "type": "str"},
         "virtual_machines_associated_ids": {"key": "properties.virtualMachinesAssociatedIds", "type": "[str]"},
@@ -924,6 +1060,7 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         rack_slot: int,
         serial_number: str,
         tags: Optional[Dict[str, str]] = None,
+        machine_cluster_version: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -944,6 +1081,9 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         :paramtype bmc_mac_address: str
         :keyword boot_mac_address: The MAC address of a NIC connected to the PXE network. Required.
         :paramtype boot_mac_address: str
+        :keyword machine_cluster_version: The cluster version that has been applied to this machine
+         during deployment or a version update.
+        :paramtype machine_cluster_version: str
         :keyword machine_details: The custom details provided by the customer. Required.
         :paramtype machine_details: str
         :keyword machine_name: The OS-level hostname assigned to this machine. Required.
@@ -960,42 +1100,47 @@ class BareMetalMachine(TrackedResource):  # pylint: disable=too-many-instance-at
         :paramtype serial_number: str
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
-        self.associated_resource_ids = None
+        self.associated_resource_ids: Optional[List[str]] = None
         self.bmc_connection_string = bmc_connection_string
         self.bmc_credentials = bmc_credentials
         self.bmc_mac_address = bmc_mac_address
         self.boot_mac_address = boot_mac_address
-        self.cluster_id = None
-        self.cordon_status = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.hardware_inventory = None
-        self.hardware_validation_status = None
-        self.hybrid_aks_clusters_associated_ids = None
-        self.kubernetes_node_name = None
-        self.kubernetes_version = None
+        self.cluster_id: Optional[str] = None
+        self.cordon_status: Optional[Union[str, "_models.BareMetalMachineCordonStatus"]] = None
+        self.detailed_status: Optional[Union[str, "_models.BareMetalMachineDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.hardware_inventory: Optional["_models.HardwareInventory"] = None
+        self.hardware_validation_status: Optional["_models.HardwareValidationStatus"] = None
+        self.hybrid_aks_clusters_associated_ids: Optional[List[str]] = None
+        self.kubernetes_node_name: Optional[str] = None
+        self.kubernetes_version: Optional[str] = None
+        self.machine_cluster_version = machine_cluster_version
         self.machine_details = machine_details
         self.machine_name = machine_name
+        self.machine_roles: Optional[List[str]] = None
         self.machine_sku_id = machine_sku_id
-        self.oam_ipv4_address = None
-        self.oam_ipv6_address = None
-        self.os_image = None
-        self.power_state = None
-        self.provisioning_state = None
+        self.oam_ipv4_address: Optional[str] = None
+        self.oam_ipv6_address: Optional[str] = None
+        self.os_image: Optional[str] = None
+        self.power_state: Optional[Union[str, "_models.BareMetalMachinePowerState"]] = None
+        self.provisioning_state: Optional[Union[str, "_models.BareMetalMachineProvisioningState"]] = None
         self.rack_id = rack_id
         self.rack_slot = rack_slot
-        self.ready_state = None
+        self.ready_state: Optional[Union[str, "_models.BareMetalMachineReadyState"]] = None
+        self.runtime_protection_status: Optional["_models.RuntimeProtectionStatus"] = None
+        self.secret_rotation_status: Optional[List["_models.SecretRotationStatus"]] = None
         self.serial_number = serial_number
-        self.service_tag = None
-        self.virtual_machines_associated_ids = None
+        self.service_tag: Optional[str] = None
+        self.virtual_machines_associated_ids: Optional[List[str]] = None
 
 
 class BareMetalMachineCommandSpecification(_serialization.Model):
     """BareMetalMachineCommandSpecification represents the command and optional arguments to exercise
     against the bare metal machine.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar arguments: The list of string arguments that will be passed to the script in order as
      separate arguments.
@@ -1031,13 +1176,15 @@ class BareMetalMachineConfigurationData(_serialization.Model):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar bmc_connection_string: The connection string for the baseboard management controller
      including IP address and protocol.
     :vartype bmc_connection_string: str
     :ivar bmc_credentials: The credentials of the baseboard management controller on this bare
-     metal machine. Required.
+     metal machine. The password field is expected to be an Azure Key Vault key URL. Until the
+     cluster is converted to utilize managed identity by setting the secret archive settings, the
+     actual password value should be provided instead. Required.
     :vartype bmc_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
     :ivar bmc_mac_address: The MAC address of the BMC for this machine. Required.
     :vartype bmc_mac_address: str
@@ -1094,7 +1241,9 @@ class BareMetalMachineConfigurationData(_serialization.Model):
     ) -> None:
         """
         :keyword bmc_credentials: The credentials of the baseboard management controller on this bare
-         metal machine. Required.
+         metal machine. The password field is expected to be an Azure Key Vault key URL. Until the
+         cluster is converted to utilize managed identity by setting the secret archive settings, the
+         actual password value should be provided instead. Required.
         :paramtype bmc_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
         :keyword bmc_mac_address: The MAC address of the BMC for this machine. Required.
         :paramtype bmc_mac_address: str
@@ -1115,7 +1264,7 @@ class BareMetalMachineConfigurationData(_serialization.Model):
         :paramtype serial_number: str
         """
         super().__init__(**kwargs)
-        self.bmc_connection_string = None
+        self.bmc_connection_string: Optional[str] = None
         self.bmc_credentials = bmc_credentials
         self.bmc_mac_address = bmc_mac_address
         self.boot_mac_address = boot_mac_address
@@ -1148,12 +1297,12 @@ class BareMetalMachineCordonParameters(_serialization.Model):
         self.evacuate = evacuate
 
 
-class BareMetalMachineKeySet(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class BareMetalMachineKeySet(TrackedResource):
     """BareMetalMachineKeySet represents the bare metal machine key set.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -1170,6 +1319,8 @@ class BareMetalMachineKeySet(TrackedResource):  # pylint: disable=too-many-insta
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -1214,6 +1365,7 @@ class BareMetalMachineKeySet(TrackedResource):  # pylint: disable=too-many-insta
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "azure_group_id": {"required": True},
         "detailed_status": {"readonly": True},
@@ -1235,6 +1387,7 @@ class BareMetalMachineKeySet(TrackedResource):  # pylint: disable=too-many-insta
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "azure_group_id": {"key": "properties.azureGroupId", "type": "str"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
@@ -1292,18 +1445,19 @@ class BareMetalMachineKeySet(TrackedResource):  # pylint: disable=too-many-insta
         :paramtype user_list: list[~azure.mgmt.networkcloud.models.KeySetUser]
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.azure_group_id = azure_group_id
-        self.detailed_status = None
-        self.detailed_status_message = None
+        self.detailed_status: Optional[Union[str, "_models.BareMetalMachineKeySetDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
         self.expiration = expiration
         self.jump_hosts_allowed = jump_hosts_allowed
-        self.last_validation = None
+        self.last_validation: Optional[datetime.datetime] = None
         self.os_group_name = os_group_name
         self.privilege_level = privilege_level
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.BareMetalMachineKeySetProvisioningState"]] = None
         self.user_list = user_list
-        self.user_list_status = None
+        self.user_list_status: Optional[List["_models.KeySetUserStatus"]] = None
 
 
 class BareMetalMachineKeySetList(_serialization.Model):
@@ -1488,7 +1642,9 @@ class BareMetalMachineReplaceParameters(_serialization.Model):
     metal machine for another.
 
     :ivar bmc_credentials: The credentials of the baseboard management controller on this bare
-     metal machine.
+     metal machine. The password field is expected to be an Azure Key Vault key URL. Until the
+     cluster is converted to utilize managed identity by setting the secret archive settings, the
+     actual password value should be provided instead.
     :vartype bmc_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
     :ivar bmc_mac_address: The MAC address of the BMC device.
     :vartype bmc_mac_address: str
@@ -1527,7 +1683,9 @@ class BareMetalMachineReplaceParameters(_serialization.Model):
     ) -> None:
         """
         :keyword bmc_credentials: The credentials of the baseboard management controller on this bare
-         metal machine.
+         metal machine. The password field is expected to be an Azure Key Vault key URL. Until the
+         cluster is converted to utilize managed identity by setting the secret archive settings, the
+         actual password value should be provided instead.
         :paramtype bmc_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
         :keyword bmc_mac_address: The MAC address of the BMC device.
         :paramtype bmc_mac_address: str
@@ -1550,7 +1708,7 @@ class BareMetalMachineRunCommandParameters(_serialization.Model):
     """BareMetalMachineRunCommandParameters represents the body of the request to execute a script on
     the bare metal machine.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar arguments: The list of string arguments that will be passed to the script in order as
      separate arguments.
@@ -1596,11 +1754,11 @@ class BareMetalMachineRunCommandParameters(_serialization.Model):
         self.script = script
 
 
-class BareMetalMachineRunDataExtractsParameters(_serialization.Model):
+class BareMetalMachineRunDataExtractsParameters(_serialization.Model):  # pylint: disable=name-too-long
     """BareMetalMachineRunDataExtractsParameters represents the body of request containing list of
     curated data extraction commands to run on the bare metal machine.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar commands: The list of curated data extraction commands to be executed directly against
      the target machine. Required.
@@ -1640,11 +1798,11 @@ class BareMetalMachineRunDataExtractsParameters(_serialization.Model):
         self.limit_time_seconds = limit_time_seconds
 
 
-class BareMetalMachineRunReadCommandsParameters(_serialization.Model):
+class BareMetalMachineRunReadCommandsParameters(_serialization.Model):  # pylint: disable=name-too-long
     """BareMetalMachineRunReadCommandsParameters represents the body of request containing list of
     read-only commands to run on the bare metal machine.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar commands: The list of read-only commands to be executed directly against the target
      machine. Required.
@@ -1687,7 +1845,7 @@ class BareMetalMachineRunReadCommandsParameters(_serialization.Model):
 class BgpAdvertisement(_serialization.Model):
     """BgpAdvertisement represents the association of IP address pools to the communities and peers.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar advertise_to_fabric: The indicator of if this advertisement is also made to the network
      fabric associated with the Network Cloud Cluster. This field is ignored if fabricPeeringEnabled
@@ -1759,8 +1917,8 @@ class BgpServiceLoadBalancerConfiguration(_serialization.Model):
     :ivar fabric_peering_enabled: The indicator to specify if the load balancer peers with the
      network fabric. Known values are: "True" and "False".
     :vartype fabric_peering_enabled: str or ~azure.mgmt.networkcloud.models.FabricPeeringEnabled
-    :ivar ip_address_pools: The list of pools of IP addresses that can be allocated to Load
-     Balancer services.
+    :ivar ip_address_pools: The list of pools of IP addresses that can be allocated to load
+     balancer services.
     :vartype ip_address_pools: list[~azure.mgmt.networkcloud.models.IpAddressPool]
     """
 
@@ -1790,8 +1948,8 @@ class BgpServiceLoadBalancerConfiguration(_serialization.Model):
         :keyword fabric_peering_enabled: The indicator to specify if the load balancer peers with the
          network fabric. Known values are: "True" and "False".
         :paramtype fabric_peering_enabled: str or ~azure.mgmt.networkcloud.models.FabricPeeringEnabled
-        :keyword ip_address_pools: The list of pools of IP addresses that can be allocated to Load
-         Balancer services.
+        :keyword ip_address_pools: The list of pools of IP addresses that can be allocated to load
+         balancer services.
         :paramtype ip_address_pools: list[~azure.mgmt.networkcloud.models.IpAddressPool]
         """
         super().__init__(**kwargs)
@@ -1801,12 +1959,12 @@ class BgpServiceLoadBalancerConfiguration(_serialization.Model):
         self.ip_address_pools = ip_address_pools
 
 
-class BmcKeySet(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class BmcKeySet(TrackedResource):
     """BmcKeySet represents the baseboard management controller key set.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -1823,6 +1981,8 @@ class BmcKeySet(TrackedResource):  # pylint: disable=too-many-instance-attribute
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -1858,6 +2018,7 @@ class BmcKeySet(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "azure_group_id": {"required": True},
         "detailed_status": {"readonly": True},
@@ -1877,6 +2038,7 @@ class BmcKeySet(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "azure_group_id": {"key": "properties.azureGroupId", "type": "str"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
@@ -1923,16 +2085,17 @@ class BmcKeySet(TrackedResource):  # pylint: disable=too-many-instance-attribute
         :paramtype user_list: list[~azure.mgmt.networkcloud.models.KeySetUser]
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.azure_group_id = azure_group_id
-        self.detailed_status = None
-        self.detailed_status_message = None
+        self.detailed_status: Optional[Union[str, "_models.BmcKeySetDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
         self.expiration = expiration
-        self.last_validation = None
+        self.last_validation: Optional[datetime.datetime] = None
         self.privilege_level = privilege_level
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.BmcKeySetProvisioningState"]] = None
         self.user_list = user_list
-        self.user_list_status = None
+        self.user_list_status: Optional[List["_models.KeySetUserStatus"]] = None
 
 
 class BmcKeySetList(_serialization.Model):
@@ -2005,7 +2168,7 @@ class BmcKeySetPatchParameters(_serialization.Model):
         self.user_list = user_list
 
 
-class CloudServicesNetwork(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class CloudServicesNetwork(TrackedResource):
     """Upon creation, the additional services that are provided by the platform will be allocated and
     represented in the status of this resource. All resources associated with this cloud services
     network will be part
@@ -2015,7 +2178,7 @@ class CloudServicesNetwork(TrackedResource):  # pylint: disable=too-many-instanc
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -2032,6 +2195,8 @@ class CloudServicesNetwork(TrackedResource):  # pylint: disable=too-many-instanc
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -2080,6 +2245,7 @@ class CloudServicesNetwork(TrackedResource):  # pylint: disable=too-many-instanc
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "associated_resource_ids": {"readonly": True},
         "cluster_id": {"readonly": True},
@@ -2099,6 +2265,7 @@ class CloudServicesNetwork(TrackedResource):  # pylint: disable=too-many-instanc
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "additional_egress_endpoints": {"key": "properties.additionalEgressEndpoints", "type": "[EgressEndpoint]"},
         "associated_resource_ids": {"key": "properties.associatedResourceIds", "type": "[str]"},
@@ -2142,18 +2309,19 @@ class CloudServicesNetwork(TrackedResource):  # pylint: disable=too-many-instanc
          ~azure.mgmt.networkcloud.models.CloudServicesNetworkEnableDefaultEgressEndpoints
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.additional_egress_endpoints = additional_egress_endpoints
-        self.associated_resource_ids = None
-        self.cluster_id = None
-        self.detailed_status = None
-        self.detailed_status_message = None
+        self.associated_resource_ids: Optional[List[str]] = None
+        self.cluster_id: Optional[str] = None
+        self.detailed_status: Optional[Union[str, "_models.CloudServicesNetworkDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
         self.enable_default_egress_endpoints = enable_default_egress_endpoints
-        self.enabled_egress_endpoints = None
-        self.hybrid_aks_clusters_associated_ids = None
-        self.interface_name = None
-        self.provisioning_state = None
-        self.virtual_machines_associated_ids = None
+        self.enabled_egress_endpoints: Optional[List["_models.EgressEndpoint"]] = None
+        self.hybrid_aks_clusters_associated_ids: Optional[List[str]] = None
+        self.interface_name: Optional[str] = None
+        self.provisioning_state: Optional[Union[str, "_models.CloudServicesNetworkProvisioningState"]] = None
+        self.virtual_machines_associated_ids: Optional[List[str]] = None
 
 
 class CloudServicesNetworkList(_serialization.Model):
@@ -2236,12 +2404,12 @@ class CloudServicesNetworkPatchParameters(_serialization.Model):
         self.enable_default_egress_endpoints = enable_default_egress_endpoints
 
 
-class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class Cluster(TrackedResource):
     """Cluster represents the on-premises Network Cloud cluster.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -2258,15 +2426,22 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster manager associated with the
      cluster. Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
+    :ivar identity: The identity for the resource.
+    :vartype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
     :ivar aggregator_or_single_rack_definition: The rack definition that is intended to reflect
      only a single rack in a single rack cluster, or an aggregator rack in a multi-rack cluster.
      Required.
     :vartype aggregator_or_single_rack_definition: ~azure.mgmt.networkcloud.models.RackDefinition
-    :ivar analytics_workspace_id: The resource ID of the Log Analytics Workspace that will be used
-     for storing relevant logs.
+    :ivar analytics_output_settings: The settings for the log analytics workspace used for output
+     of logs from this cluster.
+    :vartype analytics_output_settings: ~azure.mgmt.networkcloud.models.AnalyticsOutputSettings
+    :ivar analytics_workspace_id: Field Deprecated. The resource ID of the Log Analytics Workspace
+     that will be used for storing relevant logs.
     :vartype analytics_workspace_id: str
     :ivar available_upgrade_versions: The list of cluster runtime version upgrades available for
      this cluster.
@@ -2275,7 +2450,7 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :ivar cluster_capacity: The capacity supported by this cluster.
     :vartype cluster_capacity: ~azure.mgmt.networkcloud.models.ClusterCapacity
     :ivar cluster_connection_status: The latest heartbeat status between the cluster manager and
-     the cluster. Known values are: "Connected", "Timeout", and "Undefined".
+     the cluster. Known values are: "Connected", "Disconnected", "Timeout", and "Undefined".
     :vartype cluster_connection_status: str or
      ~azure.mgmt.networkcloud.models.ClusterConnectionStatus
     :ivar cluster_extended_location: The extended location (custom location) that represents the
@@ -2300,6 +2475,9 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :vartype cluster_type: str or ~azure.mgmt.networkcloud.models.ClusterType
     :ivar cluster_version: The current runtime version of the cluster. Required.
     :vartype cluster_version: str
+    :ivar command_output_settings: The settings for commands run in this cluster, such as bare
+     metal machine run read only commands and data extracts.
+    :vartype command_output_settings: ~azure.mgmt.networkcloud.models.CommandOutputSettings
     :ivar compute_deployment_threshold: The validation threshold indicating the allowable failures
      of compute machines during environment validation and deployment.
     :vartype compute_deployment_threshold: ~azure.mgmt.networkcloud.models.ValidationThreshold
@@ -2308,8 +2486,8 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
      cluster, or an empty list in a single-rack cluster.
     :vartype compute_rack_definitions: list[~azure.mgmt.networkcloud.models.RackDefinition]
     :ivar detailed_status: The current detailed status of the cluster. Known values are:
-     "PendingDeployment", "Deploying", "Running", "Updating", "Degraded", "Deleting",
-     "Disconnected", and "Failed".
+     "PendingDeployment", "Deploying", "Running", "Updating", "UpdatePaused", "Degraded",
+     "Deleting", "Disconnected", and "Failed".
     :vartype detailed_status: str or ~azure.mgmt.networkcloud.models.ClusterDetailedStatus
     :ivar detailed_status_message: The descriptive message about the detailed status.
     :vartype detailed_status_message: str
@@ -2331,8 +2509,23 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :ivar provisioning_state: The provisioning state of the cluster. Known values are: "Succeeded",
      "Failed", "Canceled", "Accepted", "Validating", and "Updating".
     :vartype provisioning_state: str or ~azure.mgmt.networkcloud.models.ClusterProvisioningState
+    :ivar runtime_protection_configuration: The settings for cluster runtime protection.
+    :vartype runtime_protection_configuration:
+     ~azure.mgmt.networkcloud.models.RuntimeProtectionConfiguration
+    :ivar secret_archive: The configuration for use of a key vault to store secrets for later
+     retrieval by the operator.
+    :vartype secret_archive: ~azure.mgmt.networkcloud.models.ClusterSecretArchive
+    :ivar secret_archive_settings: The settings for the secret archive used to hold credentials for
+     the cluster.
+    :vartype secret_archive_settings: ~azure.mgmt.networkcloud.models.SecretArchiveSettings
     :ivar support_expiry_date: The support end date of the runtime version of the cluster.
     :vartype support_expiry_date: str
+    :ivar update_strategy: The strategy for updating the cluster.
+    :vartype update_strategy: ~azure.mgmt.networkcloud.models.ClusterUpdateStrategy
+    :ivar vulnerability_scanning_settings: The settings for how security vulnerability scanning is
+     applied to the cluster.
+    :vartype vulnerability_scanning_settings:
+     ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettings
     :ivar workload_resource_ids: The list of workload resource IDs that are hosted within this
      cluster.
     :vartype workload_resource_ids: list[str]
@@ -2344,6 +2537,7 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "aggregator_or_single_rack_definition": {"required": True},
         "available_upgrade_versions": {"readonly": True},
@@ -2372,11 +2566,14 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
+        "identity": {"key": "identity", "type": "ManagedServiceIdentity"},
         "aggregator_or_single_rack_definition": {
             "key": "properties.aggregatorOrSingleRackDefinition",
             "type": "RackDefinition",
         },
+        "analytics_output_settings": {"key": "properties.analyticsOutputSettings", "type": "AnalyticsOutputSettings"},
         "analytics_workspace_id": {"key": "properties.analyticsWorkspaceId", "type": "str"},
         "available_upgrade_versions": {
             "key": "properties.availableUpgradeVersions",
@@ -2394,6 +2591,7 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         },
         "cluster_type": {"key": "properties.clusterType", "type": "str"},
         "cluster_version": {"key": "properties.clusterVersion", "type": "str"},
+        "command_output_settings": {"key": "properties.commandOutputSettings", "type": "CommandOutputSettings"},
         "compute_deployment_threshold": {"key": "properties.computeDeploymentThreshold", "type": "ValidationThreshold"},
         "compute_rack_definitions": {"key": "properties.computeRackDefinitions", "type": "[RackDefinition]"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
@@ -2406,7 +2604,18 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "manual_action_count": {"key": "properties.manualActionCount", "type": "int"},
         "network_fabric_id": {"key": "properties.networkFabricId", "type": "str"},
         "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
+        "runtime_protection_configuration": {
+            "key": "properties.runtimeProtectionConfiguration",
+            "type": "RuntimeProtectionConfiguration",
+        },
+        "secret_archive": {"key": "properties.secretArchive", "type": "ClusterSecretArchive"},
+        "secret_archive_settings": {"key": "properties.secretArchiveSettings", "type": "SecretArchiveSettings"},
         "support_expiry_date": {"key": "properties.supportExpiryDate", "type": "str"},
+        "update_strategy": {"key": "properties.updateStrategy", "type": "ClusterUpdateStrategy"},
+        "vulnerability_scanning_settings": {
+            "key": "properties.vulnerabilityScanningSettings",
+            "type": "VulnerabilityScanningSettings",
+        },
         "workload_resource_ids": {"key": "properties.workloadResourceIds", "type": "[str]"},
     }
 
@@ -2420,12 +2629,20 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         cluster_version: str,
         network_fabric_id: str,
         tags: Optional[Dict[str, str]] = None,
+        identity: Optional["_models.ManagedServiceIdentity"] = None,
+        analytics_output_settings: Optional["_models.AnalyticsOutputSettings"] = None,
         analytics_workspace_id: Optional[str] = None,
         cluster_location: Optional[str] = None,
         cluster_service_principal: Optional["_models.ServicePrincipalInformation"] = None,
+        command_output_settings: Optional["_models.CommandOutputSettings"] = None,
         compute_deployment_threshold: Optional["_models.ValidationThreshold"] = None,
         compute_rack_definitions: Optional[List["_models.RackDefinition"]] = None,
         managed_resource_group_configuration: Optional["_models.ManagedResourceGroupConfiguration"] = None,
+        runtime_protection_configuration: Optional["_models.RuntimeProtectionConfiguration"] = None,
+        secret_archive: Optional["_models.ClusterSecretArchive"] = None,
+        secret_archive_settings: Optional["_models.SecretArchiveSettings"] = None,
+        update_strategy: Optional["_models.ClusterUpdateStrategy"] = None,
+        vulnerability_scanning_settings: Optional["_models.VulnerabilityScanningSettings"] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -2436,12 +2653,17 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         :keyword extended_location: The extended location of the cluster manager associated with the
          cluster. Required.
         :paramtype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
+        :keyword identity: The identity for the resource.
+        :paramtype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
         :keyword aggregator_or_single_rack_definition: The rack definition that is intended to reflect
          only a single rack in a single rack cluster, or an aggregator rack in a multi-rack cluster.
          Required.
         :paramtype aggregator_or_single_rack_definition: ~azure.mgmt.networkcloud.models.RackDefinition
-        :keyword analytics_workspace_id: The resource ID of the Log Analytics Workspace that will be
-         used for storing relevant logs.
+        :keyword analytics_output_settings: The settings for the log analytics workspace used for
+         output of logs from this cluster.
+        :paramtype analytics_output_settings: ~azure.mgmt.networkcloud.models.AnalyticsOutputSettings
+        :keyword analytics_workspace_id: Field Deprecated. The resource ID of the Log Analytics
+         Workspace that will be used for storing relevant logs.
         :paramtype analytics_workspace_id: str
         :keyword cluster_location: The customer-provided location information to identify where the
          cluster resides.
@@ -2455,6 +2677,9 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         :paramtype cluster_type: str or ~azure.mgmt.networkcloud.models.ClusterType
         :keyword cluster_version: The current runtime version of the cluster. Required.
         :paramtype cluster_version: str
+        :keyword command_output_settings: The settings for commands run in this cluster, such as bare
+         metal machine run read only commands and data extracts.
+        :paramtype command_output_settings: ~azure.mgmt.networkcloud.models.CommandOutputSettings
         :keyword compute_deployment_threshold: The validation threshold indicating the allowable
          failures of compute machines during environment validation and deployment.
         :paramtype compute_deployment_threshold: ~azure.mgmt.networkcloud.models.ValidationThreshold
@@ -2469,32 +2694,56 @@ class Cluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
         :keyword network_fabric_id: The resource ID of the Network Fabric associated with the cluster.
          Required.
         :paramtype network_fabric_id: str
+        :keyword runtime_protection_configuration: The settings for cluster runtime protection.
+        :paramtype runtime_protection_configuration:
+         ~azure.mgmt.networkcloud.models.RuntimeProtectionConfiguration
+        :keyword secret_archive: The configuration for use of a key vault to store secrets for later
+         retrieval by the operator.
+        :paramtype secret_archive: ~azure.mgmt.networkcloud.models.ClusterSecretArchive
+        :keyword secret_archive_settings: The settings for the secret archive used to hold credentials
+         for the cluster.
+        :paramtype secret_archive_settings: ~azure.mgmt.networkcloud.models.SecretArchiveSettings
+        :keyword update_strategy: The strategy for updating the cluster.
+        :paramtype update_strategy: ~azure.mgmt.networkcloud.models.ClusterUpdateStrategy
+        :keyword vulnerability_scanning_settings: The settings for how security vulnerability scanning
+         is applied to the cluster.
+        :paramtype vulnerability_scanning_settings:
+         ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettings
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
+        self.identity = identity
         self.aggregator_or_single_rack_definition = aggregator_or_single_rack_definition
+        self.analytics_output_settings = analytics_output_settings
         self.analytics_workspace_id = analytics_workspace_id
-        self.available_upgrade_versions = None
-        self.cluster_capacity = None
-        self.cluster_connection_status = None
-        self.cluster_extended_location = None
+        self.available_upgrade_versions: Optional[List["_models.ClusterAvailableUpgradeVersion"]] = None
+        self.cluster_capacity: Optional["_models.ClusterCapacity"] = None
+        self.cluster_connection_status: Optional[Union[str, "_models.ClusterConnectionStatus"]] = None
+        self.cluster_extended_location: Optional["_models.ExtendedLocation"] = None
         self.cluster_location = cluster_location
-        self.cluster_manager_connection_status = None
-        self.cluster_manager_id = None
+        self.cluster_manager_connection_status: Optional[Union[str, "_models.ClusterManagerConnectionStatus"]] = None
+        self.cluster_manager_id: Optional[str] = None
         self.cluster_service_principal = cluster_service_principal
         self.cluster_type = cluster_type
         self.cluster_version = cluster_version
+        self.command_output_settings = command_output_settings
         self.compute_deployment_threshold = compute_deployment_threshold
         self.compute_rack_definitions = compute_rack_definitions
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.hybrid_aks_extended_location = None
+        self.detailed_status: Optional[Union[str, "_models.ClusterDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.hybrid_aks_extended_location: Optional["_models.ExtendedLocation"] = None
         self.managed_resource_group_configuration = managed_resource_group_configuration
-        self.manual_action_count = None
+        self.manual_action_count: Optional[int] = None
         self.network_fabric_id = network_fabric_id
-        self.provisioning_state = None
-        self.support_expiry_date = None
-        self.workload_resource_ids = None
+        self.provisioning_state: Optional[Union[str, "_models.ClusterProvisioningState"]] = None
+        self.runtime_protection_configuration = runtime_protection_configuration
+        self.secret_archive = secret_archive
+        self.secret_archive_settings = secret_archive_settings
+        self.support_expiry_date: Optional[str] = None
+        self.update_strategy = update_strategy
+        self.vulnerability_scanning_settings = vulnerability_scanning_settings
+        self.workload_resource_ids: Optional[List[str]] = None
 
 
 class ClusterAvailableUpgradeVersion(_serialization.Model):
@@ -2540,12 +2789,12 @@ class ClusterAvailableUpgradeVersion(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.control_impact = None
-        self.expected_duration = None
-        self.impact_description = None
-        self.support_expiry_date = None
-        self.target_cluster_version = None
-        self.workload_impact = None
+        self.control_impact: Optional[Union[str, "_models.ControlImpact"]] = None
+        self.expected_duration: Optional[str] = None
+        self.impact_description: Optional[str] = None
+        self.support_expiry_date: Optional[str] = None
+        self.target_cluster_version: Optional[str] = None
+        self.workload_impact: Optional[Union[str, "_models.WorkloadImpact"]] = None
 
 
 class ClusterAvailableVersion(_serialization.Model):
@@ -2573,35 +2822,36 @@ class ClusterAvailableVersion(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.support_expiry_date = None
-        self.target_cluster_version = None
+        self.support_expiry_date: Optional[str] = None
+        self.target_cluster_version: Optional[str] = None
 
 
 class ClusterCapacity(_serialization.Model):
     """ClusterCapacity represents various details regarding compute capacity.
 
     :ivar available_appliance_storage_gb: The remaining appliance-based storage in GB available for
-     workload use.
+     workload use. Measured in gibibytes.
     :vartype available_appliance_storage_gb: int
     :ivar available_core_count: The remaining number of cores that are available in this cluster
      for workload use.
     :vartype available_core_count: int
     :ivar available_host_storage_gb: The remaining machine or host-based storage in GB available
-     for workload use.
+     for workload use. Measured in gibibytes.
     :vartype available_host_storage_gb: int
     :ivar available_memory_gb: The remaining memory in GB that are available in this cluster for
-     workload use.
+     workload use. Measured in gibibytes.
     :vartype available_memory_gb: int
     :ivar total_appliance_storage_gb: The total appliance-based storage in GB supported by this
-     cluster for workload use.
+     cluster for workload use. Measured in gibibytes.
     :vartype total_appliance_storage_gb: int
     :ivar total_core_count: The total number of cores that are supported by this cluster for
      workload use.
     :vartype total_core_count: int
     :ivar total_host_storage_gb: The total machine or host-based storage in GB supported by this
-     cluster for workload use.
+     cluster for workload use. Measured in gibibytes.
     :vartype total_host_storage_gb: int
-    :ivar total_memory_gb: The total memory supported by this cluster for workload use.
+    :ivar total_memory_gb: The total memory supported by this cluster for workload use. Measured in
+     gibibytes.
     :vartype total_memory_gb: int
     """
 
@@ -2631,27 +2881,28 @@ class ClusterCapacity(_serialization.Model):
     ) -> None:
         """
         :keyword available_appliance_storage_gb: The remaining appliance-based storage in GB available
-         for workload use.
+         for workload use. Measured in gibibytes.
         :paramtype available_appliance_storage_gb: int
         :keyword available_core_count: The remaining number of cores that are available in this cluster
          for workload use.
         :paramtype available_core_count: int
         :keyword available_host_storage_gb: The remaining machine or host-based storage in GB available
-         for workload use.
+         for workload use. Measured in gibibytes.
         :paramtype available_host_storage_gb: int
         :keyword available_memory_gb: The remaining memory in GB that are available in this cluster for
-         workload use.
+         workload use. Measured in gibibytes.
         :paramtype available_memory_gb: int
         :keyword total_appliance_storage_gb: The total appliance-based storage in GB supported by this
-         cluster for workload use.
+         cluster for workload use. Measured in gibibytes.
         :paramtype total_appliance_storage_gb: int
         :keyword total_core_count: The total number of cores that are supported by this cluster for
          workload use.
         :paramtype total_core_count: int
         :keyword total_host_storage_gb: The total machine or host-based storage in GB supported by this
-         cluster for workload use.
+         cluster for workload use. Measured in gibibytes.
         :paramtype total_host_storage_gb: int
-        :keyword total_memory_gb: The total memory supported by this cluster for workload use.
+        :keyword total_memory_gb: The total memory supported by this cluster for workload use. Measured
+         in gibibytes.
         :paramtype total_memory_gb: int
         """
         super().__init__(**kwargs)
@@ -2663,6 +2914,38 @@ class ClusterCapacity(_serialization.Model):
         self.total_core_count = total_core_count
         self.total_host_storage_gb = total_host_storage_gb
         self.total_memory_gb = total_memory_gb
+
+
+class ClusterContinueUpdateVersionParameters(_serialization.Model):
+    """ClusterContinueUpdateVersionParameters represents the body of the request to continue the
+    update of a cluster version.
+
+    :ivar machine_group_targeting_mode: The mode by which the cluster will target the next grouping
+     of servers to continue the update. "AlphaByRack"
+    :vartype machine_group_targeting_mode: str or
+     ~azure.mgmt.networkcloud.models.ClusterContinueUpdateVersionMachineGroupTargetingMode
+    """
+
+    _attribute_map = {
+        "machine_group_targeting_mode": {"key": "machineGroupTargetingMode", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        machine_group_targeting_mode: Union[
+            str, "_models.ClusterContinueUpdateVersionMachineGroupTargetingMode"
+        ] = "AlphaByRack",
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword machine_group_targeting_mode: The mode by which the cluster will target the next
+         grouping of servers to continue the update. "AlphaByRack"
+        :paramtype machine_group_targeting_mode: str or
+         ~azure.mgmt.networkcloud.models.ClusterContinueUpdateVersionMachineGroupTargetingMode
+        """
+        super().__init__(**kwargs)
+        self.machine_group_targeting_mode = machine_group_targeting_mode
 
 
 class ClusterDeployParameters(_serialization.Model):
@@ -2715,12 +2998,12 @@ class ClusterList(_serialization.Model):
         self.value = value
 
 
-class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class ClusterManager(TrackedResource):
     """ClusterManager represents a control-plane to manage one or more on-premises clusters.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -2737,6 +3020,10 @@ class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attr
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
+    :ivar identity: The identity of the cluster manager.
+    :vartype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
     :ivar analytics_workspace_id: The resource ID of the Log Analytics workspace that is used for
      the logs collection.
     :vartype analytics_workspace_id: str
@@ -2780,6 +3067,7 @@ class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attr
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "cluster_versions": {"readonly": True},
         "detailed_status": {"readonly": True},
         "detailed_status_message": {"readonly": True},
@@ -2795,6 +3083,8 @@ class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attr
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
+        "identity": {"key": "identity", "type": "ManagedServiceIdentity"},
         "analytics_workspace_id": {"key": "properties.analyticsWorkspaceId", "type": "str"},
         "availability_zones": {"key": "properties.availabilityZones", "type": "[str]"},
         "cluster_versions": {"key": "properties.clusterVersions", "type": "[ClusterAvailableVersion]"},
@@ -2816,6 +3106,7 @@ class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attr
         location: str,
         fabric_controller_id: str,
         tags: Optional[Dict[str, str]] = None,
+        identity: Optional["_models.ManagedServiceIdentity"] = None,
         analytics_workspace_id: Optional[str] = None,
         availability_zones: Optional[List[str]] = None,
         managed_resource_group_configuration: Optional["_models.ManagedResourceGroupConfiguration"] = None,
@@ -2827,6 +3118,8 @@ class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attr
         :paramtype tags: dict[str, str]
         :keyword location: The geo-location where the resource lives. Required.
         :paramtype location: str
+        :keyword identity: The identity of the cluster manager.
+        :paramtype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
         :keyword analytics_workspace_id: The resource ID of the Log Analytics workspace that is used
          for the logs collection.
         :paramtype analytics_workspace_id: str
@@ -2847,15 +3140,17 @@ class ClusterManager(TrackedResource):  # pylint: disable=too-many-instance-attr
         :paramtype vm_size: str
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
+        self.identity = identity
         self.analytics_workspace_id = analytics_workspace_id
         self.availability_zones = availability_zones
-        self.cluster_versions = None
-        self.detailed_status = None
-        self.detailed_status_message = None
+        self.cluster_versions: Optional[List["_models.ClusterAvailableVersion"]] = None
+        self.detailed_status: Optional[Union[str, "_models.ClusterManagerDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
         self.fabric_controller_id = fabric_controller_id
         self.managed_resource_group_configuration = managed_resource_group_configuration
-        self.manager_extended_location = None
-        self.provisioning_state = None
+        self.manager_extended_location: Optional["_models.ExtendedLocation"] = None
+        self.provisioning_state: Optional[Union[str, "_models.ClusterManagerProvisioningState"]] = None
         self.vm_size = vm_size
 
 
@@ -2891,30 +3186,42 @@ class ClusterManagerPatchParameters(_serialization.Model):
     """ClusterManagerPatchParameters represents the body of the request to patch the cluster
     properties.
 
+    :ivar identity: The identity for the resource.
+    :vartype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
     :ivar tags: The Azure resource tags that will replace the existing ones.
     :vartype tags: dict[str, str]
     """
 
     _attribute_map = {
+        "identity": {"key": "identity", "type": "ManagedServiceIdentity"},
         "tags": {"key": "tags", "type": "{str}"},
     }
 
-    def __init__(self, *, tags: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *,
+        identity: Optional["_models.ManagedServiceIdentity"] = None,
+        tags: Optional[Dict[str, str]] = None,
+        **kwargs: Any
+    ) -> None:
         """
+        :keyword identity: The identity for the resource.
+        :paramtype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
         :keyword tags: The Azure resource tags that will replace the existing ones.
         :paramtype tags: dict[str, str]
         """
         super().__init__(**kwargs)
+        self.identity = identity
         self.tags = tags
 
 
-class ClusterMetricsConfiguration(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class ClusterMetricsConfiguration(TrackedResource):
     """ClusterMetricsConfiguration represents the metrics configuration of an on-premises Network
     Cloud cluster.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -2931,6 +3238,8 @@ class ClusterMetricsConfiguration(TrackedResource):  # pylint: disable=too-many-
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -2961,6 +3270,7 @@ class ClusterMetricsConfiguration(TrackedResource):  # pylint: disable=too-many-
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "collection_interval": {"required": True, "maximum": 1440, "minimum": 1},
         "detailed_status": {"readonly": True},
@@ -2976,6 +3286,7 @@ class ClusterMetricsConfiguration(TrackedResource):  # pylint: disable=too-many-
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "collection_interval": {"key": "properties.collectionInterval", "type": "int"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
@@ -3011,13 +3322,14 @@ class ClusterMetricsConfiguration(TrackedResource):  # pylint: disable=too-many-
         :paramtype enabled_metrics: list[str]
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.collection_interval = collection_interval
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.disabled_metrics = None
+        self.detailed_status: Optional[Union[str, "_models.ClusterMetricsConfigurationDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.disabled_metrics: Optional[List[str]] = None
         self.enabled_metrics = enabled_metrics
-        self.provisioning_state = None
+        self.provisioning_state: Optional[Union[str, "_models.ClusterMetricsConfigurationProvisioningState"]] = None
 
 
 class ClusterMetricsConfigurationList(_serialization.Model):
@@ -3052,7 +3364,7 @@ class ClusterMetricsConfigurationList(_serialization.Model):
         self.value = value
 
 
-class ClusterMetricsConfigurationPatchParameters(_serialization.Model):
+class ClusterMetricsConfigurationPatchParameters(_serialization.Model):  # pylint: disable=name-too-long
     """ClusterMetricsConfigurationPatchParameters represents the body of the request to patch the
     metrics configuration of cluster.
 
@@ -3101,17 +3413,25 @@ class ClusterMetricsConfigurationPatchParameters(_serialization.Model):
 class ClusterPatchParameters(_serialization.Model):
     """ClusterPatchParameters represents the body of the request to patch the cluster properties.
 
+    :ivar identity: The identity for the resource.
+    :vartype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
     :ivar tags: The Azure resource tags that will replace the existing ones.
     :vartype tags: dict[str, str]
     :ivar aggregator_or_single_rack_definition: The rack definition that is intended to reflect
      only a single rack in a single rack cluster, or an aggregator rack in a multi-rack cluster.
     :vartype aggregator_or_single_rack_definition: ~azure.mgmt.networkcloud.models.RackDefinition
+    :ivar analytics_output_settings: The settings for the log analytics workspace used for output
+     of logs from this cluster.
+    :vartype analytics_output_settings: ~azure.mgmt.networkcloud.models.AnalyticsOutputSettings
     :ivar cluster_location: The customer-provided location information to identify where the
      cluster resides.
     :vartype cluster_location: str
     :ivar cluster_service_principal: The service principal to be used by the cluster during Arc
      Appliance installation.
     :vartype cluster_service_principal: ~azure.mgmt.networkcloud.models.ServicePrincipalInformation
+    :ivar command_output_settings: The settings for commands run in this cluster, such as bare
+     metal machine run read only commands and data extracts.
+    :vartype command_output_settings: ~azure.mgmt.networkcloud.models.CommandOutputSettings
     :ivar compute_deployment_threshold: The validation threshold indicating the allowable failures
      of compute machines during environment validation and deployment.
     :vartype compute_deployment_threshold: ~azure.mgmt.networkcloud.models.ValidationThreshold
@@ -3119,40 +3439,82 @@ class ClusterPatchParameters(_serialization.Model):
      multi-rack
      cluster, or an empty list in a single-rack cluster.
     :vartype compute_rack_definitions: list[~azure.mgmt.networkcloud.models.RackDefinition]
+    :ivar runtime_protection_configuration: The settings for cluster runtime protection.
+    :vartype runtime_protection_configuration:
+     ~azure.mgmt.networkcloud.models.RuntimeProtectionConfiguration
+    :ivar secret_archive: The configuration for use of a key vault to store secrets for later
+     retrieval by the operator.
+    :vartype secret_archive: ~azure.mgmt.networkcloud.models.ClusterSecretArchive
+    :ivar secret_archive_settings: The settings for the secret archive used to hold credentials for
+     the cluster.
+    :vartype secret_archive_settings: ~azure.mgmt.networkcloud.models.SecretArchiveSettings
+    :ivar update_strategy: The strategy for updating the cluster.
+    :vartype update_strategy: ~azure.mgmt.networkcloud.models.ClusterUpdateStrategy
+    :ivar vulnerability_scanning_settings: The settings for how security vulnerability scanning is
+     applied to the cluster.
+    :vartype vulnerability_scanning_settings:
+     ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettingsPatch
     """
 
     _attribute_map = {
+        "identity": {"key": "identity", "type": "ManagedServiceIdentity"},
         "tags": {"key": "tags", "type": "{str}"},
         "aggregator_or_single_rack_definition": {
             "key": "properties.aggregatorOrSingleRackDefinition",
             "type": "RackDefinition",
         },
+        "analytics_output_settings": {"key": "properties.analyticsOutputSettings", "type": "AnalyticsOutputSettings"},
         "cluster_location": {"key": "properties.clusterLocation", "type": "str"},
         "cluster_service_principal": {
             "key": "properties.clusterServicePrincipal",
             "type": "ServicePrincipalInformation",
         },
+        "command_output_settings": {"key": "properties.commandOutputSettings", "type": "CommandOutputSettings"},
         "compute_deployment_threshold": {"key": "properties.computeDeploymentThreshold", "type": "ValidationThreshold"},
         "compute_rack_definitions": {"key": "properties.computeRackDefinitions", "type": "[RackDefinition]"},
+        "runtime_protection_configuration": {
+            "key": "properties.runtimeProtectionConfiguration",
+            "type": "RuntimeProtectionConfiguration",
+        },
+        "secret_archive": {"key": "properties.secretArchive", "type": "ClusterSecretArchive"},
+        "secret_archive_settings": {"key": "properties.secretArchiveSettings", "type": "SecretArchiveSettings"},
+        "update_strategy": {"key": "properties.updateStrategy", "type": "ClusterUpdateStrategy"},
+        "vulnerability_scanning_settings": {
+            "key": "properties.vulnerabilityScanningSettings",
+            "type": "VulnerabilityScanningSettingsPatch",
+        },
     }
 
     def __init__(
         self,
         *,
+        identity: Optional["_models.ManagedServiceIdentity"] = None,
         tags: Optional[Dict[str, str]] = None,
         aggregator_or_single_rack_definition: Optional["_models.RackDefinition"] = None,
+        analytics_output_settings: Optional["_models.AnalyticsOutputSettings"] = None,
         cluster_location: Optional[str] = None,
         cluster_service_principal: Optional["_models.ServicePrincipalInformation"] = None,
+        command_output_settings: Optional["_models.CommandOutputSettings"] = None,
         compute_deployment_threshold: Optional["_models.ValidationThreshold"] = None,
         compute_rack_definitions: Optional[List["_models.RackDefinition"]] = None,
+        runtime_protection_configuration: Optional["_models.RuntimeProtectionConfiguration"] = None,
+        secret_archive: Optional["_models.ClusterSecretArchive"] = None,
+        secret_archive_settings: Optional["_models.SecretArchiveSettings"] = None,
+        update_strategy: Optional["_models.ClusterUpdateStrategy"] = None,
+        vulnerability_scanning_settings: Optional["_models.VulnerabilityScanningSettingsPatch"] = None,
         **kwargs: Any
     ) -> None:
         """
+        :keyword identity: The identity for the resource.
+        :paramtype identity: ~azure.mgmt.networkcloud.models.ManagedServiceIdentity
         :keyword tags: The Azure resource tags that will replace the existing ones.
         :paramtype tags: dict[str, str]
         :keyword aggregator_or_single_rack_definition: The rack definition that is intended to reflect
          only a single rack in a single rack cluster, or an aggregator rack in a multi-rack cluster.
         :paramtype aggregator_or_single_rack_definition: ~azure.mgmt.networkcloud.models.RackDefinition
+        :keyword analytics_output_settings: The settings for the log analytics workspace used for
+         output of logs from this cluster.
+        :paramtype analytics_output_settings: ~azure.mgmt.networkcloud.models.AnalyticsOutputSettings
         :keyword cluster_location: The customer-provided location information to identify where the
          cluster resides.
         :paramtype cluster_location: str
@@ -3160,6 +3522,9 @@ class ClusterPatchParameters(_serialization.Model):
          Appliance installation.
         :paramtype cluster_service_principal:
          ~azure.mgmt.networkcloud.models.ServicePrincipalInformation
+        :keyword command_output_settings: The settings for commands run in this cluster, such as bare
+         metal machine run read only commands and data extracts.
+        :paramtype command_output_settings: ~azure.mgmt.networkcloud.models.CommandOutputSettings
         :keyword compute_deployment_threshold: The validation threshold indicating the allowable
          failures of compute machines during environment validation and deployment.
         :paramtype compute_deployment_threshold: ~azure.mgmt.networkcloud.models.ValidationThreshold
@@ -3167,20 +3532,187 @@ class ClusterPatchParameters(_serialization.Model):
          multi-rack
          cluster, or an empty list in a single-rack cluster.
         :paramtype compute_rack_definitions: list[~azure.mgmt.networkcloud.models.RackDefinition]
+        :keyword runtime_protection_configuration: The settings for cluster runtime protection.
+        :paramtype runtime_protection_configuration:
+         ~azure.mgmt.networkcloud.models.RuntimeProtectionConfiguration
+        :keyword secret_archive: The configuration for use of a key vault to store secrets for later
+         retrieval by the operator.
+        :paramtype secret_archive: ~azure.mgmt.networkcloud.models.ClusterSecretArchive
+        :keyword secret_archive_settings: The settings for the secret archive used to hold credentials
+         for the cluster.
+        :paramtype secret_archive_settings: ~azure.mgmt.networkcloud.models.SecretArchiveSettings
+        :keyword update_strategy: The strategy for updating the cluster.
+        :paramtype update_strategy: ~azure.mgmt.networkcloud.models.ClusterUpdateStrategy
+        :keyword vulnerability_scanning_settings: The settings for how security vulnerability scanning
+         is applied to the cluster.
+        :paramtype vulnerability_scanning_settings:
+         ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettingsPatch
         """
         super().__init__(**kwargs)
+        self.identity = identity
         self.tags = tags
         self.aggregator_or_single_rack_definition = aggregator_or_single_rack_definition
+        self.analytics_output_settings = analytics_output_settings
         self.cluster_location = cluster_location
         self.cluster_service_principal = cluster_service_principal
+        self.command_output_settings = command_output_settings
         self.compute_deployment_threshold = compute_deployment_threshold
         self.compute_rack_definitions = compute_rack_definitions
+        self.runtime_protection_configuration = runtime_protection_configuration
+        self.secret_archive = secret_archive
+        self.secret_archive_settings = secret_archive_settings
+        self.update_strategy = update_strategy
+        self.vulnerability_scanning_settings = vulnerability_scanning_settings
+
+
+class ClusterScanRuntimeParameters(_serialization.Model):
+    """ClusterScanRuntimeParameters defines the parameters for the cluster scan runtime operation.
+
+    :ivar scan_activity: The choice of if the scan operation should run the scan. Known values are:
+     "Scan" and "Skip".
+    :vartype scan_activity: str or
+     ~azure.mgmt.networkcloud.models.ClusterScanRuntimeParametersScanActivity
+    """
+
+    _attribute_map = {
+        "scan_activity": {"key": "scanActivity", "type": "str"},
+    }
+
+    def __init__(
+        self, *, scan_activity: Union[str, "_models.ClusterScanRuntimeParametersScanActivity"] = "Scan", **kwargs: Any
+    ) -> None:
+        """
+        :keyword scan_activity: The choice of if the scan operation should run the scan. Known values
+         are: "Scan" and "Skip".
+        :paramtype scan_activity: str or
+         ~azure.mgmt.networkcloud.models.ClusterScanRuntimeParametersScanActivity
+        """
+        super().__init__(**kwargs)
+        self.scan_activity = scan_activity
+
+
+class ClusterSecretArchive(_serialization.Model):
+    """ClusterSecretArchive configures the key vault to archive the secrets of the cluster for later
+    retrieval.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar key_vault_id: The resource ID of the key vault to archive the secrets of the cluster.
+     Required.
+    :vartype key_vault_id: str
+    :ivar use_key_vault: The indicator if the specified key vault should be used to archive the
+     secrets of the cluster. Known values are: "True" and "False".
+    :vartype use_key_vault: str or ~azure.mgmt.networkcloud.models.ClusterSecretArchiveEnabled
+    """
+
+    _validation = {
+        "key_vault_id": {"required": True},
+    }
+
+    _attribute_map = {
+        "key_vault_id": {"key": "keyVaultId", "type": "str"},
+        "use_key_vault": {"key": "useKeyVault", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        key_vault_id: str,
+        use_key_vault: Union[str, "_models.ClusterSecretArchiveEnabled"] = "False",
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword key_vault_id: The resource ID of the key vault to archive the secrets of the cluster.
+         Required.
+        :paramtype key_vault_id: str
+        :keyword use_key_vault: The indicator if the specified key vault should be used to archive the
+         secrets of the cluster. Known values are: "True" and "False".
+        :paramtype use_key_vault: str or ~azure.mgmt.networkcloud.models.ClusterSecretArchiveEnabled
+        """
+        super().__init__(**kwargs)
+        self.key_vault_id = key_vault_id
+        self.use_key_vault = use_key_vault
+
+
+class ClusterUpdateStrategy(_serialization.Model):
+    """ClusterUpdateStrategy represents the strategy for updating the cluster.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar max_unavailable: The maximum number of worker nodes that can be offline within the
+     increment of update, e.g., rack-by-rack.
+     Limited by the maximum number of machines in the increment. Defaults to the whole increment
+     size.
+    :vartype max_unavailable: int
+    :ivar strategy_type: The mode of operation for runtime protection. Required. Known values are:
+     "Rack" and "PauseAfterRack".
+    :vartype strategy_type: str or ~azure.mgmt.networkcloud.models.ClusterUpdateStrategyType
+    :ivar threshold_type: Selection of how the threshold should be evaluated. Required. Known
+     values are: "CountSuccess" and "PercentSuccess".
+    :vartype threshold_type: str or ~azure.mgmt.networkcloud.models.ValidationThresholdType
+    :ivar threshold_value: The numeric threshold value. Required.
+    :vartype threshold_value: int
+    :ivar wait_time_minutes: The time to wait between the increments of update defined by the
+     strategy.
+    :vartype wait_time_minutes: int
+    """
+
+    _validation = {
+        "max_unavailable": {"minimum": 1},
+        "strategy_type": {"required": True},
+        "threshold_type": {"required": True},
+        "threshold_value": {"required": True, "minimum": 0},
+        "wait_time_minutes": {"maximum": 60, "minimum": 0},
+    }
+
+    _attribute_map = {
+        "max_unavailable": {"key": "maxUnavailable", "type": "int"},
+        "strategy_type": {"key": "strategyType", "type": "str"},
+        "threshold_type": {"key": "thresholdType", "type": "str"},
+        "threshold_value": {"key": "thresholdValue", "type": "int"},
+        "wait_time_minutes": {"key": "waitTimeMinutes", "type": "int"},
+    }
+
+    def __init__(
+        self,
+        *,
+        strategy_type: Union[str, "_models.ClusterUpdateStrategyType"],
+        threshold_type: Union[str, "_models.ValidationThresholdType"],
+        threshold_value: int,
+        max_unavailable: Optional[int] = None,
+        wait_time_minutes: int = 15,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword max_unavailable: The maximum number of worker nodes that can be offline within the
+         increment of update, e.g., rack-by-rack.
+         Limited by the maximum number of machines in the increment. Defaults to the whole increment
+         size.
+        :paramtype max_unavailable: int
+        :keyword strategy_type: The mode of operation for runtime protection. Required. Known values
+         are: "Rack" and "PauseAfterRack".
+        :paramtype strategy_type: str or ~azure.mgmt.networkcloud.models.ClusterUpdateStrategyType
+        :keyword threshold_type: Selection of how the threshold should be evaluated. Required. Known
+         values are: "CountSuccess" and "PercentSuccess".
+        :paramtype threshold_type: str or ~azure.mgmt.networkcloud.models.ValidationThresholdType
+        :keyword threshold_value: The numeric threshold value. Required.
+        :paramtype threshold_value: int
+        :keyword wait_time_minutes: The time to wait between the increments of update defined by the
+         strategy.
+        :paramtype wait_time_minutes: int
+        """
+        super().__init__(**kwargs)
+        self.max_unavailable = max_unavailable
+        self.strategy_type = strategy_type
+        self.threshold_type = threshold_type
+        self.threshold_value = threshold_value
+        self.wait_time_minutes = wait_time_minutes
 
 
 class ClusterUpdateVersionParameters(_serialization.Model):
     """ClusterUpdateVersionParameters represents the body of the request to update cluster version.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar target_cluster_version: The version to be applied to the cluster during update. Required.
     :vartype target_cluster_version: str
@@ -3204,12 +3736,49 @@ class ClusterUpdateVersionParameters(_serialization.Model):
         self.target_cluster_version = target_cluster_version
 
 
-class Console(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class CommandOutputSettings(_serialization.Model):
+    """CommandOutputSettings represents the settings for commands run within the cluster such as bare
+    metal machine run read-only commands.
+
+    :ivar associated_identity: The selection of the managed identity to use with this storage
+     account container. The identity type must be either system assigned or user assigned.
+    :vartype associated_identity: ~azure.mgmt.networkcloud.models.IdentitySelector
+    :ivar container_url: The URL of the storage account container that is to be used by the
+     specified identities.
+    :vartype container_url: str
+    """
+
+    _attribute_map = {
+        "associated_identity": {"key": "associatedIdentity", "type": "IdentitySelector"},
+        "container_url": {"key": "containerUrl", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        associated_identity: Optional["_models.IdentitySelector"] = None,
+        container_url: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword associated_identity: The selection of the managed identity to use with this storage
+         account container. The identity type must be either system assigned or user assigned.
+        :paramtype associated_identity: ~azure.mgmt.networkcloud.models.IdentitySelector
+        :keyword container_url: The URL of the storage account container that is to be used by the
+         specified identities.
+        :paramtype container_url: str
+        """
+        super().__init__(**kwargs)
+        self.associated_identity = associated_identity
+        self.container_url = container_url
+
+
+class Console(TrackedResource):
     """Console represents the console of an on-premises Network Cloud virtual machine.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -3226,6 +3795,8 @@ class Console(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster manager associated with the
      cluster this virtual machine is created on. Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -3259,6 +3830,7 @@ class Console(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "detailed_status": {"readonly": True},
         "detailed_status_message": {"readonly": True},
@@ -3276,6 +3848,7 @@ class Console(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
         "detailed_status_message": {"key": "properties.detailedStatusMessage", "type": "str"},
@@ -3316,15 +3889,16 @@ class Console(TrackedResource):  # pylint: disable=too-many-instance-attributes
         :paramtype ssh_public_key: ~azure.mgmt.networkcloud.models.SshPublicKey
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
-        self.detailed_status = None
-        self.detailed_status_message = None
+        self.detailed_status: Optional[Union[str, "_models.ConsoleDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
         self.enabled = enabled
         self.expiration = expiration
-        self.private_link_service_id = None
-        self.provisioning_state = None
+        self.private_link_service_id: Optional[str] = None
+        self.provisioning_state: Optional[Union[str, "_models.ConsoleProvisioningState"]] = None
         self.ssh_public_key = ssh_public_key
-        self.virtual_machine_access_id = None
+        self.virtual_machine_access_id: Optional[str] = None
 
 
 class ConsoleList(_serialization.Model):
@@ -3360,8 +3934,8 @@ class ConsolePatchParameters(_serialization.Model):
 
     :ivar tags: The Azure resource tags that will replace the existing ones.
     :vartype tags: dict[str, str]
-    :ivar enabled: The credentials used to login to the image repository that has access to the
-     specified image. Known values are: "True" and "False".
+    :ivar enabled: The indicator of whether the console access is enabled. Known values are: "True"
+     and "False".
     :vartype enabled: str or ~azure.mgmt.networkcloud.models.ConsoleEnabled
     :ivar expiration: The date and time after which the key will be disallowed access.
     :vartype expiration: ~datetime.datetime
@@ -3389,8 +3963,8 @@ class ConsolePatchParameters(_serialization.Model):
         """
         :keyword tags: The Azure resource tags that will replace the existing ones.
         :paramtype tags: dict[str, str]
-        :keyword enabled: The credentials used to login to the image repository that has access to the
-         specified image. Known values are: "True" and "False".
+        :keyword enabled: The indicator of whether the console access is enabled. Known values are:
+         "True" and "False".
         :paramtype enabled: str or ~azure.mgmt.networkcloud.models.ConsoleEnabled
         :keyword expiration: The date and time after which the key will be disallowed access.
         :paramtype expiration: ~datetime.datetime
@@ -3409,7 +3983,7 @@ class ControlPlaneNodeConfiguration(_serialization.Model):
     """ControlPlaneNodeConfiguration represents the selection of virtual machines and size of the
     control plane for a Kubernetes cluster.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar administrator_configuration: The administrator credentials to be used for the nodes in
      the control plane.
@@ -3471,6 +4045,10 @@ class ControlPlaneNodePatchConfiguration(_serialization.Model):
     """ControlPlaneNodePatchConfiguration represents the properties of the control plane that can be
     patched for this Kubernetes cluster.
 
+    :ivar administrator_configuration: The configuration of administrator credentials for the
+     control plane nodes.
+    :vartype administrator_configuration:
+     ~azure.mgmt.networkcloud.models.AdministratorConfigurationPatch
     :ivar count: The number of virtual machines that use this configuration.
     :vartype count: int
     """
@@ -3480,15 +4058,27 @@ class ControlPlaneNodePatchConfiguration(_serialization.Model):
     }
 
     _attribute_map = {
+        "administrator_configuration": {"key": "administratorConfiguration", "type": "AdministratorConfigurationPatch"},
         "count": {"key": "count", "type": "int"},
     }
 
-    def __init__(self, *, count: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *,
+        administrator_configuration: Optional["_models.AdministratorConfigurationPatch"] = None,
+        count: Optional[int] = None,
+        **kwargs: Any
+    ) -> None:
         """
+        :keyword administrator_configuration: The configuration of administrator credentials for the
+         control plane nodes.
+        :paramtype administrator_configuration:
+         ~azure.mgmt.networkcloud.models.AdministratorConfigurationPatch
         :keyword count: The number of virtual machines that use this configuration.
         :paramtype count: int
         """
         super().__init__(**kwargs)
+        self.administrator_configuration = administrator_configuration
         self.count = count
 
 
@@ -3496,7 +4086,7 @@ class EgressEndpoint(_serialization.Model):
     """EgressEndpoint represents the connection from a cloud services network to the specified
     endpoint for a common purpose.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar category: The descriptive category name of endpoints accessible by the AKS agent node.
      For example, azure-resource-management, API server, etc. The platform egress endpoints provided
@@ -3533,7 +4123,7 @@ class EgressEndpoint(_serialization.Model):
 class EndpointDependency(_serialization.Model):
     """EndpointDependency represents the definition of an endpoint, including the domain and details.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar domain_name: The domain name of the dependency. Required.
     :vartype domain_name: str
@@ -3587,8 +4177,8 @@ class ErrorAdditionalInfo(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.type = None
-        self.info = None
+        self.type: Optional[str] = None
+        self.info: Optional[JSON] = None
 
 
 class ErrorDetail(_serialization.Model):
@@ -3627,11 +4217,11 @@ class ErrorDetail(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.code = None
-        self.message = None
-        self.target = None
-        self.details = None
-        self.additional_info = None
+        self.code: Optional[str] = None
+        self.message: Optional[str] = None
+        self.target: Optional[str] = None
+        self.details: Optional[List["_models.ErrorDetail"]] = None
+        self.additional_info: Optional[List["_models.ErrorAdditionalInfo"]] = None
 
 
 class ErrorResponse(_serialization.Model):
@@ -3658,7 +4248,7 @@ class ErrorResponse(_serialization.Model):
 class ExtendedLocation(_serialization.Model):
     """ExtendedLocation represents the Azure custom location where the resource will be created.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar name: The resource ID of the extended location on which the resource will be created.
      Required.
@@ -3723,10 +4313,10 @@ class FeatureStatus(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.name = None
-        self.version = None
+        self.detailed_status: Optional[Union[str, "_models.FeatureDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.name: Optional[str] = None
+        self.version: Optional[str] = None
 
 
 class HardwareInventory(_serialization.Model):
@@ -3762,9 +4352,9 @@ class HardwareInventory(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.additional_host_information = None
-        self.interfaces = None
-        self.nics = None
+        self.additional_host_information: Optional[str] = None
+        self.interfaces: Optional[List["_models.HardwareInventoryNetworkInterface"]] = None
+        self.nics: Optional[List["_models.Nic"]] = None
 
 
 class HardwareInventoryNetworkInterface(_serialization.Model):
@@ -3801,10 +4391,10 @@ class HardwareInventoryNetworkInterface(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.link_status = None
-        self.mac_address = None
-        self.name = None
-        self.network_interface_id = None
+        self.link_status: Optional[str] = None
+        self.mac_address: Optional[str] = None
+        self.name: Optional[str] = None
+        self.network_interface_id: Optional[str] = None
 
 
 class HardwareValidationStatus(_serialization.Model):
@@ -3834,14 +4424,52 @@ class HardwareValidationStatus(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.last_validation_time = None
-        self.result = None
+        self.last_validation_time: Optional[datetime.datetime] = None
+        self.result: Optional[Union[str, "_models.BareMetalMachineHardwareValidationResult"]] = None
+
+
+class IdentitySelector(_serialization.Model):
+    """IdentitySelector represents the selection of a managed identity for use.
+
+    :ivar identity_type: The type of managed identity that is being selected. Known values are:
+     "SystemAssignedIdentity" and "UserAssignedIdentity".
+    :vartype identity_type: str or
+     ~azure.mgmt.networkcloud.models.ManagedServiceIdentitySelectorType
+    :ivar user_assigned_identity_resource_id: The user assigned managed identity resource ID to
+     use. Mutually exclusive with a system assigned identity type.
+    :vartype user_assigned_identity_resource_id: str
+    """
+
+    _attribute_map = {
+        "identity_type": {"key": "identityType", "type": "str"},
+        "user_assigned_identity_resource_id": {"key": "userAssignedIdentityResourceId", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        identity_type: Optional[Union[str, "_models.ManagedServiceIdentitySelectorType"]] = None,
+        user_assigned_identity_resource_id: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword identity_type: The type of managed identity that is being selected. Known values are:
+         "SystemAssignedIdentity" and "UserAssignedIdentity".
+        :paramtype identity_type: str or
+         ~azure.mgmt.networkcloud.models.ManagedServiceIdentitySelectorType
+        :keyword user_assigned_identity_resource_id: The user assigned managed identity resource ID to
+         use. Mutually exclusive with a system assigned identity type.
+        :paramtype user_assigned_identity_resource_id: str
+        """
+        super().__init__(**kwargs)
+        self.identity_type = identity_type
+        self.user_assigned_identity_resource_id = user_assigned_identity_resource_id
 
 
 class ImageRepositoryCredentials(_serialization.Model):
     """ImageRepositoryCredentials represents the credentials used to login to the image repository.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar password: The password or token used to access an image in the target repository.
      Required.
@@ -3882,11 +4510,11 @@ class ImageRepositoryCredentials(_serialization.Model):
         self.username = username
 
 
-class InitialAgentPoolConfiguration(_serialization.Model):  # pylint: disable=too-many-instance-attributes
+class InitialAgentPoolConfiguration(_serialization.Model):
     """InitialAgentPoolConfiguration specifies the configuration of a pool of virtual machines that
     are initially defined with a Kubernetes cluster.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar administrator_configuration: The administrator credentials to be used for the nodes in
      this agent pool.
@@ -4018,10 +4646,12 @@ class InitialAgentPoolConfiguration(_serialization.Model):  # pylint: disable=to
 class IpAddressPool(_serialization.Model):
     """IpAddressPool represents a pool of IP addresses that can be allocated to a service.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar addresses: The list of IP address ranges. Each range can be a either a subnet in CIDR
-     format or an explicit start-end range of IP addresses. Required.
+     format or an explicit start-end range of IP addresses. For a BGP service load balancer
+     configuration, only CIDR format is supported and excludes /32 (IPv4) and /128 (IPv6) prefixes.
+     Required.
     :vartype addresses: list[str]
     :ivar auto_assign: The indicator to determine if automatic allocation from the pool should
      occur. Known values are: "True" and "False".
@@ -4058,7 +4688,9 @@ class IpAddressPool(_serialization.Model):
     ) -> None:
         """
         :keyword addresses: The list of IP address ranges. Each range can be a either a subnet in CIDR
-         format or an explicit start-end range of IP addresses. Required.
+         format or an explicit start-end range of IP addresses. For a BGP service load balancer
+         configuration, only CIDR format is supported and excludes /32 (IPv4) and /128 (IPv6) prefixes.
+         Required.
         :paramtype addresses: list[str]
         :keyword auto_assign: The indicator to determine if automatic allocation from the pool should
          occur. Known values are: "True" and "False".
@@ -4081,7 +4713,7 @@ class IpAddressPool(_serialization.Model):
 class KeySetUser(_serialization.Model):
     """KeySetUser represents the properties of the user in the key set.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar azure_user_name: The user name that will be used for access. Required.
     :vartype azure_user_name: str
@@ -4090,6 +4722,9 @@ class KeySetUser(_serialization.Model):
     :ivar ssh_public_key: The SSH public key that will be provisioned for user access. The user is
      expected to have the corresponding SSH private key for logging in. Required.
     :vartype ssh_public_key: ~azure.mgmt.networkcloud.models.SshPublicKey
+    :ivar user_principal_name: The user principal name (email format) used to validate this user's
+     group membership.
+    :vartype user_principal_name: str
     """
 
     _validation = {
@@ -4102,6 +4737,7 @@ class KeySetUser(_serialization.Model):
         "azure_user_name": {"key": "azureUserName", "type": "str"},
         "description": {"key": "description", "type": "str"},
         "ssh_public_key": {"key": "sshPublicKey", "type": "SshPublicKey"},
+        "user_principal_name": {"key": "userPrincipalName", "type": "str"},
     }
 
     def __init__(
@@ -4110,6 +4746,7 @@ class KeySetUser(_serialization.Model):
         azure_user_name: str,
         ssh_public_key: "_models.SshPublicKey",
         description: Optional[str] = None,
+        user_principal_name: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -4120,11 +4757,15 @@ class KeySetUser(_serialization.Model):
         :keyword ssh_public_key: The SSH public key that will be provisioned for user access. The user
          is expected to have the corresponding SSH private key for logging in. Required.
         :paramtype ssh_public_key: ~azure.mgmt.networkcloud.models.SshPublicKey
+        :keyword user_principal_name: The user principal name (email format) used to validate this
+         user's group membership.
+        :paramtype user_principal_name: str
         """
         super().__init__(**kwargs)
         self.azure_user_name = azure_user_name
         self.description = description
         self.ssh_public_key = ssh_public_key
+        self.user_principal_name = user_principal_name
 
 
 class KeySetUserStatus(_serialization.Model):
@@ -4157,17 +4798,17 @@ class KeySetUserStatus(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.azure_user_name = None
-        self.status = None
-        self.status_message = None
+        self.azure_user_name: Optional[str] = None
+        self.status: Optional[Union[str, "_models.BareMetalMachineKeySetUserSetupStatus"]] = None
+        self.status_message: Optional[str] = None
 
 
-class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class KubernetesCluster(TrackedResource):
     """KubernetesCluster represents the Kubernetes cluster hosted on Network Cloud.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -4184,6 +4825,8 @@ class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-a
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -4225,9 +4868,7 @@ class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-a
      sub-resource. Required.
     :vartype initial_agent_pool_configurations:
      list[~azure.mgmt.networkcloud.models.InitialAgentPoolConfiguration]
-    :ivar kubernetes_version: The Kubernetes version for this cluster. Accepts n.n, n.n.n, and
-     n.n.n-n format. The interpreted version used will be resolved into this field after creation or
-     update. Required.
+    :ivar kubernetes_version: The Kubernetes version for this cluster. Required.
     :vartype kubernetes_version: str
     :ivar managed_resource_group_configuration: The configuration of the managed resource group
      associated with the resource.
@@ -4251,6 +4892,7 @@ class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-a
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "attached_network_ids": {"readonly": True},
         "available_upgrades": {"readonly": True},
@@ -4275,6 +4917,7 @@ class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-a
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "aad_configuration": {"key": "properties.aadConfiguration", "type": "AadConfiguration"},
         "administrator_configuration": {
@@ -4347,9 +4990,7 @@ class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-a
          sub-resource. Required.
         :paramtype initial_agent_pool_configurations:
          list[~azure.mgmt.networkcloud.models.InitialAgentPoolConfiguration]
-        :keyword kubernetes_version: The Kubernetes version for this cluster. Accepts n.n, n.n.n, and
-         n.n.n-n format. The interpreted version used will be resolved into this field after creation or
-         update. Required.
+        :keyword kubernetes_version: The Kubernetes version for this cluster. Required.
         :paramtype kubernetes_version: str
         :keyword managed_resource_group_configuration: The configuration of the managed resource group
          associated with the resource.
@@ -4360,24 +5001,199 @@ class KubernetesCluster(TrackedResource):  # pylint: disable=too-many-instance-a
         :paramtype network_configuration: ~azure.mgmt.networkcloud.models.NetworkConfiguration
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.aad_configuration = aad_configuration
         self.administrator_configuration = administrator_configuration
-        self.attached_network_ids = None
-        self.available_upgrades = None
-        self.cluster_id = None
-        self.connected_cluster_id = None
-        self.control_plane_kubernetes_version = None
+        self.attached_network_ids: Optional[List[str]] = None
+        self.available_upgrades: Optional[List["_models.AvailableUpgrade"]] = None
+        self.cluster_id: Optional[str] = None
+        self.connected_cluster_id: Optional[str] = None
+        self.control_plane_kubernetes_version: Optional[str] = None
         self.control_plane_node_configuration = control_plane_node_configuration
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.feature_statuses = None
+        self.detailed_status: Optional[Union[str, "_models.KubernetesClusterDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.feature_statuses: Optional[List["_models.FeatureStatus"]] = None
         self.initial_agent_pool_configurations = initial_agent_pool_configurations
         self.kubernetes_version = kubernetes_version
         self.managed_resource_group_configuration = managed_resource_group_configuration
         self.network_configuration = network_configuration
-        self.nodes = None
-        self.provisioning_state = None
+        self.nodes: Optional[List["_models.KubernetesClusterNode"]] = None
+        self.provisioning_state: Optional[Union[str, "_models.KubernetesClusterProvisioningState"]] = None
+
+
+class KubernetesClusterFeature(TrackedResource):
+    """KubernetesClusterFeature represents the feature of a Kubernetes cluster.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar id: Fully qualified resource ID for the resource. E.g.
+     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
+    :vartype id: str
+    :ivar name: The name of the resource.
+    :vartype name: str
+    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
+     "Microsoft.Storage/storageAccounts".
+    :vartype type: str
+    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
+     information.
+    :vartype system_data: ~azure.mgmt.networkcloud.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives. Required.
+    :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
+    :ivar availability_lifecycle: The lifecycle indicator of the feature. Known values are:
+     "Preview" and "GenerallyAvailable".
+    :vartype availability_lifecycle: str or
+     ~azure.mgmt.networkcloud.models.KubernetesClusterFeatureAvailabilityLifecycle
+    :ivar detailed_status: The detailed status of the feature. Known values are: "Error",
+     "Provisioning", and "Installed".
+    :vartype detailed_status: str or
+     ~azure.mgmt.networkcloud.models.KubernetesClusterFeatureDetailedStatus
+    :ivar detailed_status_message: The descriptive message for the detailed status of the feature.
+    :vartype detailed_status_message: str
+    :ivar options: The configured options for the feature.
+    :vartype options: list[~azure.mgmt.networkcloud.models.StringKeyValuePair]
+    :ivar provisioning_state: The provisioning state of the Kubernetes cluster feature. Known
+     values are: "Accepted", "Canceled", "Deleting", "Failed", "Succeeded", and "Updating".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.networkcloud.models.KubernetesClusterFeatureProvisioningState
+    :ivar required: The indicator of if the feature is required or optional. Optional features may
+     be deleted by the user, while required features are managed with the kubernetes cluster
+     lifecycle. Known values are: "True" and "False".
+    :vartype required: str or ~azure.mgmt.networkcloud.models.KubernetesClusterFeatureRequired
+    :ivar version: The version of the feature.
+    :vartype version: str
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "location": {"required": True},
+        "etag": {"readonly": True},
+        "availability_lifecycle": {"readonly": True},
+        "detailed_status": {"readonly": True},
+        "detailed_status_message": {"readonly": True},
+        "provisioning_state": {"readonly": True},
+        "required": {"readonly": True},
+        "version": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
+        "availability_lifecycle": {"key": "properties.availabilityLifecycle", "type": "str"},
+        "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
+        "detailed_status_message": {"key": "properties.detailedStatusMessage", "type": "str"},
+        "options": {"key": "properties.options", "type": "[StringKeyValuePair]"},
+        "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
+        "required": {"key": "properties.required", "type": "str"},
+        "version": {"key": "properties.version", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        location: str,
+        tags: Optional[Dict[str, str]] = None,
+        options: Optional[List["_models.StringKeyValuePair"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives. Required.
+        :paramtype location: str
+        :keyword options: The configured options for the feature.
+        :paramtype options: list[~azure.mgmt.networkcloud.models.StringKeyValuePair]
+        """
+        super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
+        self.availability_lifecycle: Optional[Union[str, "_models.KubernetesClusterFeatureAvailabilityLifecycle"]] = (
+            None
+        )
+        self.detailed_status: Optional[Union[str, "_models.KubernetesClusterFeatureDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.options = options
+        self.provisioning_state: Optional[Union[str, "_models.KubernetesClusterFeatureProvisioningState"]] = None
+        self.required: Optional[Union[str, "_models.KubernetesClusterFeatureRequired"]] = None
+        self.version: Optional[str] = None
+
+
+class KubernetesClusterFeatureList(_serialization.Model):
+    """KubernetesClusterFeatureList represents the list of Kubernetes cluster feature resources.
+
+    :ivar next_link: The link used to get the next page of operations.
+    :vartype next_link: str
+    :ivar value: The list of Kubernetes cluster features.
+    :vartype value: list[~azure.mgmt.networkcloud.models.KubernetesClusterFeature]
+    """
+
+    _attribute_map = {
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[KubernetesClusterFeature]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        next_link: Optional[str] = None,
+        value: Optional[List["_models.KubernetesClusterFeature"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: The link used to get the next page of operations.
+        :paramtype next_link: str
+        :keyword value: The list of Kubernetes cluster features.
+        :paramtype value: list[~azure.mgmt.networkcloud.models.KubernetesClusterFeature]
+        """
+        super().__init__(**kwargs)
+        self.next_link = next_link
+        self.value = value
+
+
+class KubernetesClusterFeaturePatchParameters(_serialization.Model):
+    """KubernetesClusterFeaturePatchParameters represents the body of the request to patch the
+    Kubernetes cluster feature.
+
+    :ivar tags: The Azure resource tags that will replace the existing ones.
+    :vartype tags: dict[str, str]
+    :ivar options: The configured options for the feature.
+    :vartype options: list[~azure.mgmt.networkcloud.models.StringKeyValuePair]
+    """
+
+    _attribute_map = {
+        "tags": {"key": "tags", "type": "{str}"},
+        "options": {"key": "properties.options", "type": "[StringKeyValuePair]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        tags: Optional[Dict[str, str]] = None,
+        options: Optional[List["_models.StringKeyValuePair"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: The Azure resource tags that will replace the existing ones.
+        :paramtype tags: dict[str, str]
+        :keyword options: The configured options for the feature.
+        :paramtype options: list[~azure.mgmt.networkcloud.models.StringKeyValuePair]
+        """
+        super().__init__(**kwargs)
+        self.tags = tags
+        self.options = options
 
 
 class KubernetesClusterList(_serialization.Model):
@@ -4412,7 +5228,7 @@ class KubernetesClusterList(_serialization.Model):
         self.value = value
 
 
-class KubernetesClusterNode(_serialization.Model):  # pylint: disable=too-many-instance-attributes
+class KubernetesClusterNode(_serialization.Model):
     """KubernetesClusterNode represents the details of a node in a Kubernetes cluster.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -4433,7 +5249,8 @@ class KubernetesClusterNode(_serialization.Model):  # pylint: disable=too-many-i
      ~azure.mgmt.networkcloud.models.KubernetesClusterNodeDetailedStatus
     :ivar detailed_status_message: The descriptive message about the current detailed status.
     :vartype detailed_status_message: str
-    :ivar disk_size_gb: The size of the disk configured for this node.
+    :ivar disk_size_gb: The size of the disk configured for this node. Allocations are measured in
+     gibibytes.
     :vartype disk_size_gb: int
     :ivar image: The machine image used to deploy this node.
     :vartype image: str
@@ -4444,7 +5261,7 @@ class KubernetesClusterNode(_serialization.Model):  # pylint: disable=too-many-i
      containing this node.
     :vartype labels: list[~azure.mgmt.networkcloud.models.KubernetesLabel]
     :ivar memory_size_gb: The amount of memory configured for this node, derived from the vm SKU
-     specified.
+     specified. Allocations are measured in gibibytes.
     :vartype memory_size_gb: int
     :ivar mode: The mode of the agent pool containing this node. Not applicable for control plane
      nodes. Known values are: "System", "User", and "NotApplicable".
@@ -4510,24 +5327,24 @@ class KubernetesClusterNode(_serialization.Model):  # pylint: disable=too-many-i
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.agent_pool_id = None
-        self.availability_zone = None
-        self.bare_metal_machine_id = None
-        self.cpu_cores = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.disk_size_gb = None
-        self.image = None
-        self.kubernetes_version = None
-        self.labels = None
-        self.memory_size_gb = None
-        self.mode = None
-        self.name = None
-        self.network_attachments = None
-        self.power_state = None
-        self.role = None
-        self.taints = None
-        self.vm_sku_name = None
+        self.agent_pool_id: Optional[str] = None
+        self.availability_zone: Optional[str] = None
+        self.bare_metal_machine_id: Optional[str] = None
+        self.cpu_cores: Optional[int] = None
+        self.detailed_status: Optional[Union[str, "_models.KubernetesClusterNodeDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.disk_size_gb: Optional[int] = None
+        self.image: Optional[str] = None
+        self.kubernetes_version: Optional[str] = None
+        self.labels: Optional[List["_models.KubernetesLabel"]] = None
+        self.memory_size_gb: Optional[int] = None
+        self.mode: Optional[Union[str, "_models.AgentPoolMode"]] = None
+        self.name: Optional[str] = None
+        self.network_attachments: Optional[List["_models.NetworkAttachment"]] = None
+        self.power_state: Optional[Union[str, "_models.KubernetesNodePowerState"]] = None
+        self.role: Optional[Union[str, "_models.KubernetesNodeRole"]] = None
+        self.taints: Optional[List["_models.KubernetesLabel"]] = None
+        self.vm_sku_name: Optional[str] = None
 
 
 class KubernetesClusterPatchParameters(_serialization.Model):
@@ -4536,18 +5353,23 @@ class KubernetesClusterPatchParameters(_serialization.Model):
 
     :ivar tags: The Azure resource tags that will replace the existing ones.
     :vartype tags: dict[str, str]
+    :ivar administrator_configuration: The configuration of the default administrator credentials.
+    :vartype administrator_configuration:
+     ~azure.mgmt.networkcloud.models.AdministratorConfigurationPatch
     :ivar control_plane_node_configuration: The defining characteristics of the control plane that
      can be patched for this Kubernetes cluster.
     :vartype control_plane_node_configuration:
      ~azure.mgmt.networkcloud.models.ControlPlaneNodePatchConfiguration
-    :ivar kubernetes_version: The Kubernetes version for this cluster. Accepts n.n, n.n.n, and
-     n.n.n-n format. The interpreted version used will be resolved into this field after creation or
-     update.
+    :ivar kubernetes_version: The Kubernetes version for this cluster.
     :vartype kubernetes_version: str
     """
 
     _attribute_map = {
         "tags": {"key": "tags", "type": "{str}"},
+        "administrator_configuration": {
+            "key": "properties.administratorConfiguration",
+            "type": "AdministratorConfigurationPatch",
+        },
         "control_plane_node_configuration": {
             "key": "properties.controlPlaneNodeConfiguration",
             "type": "ControlPlaneNodePatchConfiguration",
@@ -4559,6 +5381,7 @@ class KubernetesClusterPatchParameters(_serialization.Model):
         self,
         *,
         tags: Optional[Dict[str, str]] = None,
+        administrator_configuration: Optional["_models.AdministratorConfigurationPatch"] = None,
         control_plane_node_configuration: Optional["_models.ControlPlaneNodePatchConfiguration"] = None,
         kubernetes_version: Optional[str] = None,
         **kwargs: Any
@@ -4566,17 +5389,20 @@ class KubernetesClusterPatchParameters(_serialization.Model):
         """
         :keyword tags: The Azure resource tags that will replace the existing ones.
         :paramtype tags: dict[str, str]
+        :keyword administrator_configuration: The configuration of the default administrator
+         credentials.
+        :paramtype administrator_configuration:
+         ~azure.mgmt.networkcloud.models.AdministratorConfigurationPatch
         :keyword control_plane_node_configuration: The defining characteristics of the control plane
          that can be patched for this Kubernetes cluster.
         :paramtype control_plane_node_configuration:
          ~azure.mgmt.networkcloud.models.ControlPlaneNodePatchConfiguration
-        :keyword kubernetes_version: The Kubernetes version for this cluster. Accepts n.n, n.n.n, and
-         n.n.n-n format. The interpreted version used will be resolved into this field after creation or
-         update.
+        :keyword kubernetes_version: The Kubernetes version for this cluster.
         :paramtype kubernetes_version: str
         """
         super().__init__(**kwargs)
         self.tags = tags
+        self.administrator_configuration = administrator_configuration
         self.control_plane_node_configuration = control_plane_node_configuration
         self.kubernetes_version = kubernetes_version
 
@@ -4585,7 +5411,7 @@ class KubernetesClusterRestartNodeParameters(_serialization.Model):
     """KubernetesClusterRestartNodeParameters represents the body of the request to restart the node
     of a Kubernetes cluster.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar node_name: The name of the node to restart. Required.
     :vartype node_name: str
@@ -4612,7 +5438,7 @@ class KubernetesLabel(_serialization.Model):
     """KubernetesLabel represents a single entry for a Kubernetes label or taint such as those used on
     a node or pod.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar key: The name of the label or taint. Required.
     :vartype key: str
@@ -4642,13 +5468,13 @@ class KubernetesLabel(_serialization.Model):
         self.value = value
 
 
-class L2Network(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class L2Network(TrackedResource):
     """L2Network represents a network that utilizes a single isolation domain set up for layer-2
     resources.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -4665,6 +5491,8 @@ class L2Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -4708,6 +5536,7 @@ class L2Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "associated_resource_ids": {"readonly": True},
         "cluster_id": {"readonly": True},
@@ -4727,6 +5556,7 @@ class L2Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "associated_resource_ids": {"key": "properties.associatedResourceIds", "type": "[str]"},
         "cluster_id": {"key": "properties.clusterId", "type": "str"},
@@ -4772,24 +5602,25 @@ class L2Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         :paramtype l2_isolation_domain_id: str
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
-        self.associated_resource_ids = None
-        self.cluster_id = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.hybrid_aks_clusters_associated_ids = None
+        self.associated_resource_ids: Optional[List[str]] = None
+        self.cluster_id: Optional[str] = None
+        self.detailed_status: Optional[Union[str, "_models.L2NetworkDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.hybrid_aks_clusters_associated_ids: Optional[List[str]] = None
         self.hybrid_aks_plugin_type = hybrid_aks_plugin_type
         self.interface_name = interface_name
         self.l2_isolation_domain_id = l2_isolation_domain_id
-        self.provisioning_state = None
-        self.virtual_machines_associated_ids = None
+        self.provisioning_state: Optional[Union[str, "_models.L2NetworkProvisioningState"]] = None
+        self.virtual_machines_associated_ids: Optional[List[str]] = None
 
 
 class L2NetworkAttachmentConfiguration(_serialization.Model):
     """L2NetworkAttachmentConfiguration represents the configuration of the attachment of a Layer 2
     network.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar network_id: The resource ID of the network that is being configured for attachment.
      Required.
@@ -4876,13 +5707,36 @@ class L2NetworkPatchParameters(_serialization.Model):
         self.tags = tags
 
 
-class L3Network(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class L2ServiceLoadBalancerConfiguration(_serialization.Model):
+    """L2ServiceLoadBalancerConfiguration represents the configuration of a layer 2 service load
+    balancer.
+
+    :ivar ip_address_pools: The list of pools of IP addresses that can be allocated to load
+     balancer services.
+    :vartype ip_address_pools: list[~azure.mgmt.networkcloud.models.IpAddressPool]
+    """
+
+    _attribute_map = {
+        "ip_address_pools": {"key": "ipAddressPools", "type": "[IpAddressPool]"},
+    }
+
+    def __init__(self, *, ip_address_pools: Optional[List["_models.IpAddressPool"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword ip_address_pools: The list of pools of IP addresses that can be allocated to load
+         balancer services.
+        :paramtype ip_address_pools: list[~azure.mgmt.networkcloud.models.IpAddressPool]
+        """
+        super().__init__(**kwargs)
+        self.ip_address_pools = ip_address_pools
+
+
+class L3Network(TrackedResource):
     """L3Network represents a network that utilizes a single isolation domain set up for layer-3
     resources.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -4899,6 +5753,8 @@ class L3Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -4960,6 +5816,7 @@ class L3Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "associated_resource_ids": {"readonly": True},
         "cluster_id": {"readonly": True},
@@ -4980,6 +5837,7 @@ class L3Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "associated_resource_ids": {"key": "properties.associatedResourceIds", "type": "[str]"},
         "cluster_id": {"key": "properties.clusterId", "type": "str"},
@@ -5053,12 +5911,13 @@ class L3Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         :paramtype vlan: int
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
-        self.associated_resource_ids = None
-        self.cluster_id = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.hybrid_aks_clusters_associated_ids = None
+        self.associated_resource_ids: Optional[List[str]] = None
+        self.cluster_id: Optional[str] = None
+        self.detailed_status: Optional[Union[str, "_models.L3NetworkDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.hybrid_aks_clusters_associated_ids: Optional[List[str]] = None
         self.hybrid_aks_ipam_enabled = hybrid_aks_ipam_enabled
         self.hybrid_aks_plugin_type = hybrid_aks_plugin_type
         self.interface_name = interface_name
@@ -5066,8 +5925,8 @@ class L3Network(TrackedResource):  # pylint: disable=too-many-instance-attribute
         self.ipv4_connected_prefix = ipv4_connected_prefix
         self.ipv6_connected_prefix = ipv6_connected_prefix
         self.l3_isolation_domain_id = l3_isolation_domain_id
-        self.provisioning_state = None
-        self.virtual_machines_associated_ids = None
+        self.provisioning_state: Optional[Union[str, "_models.L3NetworkProvisioningState"]] = None
+        self.virtual_machines_associated_ids: Optional[List[str]] = None
         self.vlan = vlan
 
 
@@ -5075,7 +5934,7 @@ class L3NetworkAttachmentConfiguration(_serialization.Model):
     """L3NetworkAttachmentConfiguration represents the configuration of the attachment of a Layer 3
     network.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar ipam_enabled: The indication of whether this network will or will not perform IP address
      management and allocate IP addresses when attached. Known values are: "True" and "False".
@@ -5207,10 +6066,10 @@ class LldpNeighbor(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.port_description = None
-        self.port_name = None
-        self.system_description = None
-        self.system_name = None
+        self.port_description: Optional[str] = None
+        self.port_name: Optional[str] = None
+        self.system_description: Optional[str] = None
+        self.system_name: Optional[str] = None
 
 
 class MachineDisk(_serialization.Model):
@@ -5218,7 +6077,7 @@ class MachineDisk(_serialization.Model):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :ivar capacity_gb: The maximum amount of storage in GB.
+    :ivar capacity_gb: The maximum amount of storage. Measured in gibibytes.
     :vartype capacity_gb: int
     :ivar connection: The connection type of the rack SKU resource. Known values are: "PCIE",
      "SATA", "RAID", and "SAS".
@@ -5242,12 +6101,12 @@ class MachineDisk(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.capacity_gb = None
-        self.connection = None
-        self.type = None
+        self.capacity_gb: Optional[int] = None
+        self.connection: Optional[Union[str, "_models.MachineSkuDiskConnectionType"]] = None
+        self.type: Optional[Union[str, "_models.DiskType"]] = None
 
 
-class MachineSkuSlot(_serialization.Model):  # pylint: disable=too-many-instance-attributes
+class MachineSkuSlot(_serialization.Model):
     """MachineSkuSlot represents a single SKU and rack slot associated with the machine.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -5266,7 +6125,7 @@ class MachineSkuSlot(_serialization.Model):  # pylint: disable=too-many-instance
     :vartype generation: str
     :ivar hardware_version: The hardware version of the machine.
     :vartype hardware_version: str
-    :ivar memory_capacity_gb: The maximum amount of memory in GB.
+    :ivar memory_capacity_gb: The maximum amount of memory. Measured in gibibytes.
     :vartype memory_capacity_gb: int
     :ivar model: The model of the machine.
     :vartype model: str
@@ -5311,18 +6170,18 @@ class MachineSkuSlot(_serialization.Model):  # pylint: disable=too-many-instance
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.rack_slot = None
-        self.bootstrap_protocol = None
-        self.cpu_cores = None
-        self.cpu_sockets = None
-        self.disks = None
-        self.generation = None
-        self.hardware_version = None
-        self.memory_capacity_gb = None
-        self.model = None
-        self.network_interfaces = None
-        self.total_threads = None
-        self.vendor = None
+        self.rack_slot: Optional[int] = None
+        self.bootstrap_protocol: Optional[Union[str, "_models.BootstrapProtocol"]] = None
+        self.cpu_cores: Optional[int] = None
+        self.cpu_sockets: Optional[int] = None
+        self.disks: Optional[List["_models.MachineDisk"]] = None
+        self.generation: Optional[str] = None
+        self.hardware_version: Optional[str] = None
+        self.memory_capacity_gb: Optional[int] = None
+        self.model: Optional[str] = None
+        self.network_interfaces: Optional[List["_models.NetworkInterface"]] = None
+        self.total_threads: Optional[int] = None
+        self.vendor: Optional[str] = None
 
 
 class ManagedResourceGroupConfiguration(_serialization.Model):
@@ -5360,12 +6219,76 @@ class ManagedResourceGroupConfiguration(_serialization.Model):
         self.name = name
 
 
+class ManagedServiceIdentity(_serialization.Model):
+    """Managed service identity (system assigned and/or user assigned identities).
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar principal_id: The service principal ID of the system assigned identity. This property
+     will only be provided for a system assigned identity.
+    :vartype principal_id: str
+    :ivar tenant_id: The tenant ID of the system assigned identity. This property will only be
+     provided for a system assigned identity.
+    :vartype tenant_id: str
+    :ivar type: Type of managed service identity (where both SystemAssigned and UserAssigned types
+     are allowed). Required. Known values are: "None", "SystemAssigned", "UserAssigned", and
+     "SystemAssigned,UserAssigned".
+    :vartype type: str or ~azure.mgmt.networkcloud.models.ManagedServiceIdentityType
+    :ivar user_assigned_identities: The set of user assigned identities associated with the
+     resource. The userAssignedIdentities dictionary keys will be ARM resource ids in the form:
+     '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}.
+     The dictionary values can be empty objects ({}) in requests.
+    :vartype user_assigned_identities: dict[str,
+     ~azure.mgmt.networkcloud.models.UserAssignedIdentity]
+    """
+
+    _validation = {
+        "principal_id": {"readonly": True},
+        "tenant_id": {"readonly": True},
+        "type": {"required": True},
+    }
+
+    _attribute_map = {
+        "principal_id": {"key": "principalId", "type": "str"},
+        "tenant_id": {"key": "tenantId", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "user_assigned_identities": {"key": "userAssignedIdentities", "type": "{UserAssignedIdentity}"},
+    }
+
+    def __init__(
+        self,
+        *,
+        type: Union[str, "_models.ManagedServiceIdentityType"],
+        user_assigned_identities: Optional[Dict[str, "_models.UserAssignedIdentity"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword type: Type of managed service identity (where both SystemAssigned and UserAssigned
+         types are allowed). Required. Known values are: "None", "SystemAssigned", "UserAssigned", and
+         "SystemAssigned,UserAssigned".
+        :paramtype type: str or ~azure.mgmt.networkcloud.models.ManagedServiceIdentityType
+        :keyword user_assigned_identities: The set of user assigned identities associated with the
+         resource. The userAssignedIdentities dictionary keys will be ARM resource ids in the form:
+         '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}.
+         The dictionary values can be empty objects ({}) in requests.
+        :paramtype user_assigned_identities: dict[str,
+         ~azure.mgmt.networkcloud.models.UserAssignedIdentity]
+        """
+        super().__init__(**kwargs)
+        self.principal_id: Optional[str] = None
+        self.tenant_id: Optional[str] = None
+        self.type = type
+        self.user_assigned_identities = user_assigned_identities
+
+
 class NetworkAttachment(_serialization.Model):
     """NetworkAttachment represents the single network attachment.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar attached_network_id: The resource ID of the associated network attached to the virtual
      machine.
@@ -5387,10 +6310,10 @@ class NetworkAttachment(_serialization.Model):
      This field is used only if the attached network has IPAllocationType of IPV4 or DualStack.
 
      If IPAllocationMethod is:
-     Static - this field must contain a user specified IPv4 address from within the subnet
+     Static - this field must contain a user specified IPv4 address from within the subnet specified
+     in the attached network.
+     Dynamic - this field is read-only, but will be populated with an address from within the subnet
      specified in the attached network.
-     Dynamic - this field is read-only, but will be populated with an address from within the
-     subnet specified in the attached network.
      Disabled - this field will be empty.
     :vartype ipv4_address: str
     :ivar ipv6_address: The IPv6 address of the virtual machine.
@@ -5410,8 +6333,8 @@ class NetworkAttachment(_serialization.Model):
     :ivar network_attachment_name: The associated network's interface name.
      If specified, the network attachment name has a maximum length of 15 characters and must be
      unique to this virtual machine.
-     If the user doesn’t specify this value, the default interface name of the network resource
-     will be used.
+     If the user doesn’t specify this value, the default interface name of the network resource will
+     be used.
      For a CloudServicesNetwork resource, this name will be ignored.
     :vartype network_attachment_name: str
     """
@@ -5465,10 +6388,10 @@ class NetworkAttachment(_serialization.Model):
          This field is used only if the attached network has IPAllocationType of IPV4 or DualStack.
 
          If IPAllocationMethod is:
-         Static - this field must contain a user specified IPv4 address from within the subnet
+         Static - this field must contain a user specified IPv4 address from within the subnet specified
+         in the attached network.
+         Dynamic - this field is read-only, but will be populated with an address from within the subnet
          specified in the attached network.
-         Dynamic - this field is read-only, but will be populated with an address from within the
-         subnet specified in the attached network.
          Disabled - this field will be empty.
         :paramtype ipv4_address: str
         :keyword ipv6_address: The IPv6 address of the virtual machine.
@@ -5485,8 +6408,8 @@ class NetworkAttachment(_serialization.Model):
         :keyword network_attachment_name: The associated network's interface name.
          If specified, the network attachment name has a maximum length of 15 characters and must be
          unique to this virtual machine.
-         If the user doesn’t specify this value, the default interface name of the network resource
-         will be used.
+         If the user doesn’t specify this value, the default interface name of the network resource will
+         be used.
          For a CloudServicesNetwork resource, this name will be ignored.
         :paramtype network_attachment_name: str
         """
@@ -5496,21 +6419,22 @@ class NetworkAttachment(_serialization.Model):
         self.ip_allocation_method = ip_allocation_method
         self.ipv4_address = ipv4_address
         self.ipv6_address = ipv6_address
-        self.mac_address = None
+        self.mac_address: Optional[str] = None
         self.network_attachment_name = network_attachment_name
 
 
 class NetworkConfiguration(_serialization.Model):
     """NetworkConfiguration specifies the Kubernetes cluster network related configuration.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar attached_network_configuration: The configuration of networks being attached to the
      cluster for use by the workloads that run on this Kubernetes cluster.
     :vartype attached_network_configuration:
      ~azure.mgmt.networkcloud.models.AttachedNetworkConfiguration
     :ivar bgp_service_load_balancer_configuration: The configuration of the BGP service load
-     balancer for this Kubernetes cluster.
+     balancer for this Kubernetes cluster. A maximum of one service load balancer may be specified,
+     either Layer 2 or BGP.
     :vartype bgp_service_load_balancer_configuration:
      ~azure.mgmt.networkcloud.models.BgpServiceLoadBalancerConfiguration
     :ivar cloud_services_network_id: The resource ID of the associated Cloud Services network.
@@ -5522,6 +6446,11 @@ class NetworkConfiguration(_serialization.Model):
     :ivar dns_service_ip: The IP address assigned to the Kubernetes DNS service. It must be within
      the Kubernetes service address range specified in service CIDR.
     :vartype dns_service_ip: str
+    :ivar l2_service_load_balancer_configuration: The configuration of the Layer 2 service load
+     balancer for this Kubernetes cluster. A maximum of one service load balancer may be specified,
+     either Layer 2 or BGP.
+    :vartype l2_service_load_balancer_configuration:
+     ~azure.mgmt.networkcloud.models.L2ServiceLoadBalancerConfiguration
     :ivar pod_cidrs: The CIDR notation IP ranges from which to assign pod IPs. One IPv4 CIDR is
      expected for single-stack networking. Two CIDRs, one for each IP family (IPv4/IPv6), is
      expected for dual-stack networking.
@@ -5549,6 +6478,10 @@ class NetworkConfiguration(_serialization.Model):
         "cloud_services_network_id": {"key": "cloudServicesNetworkId", "type": "str"},
         "cni_network_id": {"key": "cniNetworkId", "type": "str"},
         "dns_service_ip": {"key": "dnsServiceIp", "type": "str"},
+        "l2_service_load_balancer_configuration": {
+            "key": "l2ServiceLoadBalancerConfiguration",
+            "type": "L2ServiceLoadBalancerConfiguration",
+        },
         "pod_cidrs": {"key": "podCidrs", "type": "[str]"},
         "service_cidrs": {"key": "serviceCidrs", "type": "[str]"},
     }
@@ -5561,6 +6494,7 @@ class NetworkConfiguration(_serialization.Model):
         attached_network_configuration: Optional["_models.AttachedNetworkConfiguration"] = None,
         bgp_service_load_balancer_configuration: Optional["_models.BgpServiceLoadBalancerConfiguration"] = None,
         dns_service_ip: Optional[str] = None,
+        l2_service_load_balancer_configuration: Optional["_models.L2ServiceLoadBalancerConfiguration"] = None,
         pod_cidrs: Optional[List[str]] = None,
         service_cidrs: Optional[List[str]] = None,
         **kwargs: Any
@@ -5571,7 +6505,8 @@ class NetworkConfiguration(_serialization.Model):
         :paramtype attached_network_configuration:
          ~azure.mgmt.networkcloud.models.AttachedNetworkConfiguration
         :keyword bgp_service_load_balancer_configuration: The configuration of the BGP service load
-         balancer for this Kubernetes cluster.
+         balancer for this Kubernetes cluster. A maximum of one service load balancer may be specified,
+         either Layer 2 or BGP.
         :paramtype bgp_service_load_balancer_configuration:
          ~azure.mgmt.networkcloud.models.BgpServiceLoadBalancerConfiguration
         :keyword cloud_services_network_id: The resource ID of the associated Cloud Services network.
@@ -5583,6 +6518,11 @@ class NetworkConfiguration(_serialization.Model):
         :keyword dns_service_ip: The IP address assigned to the Kubernetes DNS service. It must be
          within the Kubernetes service address range specified in service CIDR.
         :paramtype dns_service_ip: str
+        :keyword l2_service_load_balancer_configuration: The configuration of the Layer 2 service load
+         balancer for this Kubernetes cluster. A maximum of one service load balancer may be specified,
+         either Layer 2 or BGP.
+        :paramtype l2_service_load_balancer_configuration:
+         ~azure.mgmt.networkcloud.models.L2ServiceLoadBalancerConfiguration
         :keyword pod_cidrs: The CIDR notation IP ranges from which to assign pod IPs. One IPv4 CIDR is
          expected for single-stack networking. Two CIDRs, one for each IP family (IPv4/IPv6), is
          expected for dual-stack networking.
@@ -5598,6 +6538,7 @@ class NetworkConfiguration(_serialization.Model):
         self.cloud_services_network_id = cloud_services_network_id
         self.cni_network_id = cni_network_id
         self.dns_service_ip = dns_service_ip
+        self.l2_service_load_balancer_configuration = l2_service_load_balancer_configuration
         self.pod_cidrs = pod_cidrs
         self.service_cidrs = service_cidrs
 
@@ -5617,8 +6558,8 @@ class NetworkInterface(_serialization.Model):
     :vartype physical_slot: int
     :ivar port_count: The number of ports on the device.
     :vartype port_count: int
-    :ivar port_speed: The maximum amount of data in GB that the line card transmits through a port
-     at any given second.
+    :ivar port_speed: The maximum amount of data in gigabits that the line card transmits through a
+     port at any given second.
     :vartype port_speed: int
     :ivar vendor: The vendor name of the device.
     :vartype vendor: str
@@ -5647,13 +6588,13 @@ class NetworkInterface(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.address = None
-        self.device_connection_type = None
-        self.model = None
-        self.physical_slot = None
-        self.port_count = None
-        self.port_speed = None
-        self.vendor = None
+        self.address: Optional[str] = None
+        self.device_connection_type: Optional[Union[str, "_models.DeviceConnectionType"]] = None
+        self.model: Optional[str] = None
+        self.physical_slot: Optional[int] = None
+        self.port_count: Optional[int] = None
+        self.port_speed: Optional[int] = None
+        self.vendor: Optional[str] = None
 
 
 class Nic(_serialization.Model):
@@ -5685,9 +6626,32 @@ class Nic(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.lldp_neighbor = None
-        self.mac_address = None
-        self.name = None
+        self.lldp_neighbor: Optional["_models.LldpNeighbor"] = None
+        self.mac_address: Optional[str] = None
+        self.name: Optional[str] = None
+
+
+class NodePoolAdministratorConfigurationPatch(_serialization.Model):
+    """NodePoolAdministratorConfigurationPatch represents the patching capabilities for the
+    administrator configuration.
+
+    :ivar ssh_public_keys: SshPublicKey represents the public key used to authenticate with a
+     resource through SSH.
+    :vartype ssh_public_keys: list[~azure.mgmt.networkcloud.models.SshPublicKey]
+    """
+
+    _attribute_map = {
+        "ssh_public_keys": {"key": "sshPublicKeys", "type": "[SshPublicKey]"},
+    }
+
+    def __init__(self, *, ssh_public_keys: Optional[List["_models.SshPublicKey"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword ssh_public_keys: SshPublicKey represents the public key used to authenticate with a
+         resource through SSH.
+        :paramtype ssh_public_keys: list[~azure.mgmt.networkcloud.models.SshPublicKey]
+        """
+        super().__init__(**kwargs)
+        self.ssh_public_keys = ssh_public_keys
 
 
 class Operation(_serialization.Model):
@@ -5733,11 +6697,11 @@ class Operation(_serialization.Model):
         :paramtype display: ~azure.mgmt.networkcloud.models.OperationDisplay
         """
         super().__init__(**kwargs)
-        self.name = None
-        self.is_data_action = None
+        self.name: Optional[str] = None
+        self.is_data_action: Optional[bool] = None
         self.display = display
-        self.origin = None
-        self.action_type = None
+        self.origin: Optional[Union[str, "_models.Origin"]] = None
+        self.action_type: Optional[Union[str, "_models.ActionType"]] = None
 
 
 class OperationDisplay(_serialization.Model):
@@ -5776,10 +6740,10 @@ class OperationDisplay(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.provider = None
-        self.resource = None
-        self.operation = None
-        self.description = None
+        self.provider: Optional[str] = None
+        self.resource: Optional[str] = None
+        self.operation: Optional[str] = None
+        self.description: Optional[str] = None
 
 
 class OperationListResult(_serialization.Model):
@@ -5807,8 +6771,8 @@ class OperationListResult(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.value = None
-        self.next_link = None
+        self.value: Optional[List["_models.Operation"]] = None
+        self.next_link: Optional[str] = None
 
 
 class OperationStatusResult(_serialization.Model):
@@ -5816,101 +6780,106 @@ class OperationStatusResult(_serialization.Model):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
+    :ivar end_time: The end time of the operation.
+    :vartype end_time: ~datetime.datetime
+    :ivar error: If present, details of the operation error.
+    :vartype error: ~azure.mgmt.networkcloud.models.ErrorDetail
     :ivar id: Fully qualified ID for the async operation.
     :vartype id: str
+    :ivar name: Name of the async operation.
+    :vartype name: str
+    :ivar operations: The operations list.
+    :vartype operations: list[~azure.mgmt.networkcloud.models.OperationStatusResult]
+    :ivar percent_complete: Percent of the operation that is complete.
+    :vartype percent_complete: float
     :ivar resource_id: Fully qualified ID of the resource against which the original async
      operation was started.
     :vartype resource_id: str
-    :ivar name: Name of the async operation.
-    :vartype name: str
-    :ivar status: Operation status. Required.
-    :vartype status: str
-    :ivar percent_complete: Percent of the operation that is complete.
-    :vartype percent_complete: float
     :ivar start_time: The start time of the operation.
     :vartype start_time: ~datetime.datetime
-    :ivar end_time: The end time of the operation.
-    :vartype end_time: ~datetime.datetime
-    :ivar operations: The operations list.
-    :vartype operations: list[~azure.mgmt.networkcloud.models.OperationStatusResult]
-    :ivar error: If present, details of the operation error.
-    :vartype error: ~azure.mgmt.networkcloud.models.ErrorDetail
+    :ivar status: Operation status. Required.
+    :vartype status: str
+    :ivar exit_code: For actions that run commands or scripts, the exit code of the script
+     execution.
+    :vartype exit_code: str
+    :ivar output_head: For actions that run commands or scripts, the leading bytes of the output of
+     the script execution.
+    :vartype output_head: str
+    :ivar result_ref: For actions that run commands or scripts, a reference to the location of the
+     result.
+    :vartype result_ref: str
+    :ivar result_url: For actions that run commands or scripts, the URL where the full output of
+     the script output can be retrieved.
+    :vartype result_url: str
     """
 
     _validation = {
+        "end_time": {"readonly": True},
+        "error": {"readonly": True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "operations": {"readonly": True},
+        "percent_complete": {"readonly": True, "maximum": 100, "minimum": 0},
         "resource_id": {"readonly": True},
+        "start_time": {"readonly": True},
         "status": {"required": True},
-        "percent_complete": {"maximum": 100, "minimum": 0},
+        "exit_code": {"readonly": True},
+        "output_head": {"readonly": True},
+        "result_ref": {"readonly": True},
+        "result_url": {"readonly": True},
     }
 
     _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "resource_id": {"key": "resourceId", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "status": {"key": "status", "type": "str"},
-        "percent_complete": {"key": "percentComplete", "type": "float"},
-        "start_time": {"key": "startTime", "type": "iso-8601"},
         "end_time": {"key": "endTime", "type": "iso-8601"},
-        "operations": {"key": "operations", "type": "[OperationStatusResult]"},
         "error": {"key": "error", "type": "ErrorDetail"},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "operations": {"key": "operations", "type": "[OperationStatusResult]"},
+        "percent_complete": {"key": "percentComplete", "type": "float"},
+        "resource_id": {"key": "resourceId", "type": "str"},
+        "start_time": {"key": "startTime", "type": "iso-8601"},
+        "status": {"key": "status", "type": "str"},
+        "exit_code": {"key": "properties.exitCode", "type": "str"},
+        "output_head": {"key": "properties.outputHead", "type": "str"},
+        "result_ref": {"key": "properties.resultRef", "type": "str"},
+        "result_url": {"key": "properties.resultUrl", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        status: str,
-        id: Optional[str] = None,  # pylint: disable=redefined-builtin
-        name: Optional[str] = None,
-        percent_complete: Optional[float] = None,
-        start_time: Optional[datetime.datetime] = None,
-        end_time: Optional[datetime.datetime] = None,
-        operations: Optional[List["_models.OperationStatusResult"]] = None,
-        error: Optional["_models.ErrorDetail"] = None,
-        **kwargs: Any
-    ) -> None:
+    def __init__(self, *, status: str, **kwargs: Any) -> None:
         """
-        :keyword id: Fully qualified ID for the async operation.
-        :paramtype id: str
-        :keyword name: Name of the async operation.
-        :paramtype name: str
         :keyword status: Operation status. Required.
         :paramtype status: str
-        :keyword percent_complete: Percent of the operation that is complete.
-        :paramtype percent_complete: float
-        :keyword start_time: The start time of the operation.
-        :paramtype start_time: ~datetime.datetime
-        :keyword end_time: The end time of the operation.
-        :paramtype end_time: ~datetime.datetime
-        :keyword operations: The operations list.
-        :paramtype operations: list[~azure.mgmt.networkcloud.models.OperationStatusResult]
-        :keyword error: If present, details of the operation error.
-        :paramtype error: ~azure.mgmt.networkcloud.models.ErrorDetail
         """
         super().__init__(**kwargs)
-        self.id = id
-        self.resource_id = None
-        self.name = name
+        self.end_time: Optional[datetime.datetime] = None
+        self.error: Optional["_models.ErrorDetail"] = None
+        self.id: Optional[str] = None
+        self.name: Optional[str] = None
+        self.operations: Optional[List["_models.OperationStatusResult"]] = None
+        self.percent_complete: Optional[float] = None
+        self.resource_id: Optional[str] = None
+        self.start_time: Optional[datetime.datetime] = None
         self.status = status
-        self.percent_complete = percent_complete
-        self.start_time = start_time
-        self.end_time = end_time
-        self.operations = operations
-        self.error = error
+        self.exit_code: Optional[str] = None
+        self.output_head: Optional[str] = None
+        self.result_ref: Optional[str] = None
+        self.result_url: Optional[str] = None
 
 
 class OsDisk(_serialization.Model):
     """OsDisk represents configuration of the boot disk.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar create_option: The strategy for creating the OS disk. "Ephemeral"
+    :ivar create_option: The strategy for creating the OS disk. Known values are: "Ephemeral" and
+     "Persistent".
     :vartype create_option: str or ~azure.mgmt.networkcloud.models.OsDiskCreateOption
     :ivar delete_option: The strategy for deleting the OS disk. "Delete"
     :vartype delete_option: str or ~azure.mgmt.networkcloud.models.OsDiskDeleteOption
-    :ivar disk_size_gb: The size of the disk in gigabytes. Required if the createOption is
-     Ephemeral. Required.
+    :ivar disk_size_gb: The size of the disk. Required if the createOption is Ephemeral.
+     Allocations are measured in gibibytes. Required.
     :vartype disk_size_gb: int
     """
 
@@ -5933,12 +6902,13 @@ class OsDisk(_serialization.Model):
         **kwargs: Any
     ) -> None:
         """
-        :keyword create_option: The strategy for creating the OS disk. "Ephemeral"
+        :keyword create_option: The strategy for creating the OS disk. Known values are: "Ephemeral"
+         and "Persistent".
         :paramtype create_option: str or ~azure.mgmt.networkcloud.models.OsDiskCreateOption
         :keyword delete_option: The strategy for deleting the OS disk. "Delete"
         :paramtype delete_option: str or ~azure.mgmt.networkcloud.models.OsDiskDeleteOption
-        :keyword disk_size_gb: The size of the disk in gigabytes. Required if the createOption is
-         Ephemeral. Required.
+        :keyword disk_size_gb: The size of the disk. Required if the createOption is Ephemeral.
+         Allocations are measured in gibibytes. Required.
         :paramtype disk_size_gb: int
         """
         super().__init__(**kwargs)
@@ -5947,12 +6917,12 @@ class OsDisk(_serialization.Model):
         self.disk_size_gb = disk_size_gb
 
 
-class Rack(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class Rack(TrackedResource):
     """Rack represents the hardware of the rack and is dependent upon the cluster for lifecycle.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -5969,6 +6939,8 @@ class Rack(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -6004,6 +6976,7 @@ class Rack(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "availability_zone": {"required": True, "pattern": r"^[a-zA-Z0-9]{1,10}$"},
         "cluster_id": {"readonly": True},
@@ -6022,6 +6995,7 @@ class Rack(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "availability_zone": {"key": "properties.availabilityZone", "type": "str"},
         "cluster_id": {"key": "properties.clusterId", "type": "str"},
@@ -6068,12 +7042,13 @@ class Rack(TrackedResource):  # pylint: disable=too-many-instance-attributes
         :paramtype rack_sku_id: str
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.availability_zone = availability_zone
-        self.cluster_id = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.provisioning_state = None
+        self.cluster_id: Optional[str] = None
+        self.detailed_status: Optional[Union[str, "_models.RackDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.provisioning_state: Optional[Union[str, "_models.RackProvisioningState"]] = None
         self.rack_location = rack_location
         self.rack_serial_number = rack_serial_number
         self.rack_sku_id = rack_sku_id
@@ -6082,7 +7057,7 @@ class Rack(TrackedResource):  # pylint: disable=too-many-instance-attributes
 class RackDefinition(_serialization.Model):
     """RackDefinition represents details regarding the rack.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar availability_zone: The zone name used for this rack when created. Availability zones are
      used for workload placement.
@@ -6252,7 +7227,7 @@ class RackPatchParameters(_serialization.Model):
         self.rack_serial_number = rack_serial_number
 
 
-class RackSku(Resource):  # pylint: disable=too-many-instance-attributes
+class RackSku(Resource):
     """RackSku represents the SKU information of the rack.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -6279,7 +7254,8 @@ class RackSku(Resource):  # pylint: disable=too-many-instance-attributes
     :ivar max_cluster_slots: The maximum number of compute racks supported by an aggregator rack. 0
      if this is a compute rack or a rack for a single rack cluster(rackType="Single").
     :vartype max_cluster_slots: int
-    :ivar provisioning_state: The provisioning state of the rack SKU resource. "Succeeded"
+    :ivar provisioning_state: The provisioning state of the rack SKU resource. Known values are:
+     "Canceled", "Failed", and "Succeeded".
     :vartype provisioning_state: str or ~azure.mgmt.networkcloud.models.RackSkuProvisioningState
     :ivar rack_type: The type of the rack. Known values are: "Aggregator", "Compute", and "Single".
     :vartype rack_type: str or ~azure.mgmt.networkcloud.models.RackSkuType
@@ -6323,14 +7299,14 @@ class RackSku(Resource):  # pylint: disable=too-many-instance-attributes
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.compute_machines = None
-        self.controller_machines = None
-        self.description = None
-        self.max_cluster_slots = None
-        self.provisioning_state = None
-        self.rack_type = None
-        self.storage_appliances = None
-        self.supported_rack_sku_ids = None
+        self.compute_machines: Optional[List["_models.MachineSkuSlot"]] = None
+        self.controller_machines: Optional[List["_models.MachineSkuSlot"]] = None
+        self.description: Optional[str] = None
+        self.max_cluster_slots: Optional[int] = None
+        self.provisioning_state: Optional[Union[str, "_models.RackSkuProvisioningState"]] = None
+        self.rack_type: Optional[Union[str, "_models.RackSkuType"]] = None
+        self.storage_appliances: Optional[List["_models.StorageApplianceSkuSlot"]] = None
+        self.supported_rack_sku_ids: Optional[List[str]] = None
 
 
 class RackSkuList(_serialization.Model):
@@ -6361,11 +7337,196 @@ class RackSkuList(_serialization.Model):
         self.value = value
 
 
+class RuntimeProtectionConfiguration(_serialization.Model):
+    """RuntimeProtectionConfiguration represents the runtime protection configuration for the cluster.
+
+    :ivar enforcement_level: The mode of operation for runtime protection. Known values are:
+     "Audit", "Disabled", "OnDemand", "Passive", and "RealTime".
+    :vartype enforcement_level: str or
+     ~azure.mgmt.networkcloud.models.RuntimeProtectionEnforcementLevel
+    """
+
+    _attribute_map = {
+        "enforcement_level": {"key": "enforcementLevel", "type": "str"},
+    }
+
+    def __init__(
+        self, *, enforcement_level: Union[str, "_models.RuntimeProtectionEnforcementLevel"] = "Disabled", **kwargs: Any
+    ) -> None:
+        """
+        :keyword enforcement_level: The mode of operation for runtime protection. Known values are:
+         "Audit", "Disabled", "OnDemand", "Passive", and "RealTime".
+        :paramtype enforcement_level: str or
+         ~azure.mgmt.networkcloud.models.RuntimeProtectionEnforcementLevel
+        """
+        super().__init__(**kwargs)
+        self.enforcement_level = enforcement_level
+
+
+class RuntimeProtectionStatus(_serialization.Model):
+    """RuntimeProtectionStatus represents the runtime protection status of the bare metal machine.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar definitions_last_updated: The timestamp when the malware definitions were last updated.
+    :vartype definitions_last_updated: ~datetime.datetime
+    :ivar definitions_version: The version of the malware definitions.
+    :vartype definitions_version: str
+    :ivar scan_completed_time: The timestamp of the most recently completed scan, or empty if there
+     has never been a scan.
+    :vartype scan_completed_time: ~datetime.datetime
+    :ivar scan_scheduled_time: The timestamp of the most recently scheduled scan, or empty if no
+     scan has been scheduled.
+    :vartype scan_scheduled_time: ~datetime.datetime
+    :ivar scan_started_time: The timestamp of the most recently started scan, or empty if there has
+     never been a scan.
+    :vartype scan_started_time: ~datetime.datetime
+    """
+
+    _validation = {
+        "definitions_last_updated": {"readonly": True},
+        "definitions_version": {"readonly": True},
+        "scan_completed_time": {"readonly": True},
+        "scan_scheduled_time": {"readonly": True},
+        "scan_started_time": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "definitions_last_updated": {"key": "definitionsLastUpdated", "type": "iso-8601"},
+        "definitions_version": {"key": "definitionsVersion", "type": "str"},
+        "scan_completed_time": {"key": "scanCompletedTime", "type": "iso-8601"},
+        "scan_scheduled_time": {"key": "scanScheduledTime", "type": "iso-8601"},
+        "scan_started_time": {"key": "scanStartedTime", "type": "iso-8601"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.definitions_last_updated: Optional[datetime.datetime] = None
+        self.definitions_version: Optional[str] = None
+        self.scan_completed_time: Optional[datetime.datetime] = None
+        self.scan_scheduled_time: Optional[datetime.datetime] = None
+        self.scan_started_time: Optional[datetime.datetime] = None
+
+
+class SecretArchiveReference(_serialization.Model):
+    """SecretArchiveReference represents the reference to a secret in a key vault.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar key_vault_id: The resource ID of the key vault containing the secret.
+    :vartype key_vault_id: str
+    :ivar secret_name: The name of the secret in the key vault.
+    :vartype secret_name: str
+    :ivar secret_version: The version of the secret in the key vault.
+    :vartype secret_version: str
+    """
+
+    _validation = {
+        "key_vault_id": {"readonly": True},
+        "secret_name": {"readonly": True},
+        "secret_version": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "key_vault_id": {"key": "keyVaultId", "type": "str"},
+        "secret_name": {"key": "secretName", "type": "str"},
+        "secret_version": {"key": "secretVersion", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.key_vault_id: Optional[str] = None
+        self.secret_name: Optional[str] = None
+        self.secret_version: Optional[str] = None
+
+
+class SecretArchiveSettings(_serialization.Model):
+    """SecretArchiveSettings represents the settings for the secret archive used to hold credentials
+    for the cluster.
+
+    :ivar associated_identity: The selection of the managed identity to use with this vault URI.
+     The identity type must be either system assigned or user assigned.
+    :vartype associated_identity: ~azure.mgmt.networkcloud.models.IdentitySelector
+    :ivar vault_uri: The URI for the key vault used as the secret archive.
+    :vartype vault_uri: str
+    """
+
+    _attribute_map = {
+        "associated_identity": {"key": "associatedIdentity", "type": "IdentitySelector"},
+        "vault_uri": {"key": "vaultUri", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        associated_identity: Optional["_models.IdentitySelector"] = None,
+        vault_uri: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword associated_identity: The selection of the managed identity to use with this vault URI.
+         The identity type must be either system assigned or user assigned.
+        :paramtype associated_identity: ~azure.mgmt.networkcloud.models.IdentitySelector
+        :keyword vault_uri: The URI for the key vault used as the secret archive.
+        :paramtype vault_uri: str
+        """
+        super().__init__(**kwargs)
+        self.associated_identity = associated_identity
+        self.vault_uri = vault_uri
+
+
+class SecretRotationStatus(_serialization.Model):
+    """SecretRotationStatus represents the status of a secret rotation.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar expire_period_days: The maximum number of days the secret may be used before it must be
+     changed.
+    :vartype expire_period_days: int
+    :ivar last_rotation_time: The date and time when the secret was last changed.
+    :vartype last_rotation_time: ~datetime.datetime
+    :ivar rotation_period_days: The number of days a secret exists before rotations will be
+     attempted.
+    :vartype rotation_period_days: int
+    :ivar secret_archive_reference: The reference to the secret in a key vault.
+    :vartype secret_archive_reference: ~azure.mgmt.networkcloud.models.SecretArchiveReference
+    :ivar secret_type: The type name used to identify the purpose of the secret.
+    :vartype secret_type: str
+    """
+
+    _validation = {
+        "expire_period_days": {"readonly": True},
+        "last_rotation_time": {"readonly": True},
+        "rotation_period_days": {"readonly": True},
+        "secret_archive_reference": {"readonly": True},
+        "secret_type": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "expire_period_days": {"key": "expirePeriodDays", "type": "int"},
+        "last_rotation_time": {"key": "lastRotationTime", "type": "iso-8601"},
+        "rotation_period_days": {"key": "rotationPeriodDays", "type": "int"},
+        "secret_archive_reference": {"key": "secretArchiveReference", "type": "SecretArchiveReference"},
+        "secret_type": {"key": "secretType", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.expire_period_days: Optional[int] = None
+        self.last_rotation_time: Optional[datetime.datetime] = None
+        self.rotation_period_days: Optional[int] = None
+        self.secret_archive_reference: Optional["_models.SecretArchiveReference"] = None
+        self.secret_type: Optional[str] = None
+
+
 class ServiceLoadBalancerBgpPeer(_serialization.Model):
     """ServiceLoadBalancerBgpPeer represents the configuration of the BGP service load balancer for
     the Kubernetes cluster.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar bfd_enabled: The indicator of BFD enablement for this BgpPeer. Known values are: "True"
      and "False".
@@ -6373,11 +7534,13 @@ class ServiceLoadBalancerBgpPeer(_serialization.Model):
     :ivar bgp_multi_hop: The indicator to enable multi-hop peering support. Known values are:
      "True" and "False".
     :vartype bgp_multi_hop: str or ~azure.mgmt.networkcloud.models.BgpMultiHop
-    :ivar hold_time: The requested BGP hold time value. This field uses ISO 8601 duration format,
-     for example P1H.
+    :ivar hold_time: Field Deprecated. The field was previously optional, now it will have no
+     defined behavior and will be ignored. The requested BGP hold time value. This field uses ISO
+     8601 duration format, for example P1H.
     :vartype hold_time: str
-    :ivar keep_alive_time: The requested BGP keepalive time value. This field uses ISO 8601
-     duration format, for example P1H.
+    :ivar keep_alive_time: Field Deprecated. The field was previously optional, now it will have no
+     defined behavior and will be ignored. The requested BGP keepalive time value. This field uses
+     ISO 8601 duration format, for example P1H.
     :vartype keep_alive_time: str
     :ivar my_asn: The autonomous system number used for the local end of the BGP session.
     :vartype my_asn: int
@@ -6439,11 +7602,13 @@ class ServiceLoadBalancerBgpPeer(_serialization.Model):
         :keyword bgp_multi_hop: The indicator to enable multi-hop peering support. Known values are:
          "True" and "False".
         :paramtype bgp_multi_hop: str or ~azure.mgmt.networkcloud.models.BgpMultiHop
-        :keyword hold_time: The requested BGP hold time value. This field uses ISO 8601 duration
-         format, for example P1H.
+        :keyword hold_time: Field Deprecated. The field was previously optional, now it will have no
+         defined behavior and will be ignored. The requested BGP hold time value. This field uses ISO
+         8601 duration format, for example P1H.
         :paramtype hold_time: str
-        :keyword keep_alive_time: The requested BGP keepalive time value. This field uses ISO 8601
-         duration format, for example P1H.
+        :keyword keep_alive_time: Field Deprecated. The field was previously optional, now it will have
+         no defined behavior and will be ignored. The requested BGP keepalive time value. This field
+         uses ISO 8601 duration format, for example P1H.
         :paramtype keep_alive_time: str
         :keyword my_asn: The autonomous system number used for the local end of the BGP session.
         :paramtype my_asn: int
@@ -6478,7 +7643,7 @@ class ServicePrincipalInformation(_serialization.Model):
     """ServicePrincipalInformation represents the details of the service principal to be used by the
     cluster during Arc Appliance installation.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar application_id: The application ID, also known as client ID, of the service principal.
      Required.
@@ -6531,7 +7696,7 @@ class ServicePrincipalInformation(_serialization.Model):
 class SshPublicKey(_serialization.Model):
     """SshPublicKey represents the public key used to authenticate with a resource through SSH.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar key_data: The SSH public key data. Required.
     :vartype key_data: str
@@ -6554,12 +7719,12 @@ class SshPublicKey(_serialization.Model):
         self.key_data = key_data
 
 
-class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class StorageAppliance(TrackedResource):
     """StorageAppliance represents on-premises Network Cloud storage appliance.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -6576,26 +7741,33 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
     :ivar administrator_credentials: The credentials of the administrative interface on this
      storage appliance. Required.
     :vartype administrator_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
-    :ivar capacity: The total capacity of the storage appliance.
+    :ivar capacity: The total capacity of the storage appliance. Measured in GiB.
     :vartype capacity: int
     :ivar capacity_used: The amount of storage consumed.
     :vartype capacity_used: int
     :ivar cluster_id: The resource ID of the cluster this storage appliance is associated with.
+     Measured in GiB.
     :vartype cluster_id: str
-    :ivar detailed_status: The detailed status of the storage appliance. Known values are: "Error",
-     "Available", and "Provisioning".
+    :ivar detailed_status: The detailed status of the storage appliance. Known values are:
+     "Available", "Degraded", "Error", and "Provisioning".
     :vartype detailed_status: str or ~azure.mgmt.networkcloud.models.StorageApplianceDetailedStatus
     :ivar detailed_status_message: The descriptive message about the current detailed status.
     :vartype detailed_status_message: str
     :ivar management_ipv4_address: The endpoint for the management interface of the storage
      appliance.
     :vartype management_ipv4_address: str
+    :ivar manufacturer: The manufacturer of the storage appliance.
+    :vartype manufacturer: str
+    :ivar model: The model of the storage appliance.
+    :vartype model: str
     :ivar provisioning_state: The provisioning state of the storage appliance. Known values are:
      "Succeeded", "Failed", "Canceled", "Provisioning", and "Accepted".
     :vartype provisioning_state: str or
@@ -6614,10 +7786,14 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
      are: "Enabled", "Disabled", and "Unsupported".
     :vartype remote_vendor_management_status: str or
      ~azure.mgmt.networkcloud.models.RemoteVendorManagementStatus
+    :ivar secret_rotation_status: The list of statuses that represent secret rotation activity.
+    :vartype secret_rotation_status: list[~azure.mgmt.networkcloud.models.SecretRotationStatus]
     :ivar serial_number: The serial number for the storage appliance. Required.
     :vartype serial_number: str
     :ivar storage_appliance_sku_id: The SKU for the storage appliance. Required.
     :vartype storage_appliance_sku_id: str
+    :ivar version: The version of the storage appliance.
+    :vartype version: str
     """
 
     _validation = {
@@ -6626,6 +7802,7 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "administrator_credentials": {"required": True},
         "capacity": {"readonly": True},
@@ -6634,13 +7811,17 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
         "detailed_status": {"readonly": True},
         "detailed_status_message": {"readonly": True},
         "management_ipv4_address": {"readonly": True},
+        "manufacturer": {"readonly": True},
+        "model": {"readonly": True},
         "provisioning_state": {"readonly": True},
         "rack_id": {"required": True},
         "rack_slot": {"required": True, "maximum": 256, "minimum": 1},
         "remote_vendor_management_feature": {"readonly": True},
         "remote_vendor_management_status": {"readonly": True},
+        "secret_rotation_status": {"readonly": True},
         "serial_number": {"required": True},
         "storage_appliance_sku_id": {"required": True},
+        "version": {"readonly": True},
     }
 
     _attribute_map = {
@@ -6650,6 +7831,7 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "administrator_credentials": {
             "key": "properties.administratorCredentials",
@@ -6661,16 +7843,20 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
         "detailed_status_message": {"key": "properties.detailedStatusMessage", "type": "str"},
         "management_ipv4_address": {"key": "properties.managementIpv4Address", "type": "str"},
+        "manufacturer": {"key": "properties.manufacturer", "type": "str"},
+        "model": {"key": "properties.model", "type": "str"},
         "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
         "rack_id": {"key": "properties.rackId", "type": "str"},
         "rack_slot": {"key": "properties.rackSlot", "type": "int"},
         "remote_vendor_management_feature": {"key": "properties.remoteVendorManagementFeature", "type": "str"},
         "remote_vendor_management_status": {"key": "properties.remoteVendorManagementStatus", "type": "str"},
+        "secret_rotation_status": {"key": "properties.secretRotationStatus", "type": "[SecretRotationStatus]"},
         "serial_number": {"key": "properties.serialNumber", "type": "str"},
         "storage_appliance_sku_id": {"key": "properties.storageApplianceSkuId", "type": "str"},
+        "version": {"key": "properties.version", "type": "str"},
     }
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals
         self,
         *,
         location: str,
@@ -6705,30 +7891,37 @@ class StorageAppliance(TrackedResource):  # pylint: disable=too-many-instance-at
         :paramtype storage_appliance_sku_id: str
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.administrator_credentials = administrator_credentials
-        self.capacity = None
-        self.capacity_used = None
-        self.cluster_id = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.management_ipv4_address = None
-        self.provisioning_state = None
+        self.capacity: Optional[int] = None
+        self.capacity_used: Optional[int] = None
+        self.cluster_id: Optional[str] = None
+        self.detailed_status: Optional[Union[str, "_models.StorageApplianceDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.management_ipv4_address: Optional[str] = None
+        self.manufacturer: Optional[str] = None
+        self.model: Optional[str] = None
+        self.provisioning_state: Optional[Union[str, "_models.StorageApplianceProvisioningState"]] = None
         self.rack_id = rack_id
         self.rack_slot = rack_slot
-        self.remote_vendor_management_feature = None
-        self.remote_vendor_management_status = None
+        self.remote_vendor_management_feature: Optional[Union[str, "_models.RemoteVendorManagementFeature"]] = None
+        self.remote_vendor_management_status: Optional[Union[str, "_models.RemoteVendorManagementStatus"]] = None
+        self.secret_rotation_status: Optional[List["_models.SecretRotationStatus"]] = None
         self.serial_number = serial_number
         self.storage_appliance_sku_id = storage_appliance_sku_id
+        self.version: Optional[str] = None
 
 
 class StorageApplianceConfigurationData(_serialization.Model):
     """StorageApplianceConfigurationData represents configuration for the storage application.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar admin_credentials: The credentials of the administrative interface on this storage
-     appliance. Required.
+     appliance. The password field is expected to be an Azure Key Vault key URL. Until the cluster
+     is converted to utilize managed identity by setting the secret archive settings, the actual
+     password value should be provided instead. Required.
     :vartype admin_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
     :ivar rack_slot: The slot that storage appliance is in the rack based on the BOM configuration.
      Required.
@@ -6765,7 +7958,9 @@ class StorageApplianceConfigurationData(_serialization.Model):
     ) -> None:
         """
         :keyword admin_credentials: The credentials of the administrative interface on this storage
-         appliance. Required.
+         appliance. The password field is expected to be an Azure Key Vault key URL. Until the cluster
+         is converted to utilize managed identity by setting the secret archive settings, the actual
+         password value should be provided instead. Required.
         :paramtype admin_credentials: ~azure.mgmt.networkcloud.models.AdministrativeCredentials
         :keyword rack_slot: The slot that storage appliance is in the rack based on the BOM
          configuration. Required.
@@ -6783,7 +7978,7 @@ class StorageApplianceConfigurationData(_serialization.Model):
         self.storage_appliance_name = storage_appliance_name
 
 
-class StorageApplianceEnableRemoteVendorManagementParameters(_serialization.Model):
+class StorageApplianceEnableRemoteVendorManagementParameters(_serialization.Model):  # pylint: disable=name-too-long
     """StorageApplianceEnableRemoteVendorManagementParameters represents the body of the request to
     enable remote vendor management of a storage appliance.
 
@@ -6879,7 +8074,7 @@ class StorageApplianceSkuSlot(_serialization.Model):
 
     :ivar rack_slot: The position in the rack for the storage appliance.
     :vartype rack_slot: int
-    :ivar capacity_gb: The maximum capacity of the storage appliance.
+    :ivar capacity_gb: The maximum capacity of the storage appliance. Measured in gibibytes.
     :vartype capacity_gb: int
     :ivar model: The model of the storage appliance.
     :vartype model: str
@@ -6900,15 +8095,15 @@ class StorageApplianceSkuSlot(_serialization.Model):
     def __init__(self, **kwargs: Any) -> None:
         """ """
         super().__init__(**kwargs)
-        self.rack_slot = None
-        self.capacity_gb = None
-        self.model = None
+        self.rack_slot: Optional[int] = None
+        self.capacity_gb: Optional[int] = None
+        self.model: Optional[str] = None
 
 
 class StorageProfile(_serialization.Model):
     """StorageProfile represents information about a disk.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar os_disk: The disk to use with this virtual machine. Required.
     :vartype os_disk: ~azure.mgmt.networkcloud.models.OsDisk
@@ -6939,6 +8134,39 @@ class StorageProfile(_serialization.Model):
         super().__init__(**kwargs)
         self.os_disk = os_disk
         self.volume_attachments = volume_attachments
+
+
+class StringKeyValuePair(_serialization.Model):
+    """StringKeyValuePair represents a single entry in a mapping of keys to values.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar key: The key to the mapped value. Required.
+    :vartype key: str
+    :ivar value: The value of the mapping key. Required.
+    :vartype value: str
+    """
+
+    _validation = {
+        "key": {"required": True},
+        "value": {"required": True},
+    }
+
+    _attribute_map = {
+        "key": {"key": "key", "type": "str"},
+        "value": {"key": "value", "type": "str"},
+    }
+
+    def __init__(self, *, key: str, value: str, **kwargs: Any) -> None:
+        """
+        :keyword key: The key to the mapped value. Required.
+        :paramtype key: str
+        :keyword value: The value of the mapping key. Required.
+        :paramtype value: str
+        """
+        super().__init__(**kwargs)
+        self.key = key
+        self.value = value
 
 
 class SystemData(_serialization.Model):
@@ -7025,13 +8253,13 @@ class TagsParameter(_serialization.Model):
         self.tags = tags
 
 
-class TrunkedNetwork(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class TrunkedNetwork(TrackedResource):
     """TrunkedNetwork represents a network that utilizes multiple isolation domains and specified
     VLANs to create a trunked network.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -7048,6 +8276,8 @@ class TrunkedNetwork(TrackedResource):  # pylint: disable=too-many-instance-attr
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -7096,6 +8326,7 @@ class TrunkedNetwork(TrackedResource):  # pylint: disable=too-many-instance-attr
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "associated_resource_ids": {"readonly": True},
         "cluster_id": {"readonly": True},
@@ -7116,6 +8347,7 @@ class TrunkedNetwork(TrackedResource):  # pylint: disable=too-many-instance-attr
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "associated_resource_ids": {"key": "properties.associatedResourceIds", "type": "[str]"},
         "cluster_id": {"key": "properties.clusterId", "type": "str"},
@@ -7167,17 +8399,18 @@ class TrunkedNetwork(TrackedResource):  # pylint: disable=too-many-instance-attr
         :paramtype vlans: list[int]
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
-        self.associated_resource_ids = None
-        self.cluster_id = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.hybrid_aks_clusters_associated_ids = None
+        self.associated_resource_ids: Optional[List[str]] = None
+        self.cluster_id: Optional[str] = None
+        self.detailed_status: Optional[Union[str, "_models.TrunkedNetworkDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.hybrid_aks_clusters_associated_ids: Optional[List[str]] = None
         self.hybrid_aks_plugin_type = hybrid_aks_plugin_type
         self.interface_name = interface_name
         self.isolation_domain_ids = isolation_domain_ids
-        self.provisioning_state = None
-        self.virtual_machines_associated_ids = None
+        self.provisioning_state: Optional[Union[str, "_models.TrunkedNetworkProvisioningState"]] = None
+        self.virtual_machines_associated_ids: Optional[List[str]] = None
         self.vlans = vlans
 
 
@@ -7185,7 +8418,7 @@ class TrunkedNetworkAttachmentConfiguration(_serialization.Model):
     """TrunkedNetworkAttachmentConfiguration represents the configuration of the attachment of a
     trunked network.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar network_id: The resource ID of the network that is being configured for attachment.
      Required.
@@ -7272,10 +8505,38 @@ class TrunkedNetworkPatchParameters(_serialization.Model):
         self.tags = tags
 
 
+class UserAssignedIdentity(_serialization.Model):
+    """User assigned identity properties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar principal_id: The principal ID of the assigned identity.
+    :vartype principal_id: str
+    :ivar client_id: The client ID of the assigned identity.
+    :vartype client_id: str
+    """
+
+    _validation = {
+        "principal_id": {"readonly": True},
+        "client_id": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "principal_id": {"key": "principalId", "type": "str"},
+        "client_id": {"key": "clientId", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.principal_id: Optional[str] = None
+        self.client_id: Optional[str] = None
+
+
 class ValidationThreshold(_serialization.Model):
     """ValidationThreshold indicates allowed machine and node hardware and deployment failures.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar grouping: Selection of how the type evaluation is applied to the cluster calculation.
      Required. Known values are: "PerCluster" and "PerRack".
@@ -7323,12 +8584,12 @@ class ValidationThreshold(_serialization.Model):
         self.value = value
 
 
-class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class VirtualMachine(TrackedResource):
     """VirtualMachine represents the on-premises Network Cloud virtual machine.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -7345,6 +8606,8 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -7353,8 +8616,8 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
     :vartype admin_username: str
     :ivar availability_zone: The cluster availability zone containing this virtual machine.
     :vartype availability_zone: str
-    :ivar bare_metal_machine_id: The resource ID of the bare metal machine the virtual machine has
-     landed to.
+    :ivar bare_metal_machine_id: The resource ID of the bare metal machine that hosts the virtual
+     machine.
     :vartype bare_metal_machine_id: str
     :ivar boot_method: Selects the boot method for the virtual machine. Known values are: "UEFI"
      and "BIOS".
@@ -7364,6 +8627,9 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
     :vartype cloud_services_network_attachment: ~azure.mgmt.networkcloud.models.NetworkAttachment
     :ivar cluster_id: The resource ID of the cluster the virtual machine is created for.
     :vartype cluster_id: str
+    :ivar console_extended_location: The extended location to use for creation of a VM console
+     resource.
+    :vartype console_extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
     :ivar cpu_cores: The number of CPU cores in the virtual machine. Required.
     :vartype cpu_cores: int
     :ivar detailed_status: The more detailed status of the virtual machine. Known values are:
@@ -7377,7 +8643,8 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
      this virtual machine. Known values are: "True" and "False".
     :vartype isolate_emulator_thread: str or
      ~azure.mgmt.networkcloud.models.VirtualMachineIsolateEmulatorThread
-    :ivar memory_size_gb: The memory size of the virtual machine in GB. Required.
+    :ivar memory_size_gb: The memory size of the virtual machine. Allocations are measured in
+     gibibytes. Required.
     :vartype memory_size_gb: int
     :ivar network_attachments: The list of network attachments to the virtual machine.
     :vartype network_attachments: list[~azure.mgmt.networkcloud.models.NetworkAttachment]
@@ -7404,7 +8671,8 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
      virtio interface. Known values are: "Modern" and "Transitional".
     :vartype virtio_interface: str or
      ~azure.mgmt.networkcloud.models.VirtualMachineVirtioInterfaceType
-    :ivar vm_device_model: The type of the device model to use. Known values are: "T1" and "T2".
+    :ivar vm_device_model: The type of the device model to use. Known values are: "T1", "T2", and
+     "T3".
     :vartype vm_device_model: str or ~azure.mgmt.networkcloud.models.VirtualMachineDeviceModelType
     :ivar vm_image: The virtual machine image that is currently provisioned to the OS disk, using
      the full url and tag notation used to pull the image. Required.
@@ -7423,6 +8691,7 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "admin_username": {"required": True, "max_length": 32, "min_length": 1, "pattern": r"^[a-z_][a-z0-9_]{0,31}$"},
         "availability_zone": {"readonly": True},
@@ -7447,6 +8716,7 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "admin_username": {"key": "properties.adminUsername", "type": "str"},
         "availability_zone": {"key": "properties.availabilityZone", "type": "str"},
@@ -7457,6 +8727,7 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
             "type": "NetworkAttachment",
         },
         "cluster_id": {"key": "properties.clusterId", "type": "str"},
+        "console_extended_location": {"key": "properties.consoleExtendedLocation", "type": "ExtendedLocation"},
         "cpu_cores": {"key": "properties.cpuCores", "type": "int"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
         "detailed_status_message": {"key": "properties.detailedStatusMessage", "type": "str"},
@@ -7493,6 +8764,7 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
         vm_image: str,
         tags: Optional[Dict[str, str]] = None,
         boot_method: Union[str, "_models.VirtualMachineBootMethod"] = "UEFI",
+        console_extended_location: Optional["_models.ExtendedLocation"] = None,
         isolate_emulator_thread: Union[str, "_models.VirtualMachineIsolateEmulatorThread"] = "True",
         network_attachments: Optional[List["_models.NetworkAttachment"]] = None,
         network_data: Optional[str] = None,
@@ -7521,6 +8793,9 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
         :keyword cloud_services_network_attachment: The cloud service network that provides
          platform-level services for the virtual machine. Required.
         :paramtype cloud_services_network_attachment: ~azure.mgmt.networkcloud.models.NetworkAttachment
+        :keyword console_extended_location: The extended location to use for creation of a VM console
+         resource.
+        :paramtype console_extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
         :keyword cpu_cores: The number of CPU cores in the virtual machine. Required.
         :paramtype cpu_cores: int
         :keyword isolate_emulator_thread: Field Deprecated, the value will be ignored if provided. The
@@ -7528,7 +8803,8 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
          this virtual machine. Known values are: "True" and "False".
         :paramtype isolate_emulator_thread: str or
          ~azure.mgmt.networkcloud.models.VirtualMachineIsolateEmulatorThread
-        :keyword memory_size_gb: The memory size of the virtual machine in GB. Required.
+        :keyword memory_size_gb: The memory size of the virtual machine. Allocations are measured in
+         gibibytes. Required.
         :paramtype memory_size_gb: int
         :keyword network_attachments: The list of network attachments to the virtual machine.
         :paramtype network_attachments: list[~azure.mgmt.networkcloud.models.NetworkAttachment]
@@ -7548,7 +8824,8 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
          virtio interface. Known values are: "Modern" and "Transitional".
         :paramtype virtio_interface: str or
          ~azure.mgmt.networkcloud.models.VirtualMachineVirtioInterfaceType
-        :keyword vm_device_model: The type of the device model to use. Known values are: "T1" and "T2".
+        :keyword vm_device_model: The type of the device model to use. Known values are: "T1", "T2",
+         and "T3".
         :paramtype vm_device_model: str or
          ~azure.mgmt.networkcloud.models.VirtualMachineDeviceModelType
         :keyword vm_image: The virtual machine image that is currently provisioned to the OS disk,
@@ -7560,23 +8837,25 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
          ~azure.mgmt.networkcloud.models.ImageRepositoryCredentials
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
         self.admin_username = admin_username
-        self.availability_zone = None
-        self.bare_metal_machine_id = None
+        self.availability_zone: Optional[str] = None
+        self.bare_metal_machine_id: Optional[str] = None
         self.boot_method = boot_method
         self.cloud_services_network_attachment = cloud_services_network_attachment
-        self.cluster_id = None
+        self.cluster_id: Optional[str] = None
+        self.console_extended_location = console_extended_location
         self.cpu_cores = cpu_cores
-        self.detailed_status = None
-        self.detailed_status_message = None
+        self.detailed_status: Optional[Union[str, "_models.VirtualMachineDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
         self.isolate_emulator_thread = isolate_emulator_thread
         self.memory_size_gb = memory_size_gb
         self.network_attachments = network_attachments
         self.network_data = network_data
         self.placement_hints = placement_hints
-        self.power_state = None
-        self.provisioning_state = None
+        self.power_state: Optional[Union[str, "_models.VirtualMachinePowerState"]] = None
+        self.provisioning_state: Optional[Union[str, "_models.VirtualMachineProvisioningState"]] = None
         self.ssh_public_keys = ssh_public_keys
         self.storage_profile = storage_profile
         self.user_data = user_data
@@ -7584,7 +8863,7 @@ class VirtualMachine(TrackedResource):  # pylint: disable=too-many-instance-attr
         self.vm_device_model = vm_device_model
         self.vm_image = vm_image
         self.vm_image_repository_credentials = vm_image_repository_credentials
-        self.volumes = None
+        self.volumes: Optional[List[str]] = None
 
 
 class VirtualMachineList(_serialization.Model):
@@ -7657,7 +8936,7 @@ class VirtualMachinePatchParameters(_serialization.Model):
 class VirtualMachinePlacementHint(_serialization.Model):
     """VirtualMachinePlacementHint represents a single scheduling hint of the virtual machine.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar hint_type: The specification of whether this hint supports affinity or anti-affinity with
      the referenced resources. Required. Known values are: "Affinity" and "AntiAffinity".
@@ -7678,7 +8957,7 @@ class VirtualMachinePlacementHint(_serialization.Model):
 
     _validation = {
         "hint_type": {"required": True},
-        "resource_id": {"required": True, "min_length": 1},
+        "resource_id": {"required": True},
         "scheduling_execution": {"required": True},
         "scope": {"required": True},
     }
@@ -7746,12 +9025,12 @@ class VirtualMachinePowerOffParameters(_serialization.Model):
         self.skip_shutdown = skip_shutdown
 
 
-class Volume(TrackedResource):  # pylint: disable=too-many-instance-attributes
+class Volume(TrackedResource):
     """Volume represents storage made available for use by resources running on the cluster.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Fully qualified resource ID for the resource. E.g.
      "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}".
@@ -7768,6 +9047,8 @@ class Volume(TrackedResource):  # pylint: disable=too-many-instance-attributes
     :vartype tags: dict[str, str]
     :ivar location: The geo-location where the resource lives. Required.
     :vartype location: str
+    :ivar etag: Resource ETag.
+    :vartype etag: str
     :ivar extended_location: The extended location of the cluster associated with the resource.
      Required.
     :vartype extended_location: ~azure.mgmt.networkcloud.models.ExtendedLocation
@@ -7794,6 +9075,7 @@ class Volume(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "type": {"readonly": True},
         "system_data": {"readonly": True},
         "location": {"required": True},
+        "etag": {"readonly": True},
         "extended_location": {"required": True},
         "attached_to": {"readonly": True},
         "detailed_status": {"readonly": True},
@@ -7810,6 +9092,7 @@ class Volume(TrackedResource):  # pylint: disable=too-many-instance-attributes
         "system_data": {"key": "systemData", "type": "SystemData"},
         "tags": {"key": "tags", "type": "{str}"},
         "location": {"key": "location", "type": "str"},
+        "etag": {"key": "etag", "type": "str"},
         "extended_location": {"key": "extendedLocation", "type": "ExtendedLocation"},
         "attached_to": {"key": "properties.attachedTo", "type": "[str]"},
         "detailed_status": {"key": "properties.detailedStatus", "type": "str"},
@@ -7840,12 +9123,13 @@ class Volume(TrackedResource):  # pylint: disable=too-many-instance-attributes
         :paramtype size_mi_b: int
         """
         super().__init__(tags=tags, location=location, **kwargs)
+        self.etag: Optional[str] = None
         self.extended_location = extended_location
-        self.attached_to = None
-        self.detailed_status = None
-        self.detailed_status_message = None
-        self.provisioning_state = None
-        self.serial_number = None
+        self.attached_to: Optional[List[str]] = None
+        self.detailed_status: Optional[Union[str, "_models.VolumeDetailedStatus"]] = None
+        self.detailed_status_message: Optional[str] = None
+        self.provisioning_state: Optional[Union[str, "_models.VolumeProvisioningState"]] = None
+        self.serial_number: Optional[str] = None
         self.size_mi_b = size_mi_b
 
 
@@ -7895,3 +9179,63 @@ class VolumePatchParameters(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.tags = tags
+
+
+class VulnerabilityScanningSettings(_serialization.Model):
+    """VulnerabilityScanningSettings represents the settings for how security vulnerability scanning
+    is applied to the cluster.
+
+    :ivar container_scan: The mode selection for container vulnerability scanning. Known values
+     are: "Disabled" and "Enabled".
+    :vartype container_scan: str or
+     ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettingsContainerScan
+    """
+
+    _attribute_map = {
+        "container_scan": {"key": "containerScan", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        container_scan: Optional[Union[str, "_models.VulnerabilityScanningSettingsContainerScan"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword container_scan: The mode selection for container vulnerability scanning. Known values
+         are: "Disabled" and "Enabled".
+        :paramtype container_scan: str or
+         ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettingsContainerScan
+        """
+        super().__init__(**kwargs)
+        self.container_scan = container_scan
+
+
+class VulnerabilityScanningSettingsPatch(_serialization.Model):
+    """VulnerabilityScanningSettingsPatch represents the settings for how security vulnerability
+    scanning is applied to the cluster.
+
+    :ivar container_scan: The mode selection for container vulnerability scanning. Known values
+     are: "Disabled" and "Enabled".
+    :vartype container_scan: str or
+     ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettingsContainerScan
+    """
+
+    _attribute_map = {
+        "container_scan": {"key": "containerScan", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        container_scan: Optional[Union[str, "_models.VulnerabilityScanningSettingsContainerScan"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword container_scan: The mode selection for container vulnerability scanning. Known values
+         are: "Disabled" and "Enabled".
+        :paramtype container_scan: str or
+         ~azure.mgmt.networkcloud.models.VulnerabilityScanningSettingsContainerScan
+        """
+        super().__init__(**kwargs)
+        self.container_scan = container_scan

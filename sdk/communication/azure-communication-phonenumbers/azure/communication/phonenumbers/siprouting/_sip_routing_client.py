@@ -4,18 +4,14 @@
 # license information.
 # --------------------------------------------------------------------------
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Any
 from urllib.parse import urlparse
 
 from azure.core.tracing.decorator import distributed_trace
 from azure.core.paging import ItemPaged
 
-from._models import SipTrunk, SipTrunkRoute
-from ._generated.models import (
-    SipConfiguration,
-    SipTrunkInternal,
-    SipTrunkRouteInternal
-)
+from ._models import SipTrunk, SipTrunkRoute
+from ._generated.models import SipConfiguration, SipTrunkInternal, SipTrunkRouteInternal
 from ._generated._client import SIPRoutingService
 from .._shared.auth_policy_utils import get_authentication_policy
 from .._shared.utils import parse_connection_str
@@ -37,13 +33,12 @@ class SipRoutingClient(object):
      this default value may result in unsupported behavior.
     :paramtype api_version: str
     """
-
     def __init__(
         self,
-        endpoint,  # type: str
-        credential,  # type: TokenCredential
-        **kwargs  # type: Any
-    ):  # type: (...) -> SipRoutingClient
+        endpoint: str,
+        credential: "TokenCredential",
+        **kwargs: Any
+    ) -> None:
 
         if not credential:
             raise ValueError("credential can not be None")
@@ -51,7 +46,7 @@ class SipRoutingClient(object):
             if not endpoint.lower().startswith("http"):
                 endpoint = "https://" + endpoint
         except AttributeError:
-            raise ValueError("Host URL must be a string") # pylint:disable=raise-missing-from
+            raise ValueError("Host URL must be a string")  # pylint:disable=raise-missing-from
 
         parsed_url = urlparse(endpoint.rstrip("/"))
         if not parsed_url.netloc:
@@ -61,19 +56,15 @@ class SipRoutingClient(object):
         self._authentication_policy = get_authentication_policy(endpoint, credential)
 
         self._rest_service = SIPRoutingService(
-            self._endpoint,
-            authentication_policy=self._authentication_policy,
-            sdk_moniker=SDK_MONIKER,
-            **kwargs
+            self._endpoint, authentication_policy=self._authentication_policy, sdk_moniker=SDK_MONIKER, **kwargs
         )
 
     @classmethod
     def from_connection_string(
         cls,
-        conn_str,  # type: str
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> SipRoutingClient
+        conn_str: str,
+        **kwargs: Any
+    ) -> "SipRoutingClient":
         """Factory method for creating client from connection string.
 
         :param str conn_str: Connection string containing endpoint and credentials.
@@ -86,9 +77,9 @@ class SipRoutingClient(object):
     @distributed_trace
     def get_trunk(
         self,
-        trunk_fqdn,  # type: str
-        **kwargs  # type: Any
-    ):  # type: (...) -> SipTrunk
+        trunk_fqdn: str,
+        **kwargs: Any
+    ) -> SipTrunk:
         """Retrieve a single SIP trunk.
 
         :param trunk_fqdn: FQDN of the desired SIP trunk.
@@ -100,18 +91,17 @@ class SipRoutingClient(object):
         if trunk_fqdn is None:
             raise ValueError("Parameter 'trunk_fqdn' must not be None.")
 
-        config = self._rest_service.sip_routing.get(
-            **kwargs)
+        config = self._rest_service.sip_routing.get(**kwargs)
 
         trunk = config.trunks[trunk_fqdn]
-        return SipTrunk(fqdn=trunk_fqdn,sip_signaling_port=trunk.sip_signaling_port)
+        return SipTrunk(fqdn=trunk_fqdn, sip_signaling_port=trunk.sip_signaling_port)
 
     @distributed_trace
     def set_trunk(
         self,
-        trunk,  # type: SipTrunk
-        **kwargs  # type: Any
-    ):  # type: (...) -> None
+        trunk: SipTrunk,
+        **kwargs: Any
+    ) -> None:
         """Modifies SIP trunk with the given FQDN. If it doesn't exist, adds a new trunk.
 
         :param trunk: Trunk object to be set.
@@ -123,14 +113,14 @@ class SipRoutingClient(object):
         if trunk is None:
             raise ValueError("Parameter 'trunk' must not be None.")
 
-        self._update_trunks_([trunk],**kwargs)
+        self._update_trunks_([trunk], **kwargs)
 
     @distributed_trace
     def delete_trunk(
         self,
-        trunk_fqdn,  # type: str
-        **kwargs  # type: Any
-    ):  # type: (...) -> None
+        trunk_fqdn: str,
+        **kwargs: Any
+    ) -> None:
         """Deletes SIP trunk.
 
         :param trunk_fqdn: FQDN of the trunk to be deleted.
@@ -142,40 +132,35 @@ class SipRoutingClient(object):
         if trunk_fqdn is None:
             raise ValueError("Parameter 'trunk_fqdn' must not be None.")
 
-        self._rest_service.sip_routing.update(
-            body=SipConfiguration(trunks={trunk_fqdn:None}),
-            **kwargs)
+        self._rest_service.sip_routing.update(body=SipConfiguration(trunks={trunk_fqdn: None}), **kwargs)
 
     @distributed_trace
     def list_trunks(
         self,
-        **kwargs  # type: Any
-    ):  # type: (...) -> ItemPaged[SipTrunk]
+        **kwargs: Any
+    ) -> ItemPaged[SipTrunk]:
         """Retrieves the currently configured SIP trunks.
 
         :returns: Current SIP trunks configuration.
         :rtype: ItemPaged[~azure.communication.siprouting.models.SipTrunk]
         :raises: ~azure.core.exceptions.HttpResponseError
         """
+
         def extract_data(config):
-            list_of_elem = [SipTrunk(
-                fqdn=k,
-                sip_signaling_port=v.sip_signaling_port) for k,v in config.trunks.items()]
+            list_of_elem = [SipTrunk(fqdn=k, sip_signaling_port=v.sip_signaling_port) for k, v in config.trunks.items()]
             return None, list_of_elem
 
         # pylint: disable=unused-argument
         def get_next(nextLink=None):
-            return self._rest_service.sip_routing.get(
-                **kwargs
-                )
+            return self._rest_service.sip_routing.get(**kwargs)
 
         return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_routes(
         self,
-        **kwargs  # type: Any
-    ):  # type: (...) -> ItemPaged[SipTrunkRoute]
+        **kwargs: Any
+    ) -> ItemPaged[SipTrunkRoute]:
         """Retrieves the currently configured SIP routes.
 
         :returns: Current SIP routes configuration.
@@ -184,27 +169,24 @@ class SipRoutingClient(object):
         """
 
         def extract_data(config):
-            list_of_elem =  [SipTrunkRoute(
-                description=x.description,
-                name=x.name,
-                number_pattern=x.number_pattern,
-                trunks=x.trunks) for x in config.routes]
+            list_of_elem = [
+                SipTrunkRoute(description=x.description, name=x.name, number_pattern=x.number_pattern, trunks=x.trunks)
+                for x in config.routes
+            ]
             return None, list_of_elem
 
         # pylint: disable=unused-argument
         def get_next(nextLink=None):
-            return  self._rest_service.sip_routing.get(
-                **kwargs
-            )
+            return self._rest_service.sip_routing.get(**kwargs)
 
         return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def set_trunks(
         self,
-        trunks,  # type: List[SipTrunk]
-        **kwargs  # type: Any
-    ):  # type: (...) -> None
+        trunks: List[SipTrunk],
+        **kwargs: Any
+    ) -> None:
         """Overwrites the list of SIP trunks.
 
         :param trunks: New list of trunks to be set.
@@ -226,16 +208,14 @@ class SipRoutingClient(object):
                 config.trunks[x.fqdn] = None
 
         if len(config.trunks) > 0:
-            self._rest_service.sip_routing.update(
-                body=config, **kwargs
-            )
+            self._rest_service.sip_routing.update(body=config, **kwargs)
 
     @distributed_trace
     def set_routes(
         self,
-        routes,  # type: List[SipTrunkRoute]
-        **kwargs  # type: Any
-    ):  # type: (...) ->  None
+        routes: List[SipTrunkRoute],
+        **kwargs: Any
+    ) -> None:
         """Overwrites the list of SIP routes.
 
         :param routes: New list of routes to be set.
@@ -247,32 +227,28 @@ class SipRoutingClient(object):
         if routes is None:
             raise ValueError("Parameter 'routes' must not be None.")
 
-        routes_internal = [SipTrunkRouteInternal(
-            description=x.description,
-            name=x.name,
-            number_pattern=x.number_pattern,
-            trunks=x.trunks
-            ) for x in routes]
-        self._rest_service.sip_routing.update(
-            body=SipConfiguration(routes=routes_internal), **kwargs
-        )
+        routes_internal = [
+            SipTrunkRouteInternal(
+                description=x.description, name=x.name, number_pattern=x.number_pattern, trunks=x.trunks
+            )
+            for x in routes
+        ]
+        self._rest_service.sip_routing.update(body=SipConfiguration(routes=routes_internal), **kwargs)
 
-    def _list_trunks_(self, **kwargs):
-        config = self._rest_service.sip_routing.get(
-            **kwargs)
-        return [SipTrunk(fqdn=k,sip_signaling_port=v.sip_signaling_port) for k,v in config.trunks.items()]
+    def _list_trunks_(self, **kwargs: Any) -> List[SipTrunk]:
+        config = self._rest_service.sip_routing.get(**kwargs)
+        return [SipTrunk(fqdn=k, sip_signaling_port=v.sip_signaling_port) for k, v in config.trunks.items()]
 
-    def _update_trunks_(self,
-        trunks,  # type: List[SipTrunk]
-        **kwargs  # type: Any
-        ):  # type: (...) -> SipTrunk
+    def _update_trunks_(
+        self,
+        trunks: List[SipTrunk],
+        **kwargs: Any
+    ) -> List[SipTrunk]:
         trunks_internal = {x.fqdn: SipTrunkInternal(sip_signaling_port=x.sip_signaling_port) for x in trunks}
         modified_config = SipConfiguration(trunks=trunks_internal)
 
-        new_config = self._rest_service.sip_routing.update(
-            body=modified_config, **kwargs
-        )
-        return [SipTrunk(fqdn=k,sip_signaling_port=v.sip_signaling_port) for k,v in new_config.trunks.items()]
+        new_config = self._rest_service.sip_routing.update(body=modified_config, **kwargs)
+        return [SipTrunk(fqdn=k, sip_signaling_port=v.sip_signaling_port) for k, v in new_config.trunks.items()]
 
     def close(self) -> None:
         self._rest_service.close()

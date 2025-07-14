@@ -16,9 +16,10 @@ from azure.monitor.query import (
     LogsQueryResult,
     LogsTableRow,
     LogsQueryPartialResult,
-    LogsQueryStatus
+    LogsQueryStatus,
 )
 from azure.monitor.query._helpers import native_col_type
+from azure.monitor.query._version import VERSION
 
 from base_testcase import AzureMonitorQueryLogsTestCase
 
@@ -32,7 +33,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         summarize avgRequestDuration=avg(DurationMs) by bin(TimeGenerated, 10m), _ResourceId"""
 
         # returns LogsQueryResult
-        response = client.query_workspace(monitor_info['workspace_id'], query, timespan=None)
+        response = client.query_workspace(monitor_info["workspace_id"], query, timespan=None)
 
         assert response is not None
         assert response.status == LogsQueryStatus.SUCCESS
@@ -46,7 +47,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
 
         # returns LogsQueryResult
         with pytest.raises(TypeError):
-            client.query_workspace(monitor_info['workspace_id'], query)
+            client.query_workspace(monitor_info["workspace_id"], query)
 
     def test_logs_single_query_with_non_200(self, recorded_test, monitor_info):
         client = self.get_client(LogsQueryClient, self.get_credential(LogsQueryClient))
@@ -54,7 +55,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         where TimeGenerated > ago(12h)"""
 
         with pytest.raises(HttpResponseError) as e:
-            client.query_workspace(monitor_info['workspace_id'], query, timespan=None)
+            client.query_workspace(monitor_info["workspace_id"], query, timespan=None)
 
         assert "SemanticError" in e.value.message
 
@@ -63,7 +64,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         query = """let Weight = 92233720368547758;
         range x from 1 to 3 step 1
         | summarize percentilesw(x, Weight * 100, 50)"""
-        response = client.query_workspace(monitor_info['workspace_id'], query, timespan=None)
+        response = client.query_workspace(monitor_info["workspace_id"], query, timespan=None)
 
         assert response.partial_error is not None
         assert response.partial_data is not None
@@ -88,39 +89,34 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
             assert response.status == LogsQueryStatus.PARTIAL
             assert "timed out" in str(response.partial_error)
 
-
     @pytest.mark.live_test_only("Issues recording dynamic 'id' values in requests/responses")
     def test_logs_query_batch_default(self, monitor_info):
         client = self.get_client(LogsQueryClient, self.get_credential(LogsQueryClient))
 
         requests = [
             LogsBatchQuery(
-                workspace_id=monitor_info['workspace_id'],
+                workspace_id=monitor_info["workspace_id"],
                 query="AzureActivity | summarize count()",
-                timespan=timedelta(hours=1)
-            ),
-            LogsBatchQuery(
-                workspace_id=monitor_info['workspace_id'],
-                query= """AppRequests | take 10  |
-                    summarize avgRequestDuration=avg(DurationMs) by bin(TimeGenerated, 10m), _ResourceId""",
                 timespan=timedelta(hours=1),
             ),
             LogsBatchQuery(
-                workspace_id=monitor_info['workspace_id'],
-                query= "Wrong query | take 2",
-                timespan=None
+                workspace_id=monitor_info["workspace_id"],
+                query="""AppRequests | take 10  |
+                    summarize avgRequestDuration=avg(DurationMs) by bin(TimeGenerated, 10m), _ResourceId""",
+                timespan=timedelta(hours=1),
             ),
+            LogsBatchQuery(workspace_id=monitor_info["workspace_id"], query="Wrong query | take 2", timespan=None),
         ]
         response = client.query_batch(requests)
 
         assert len(response) == 3
 
         r0 = response[0]
-        assert r0.tables[0].columns == ['count_']
+        assert r0.tables[0].columns == ["count_"]
         r1 = response[1]
-        assert r1.tables[0].columns[0] == 'TimeGenerated'
-        assert r1.tables[0].columns[1] == '_ResourceId'
-        assert r1.tables[0].columns[2] == 'avgRequestDuration'
+        assert r1.tables[0].columns[0] == "TimeGenerated"
+        assert r1.tables[0].columns[1] == "_ResourceId"
+        assert r1.tables[0].columns[2] == "avgRequestDuration"
         r2 = response[2]
         assert r2.__class__ == LogsQueryError
 
@@ -129,7 +125,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         query = """AppRequests | take 10"""
 
         # returns LogsQueryResult
-        response = client.query_workspace(monitor_info['workspace_id'], query, timespan=None, include_statistics=True)
+        response = client.query_workspace(monitor_info["workspace_id"], query, timespan=None, include_statistics=True)
 
         assert response.statistics is not None
 
@@ -139,7 +135,8 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
 
         # returns LogsQueryResult
         response = client.query_workspace(
-            monitor_info['workspace_id'], query, timespan=None, include_visualization=True)
+            monitor_info["workspace_id"], query, timespan=None, include_visualization=True
+        )
 
         assert response.visualization is not None
 
@@ -149,7 +146,8 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
 
         # returns LogsQueryResult
         response = client.query_workspace(
-            monitor_info['workspace_id'], query, timespan=None, include_visualization=True, include_statistics=True)
+            monitor_info["workspace_id"], query, timespan=None, include_visualization=True, include_statistics=True
+        )
 
         assert response.visualization is not None
         assert response.statistics is not None
@@ -160,22 +158,19 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
 
         requests = [
             LogsBatchQuery(
-                workspace_id=monitor_info['workspace_id'],
+                workspace_id=monitor_info["workspace_id"],
                 query="AzureActivity | summarize count()",
                 timespan=timedelta(hours=1),
             ),
             LogsBatchQuery(
-                workspace_id=monitor_info['workspace_id'],
-                query= """AppRequests|
+                workspace_id=monitor_info["workspace_id"],
+                query="""AppRequests|
                     summarize avgRequestDuration=avg(DurationMs) by bin(TimeGenerated, 10m), _ResourceId""",
                 timespan=timedelta(hours=1),
-                include_statistics=True
+                include_statistics=True,
             ),
             LogsBatchQuery(
-                workspace_id=monitor_info['workspace_id'],
-                query= "AppRequests",
-                timespan=None,
-                include_statistics=True
+                workspace_id=monitor_info["workspace_id"], query="AppRequests", timespan=None, include_statistics=True
             ),
         ]
         response = client.query_batch(requests)
@@ -192,11 +187,11 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         )
         # returns LogsQueryResult
         response = client.query_workspace(
-            monitor_info['workspace_id'],
+            monitor_info["workspace_id"],
             query,
             timespan=None,
-            additional_workspaces=[monitor_info['secondary_workspace_id']],
-            )
+            additional_workspaces=[monitor_info["secondary_workspace_id"]],
+        )
 
         assert response is not None
         assert len(response.tables[0].rows) == 2
@@ -211,22 +206,22 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         )
         requests = [
             LogsBatchQuery(
-                monitor_info['workspace_id'],
+                monitor_info["workspace_id"],
                 query,
                 timespan=None,
-                additional_workspaces=[monitor_info['secondary_workspace_id']]
+                additional_workspaces=[monitor_info["secondary_workspace_id"]],
             ),
             LogsBatchQuery(
-                monitor_info['workspace_id'],
+                monitor_info["workspace_id"],
                 query,
                 timespan=None,
-                additional_workspaces=[monitor_info['secondary_workspace_id']]
+                additional_workspaces=[monitor_info["secondary_workspace_id"]],
             ),
             LogsBatchQuery(
-                    monitor_info['workspace_id'],
-                    query,
-                    timespan=None,
-                    additional_workspaces=[monitor_info['secondary_workspace_id']]
+                monitor_info["workspace_id"],
+                query,
+                timespan=None,
+                additional_workspaces=[monitor_info["secondary_workspace_id"]],
             ),
         ]
         response = client.query_batch(requests)
@@ -239,11 +234,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         query = "AppRequests | take 10; AppRequests | take 5"
 
         response = client.query_workspace(
-            monitor_info['workspace_id'],
-            query,
-            timespan=None,
-            include_statistics=True,
-            include_visualization=True
+            monitor_info["workspace_id"], query, timespan=None, include_statistics=True, include_visualization=True
         )
 
         ## should iterate over tables
@@ -261,7 +252,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         query = "AppRequests | take 5"
 
         response = client.query_workspace(
-            monitor_info['workspace_id'],
+            monitor_info["workspace_id"],
             query,
             timespan=None,
         )
@@ -274,17 +265,17 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
                 assert row.__class__ == LogsTableRow
 
     def test_native_col_type(self):
-        val = native_col_type('datetime', None)
+        val = native_col_type("datetime", None)
         assert val is None
 
-        val = native_col_type('datetime', '2020-10-10')
+        val = native_col_type("datetime", "2020-10-10")
         assert val is not None
 
     def test_logs_resource_query(self, recorded_test, monitor_info):
         client = self.get_client(LogsQueryClient, self.get_credential(LogsQueryClient))
         query = "requests | summarize count()"
 
-        response = client.query_resource(monitor_info['metrics_resource_id'], query, timespan=None)
+        response = client.query_resource(monitor_info["metrics_resource_id"], query, timespan=None)
 
         assert response is not None
         assert response.tables is not None
@@ -295,11 +286,11 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
         query = "requests | summarize count()"
 
         response = client.query_resource(
-            monitor_info['metrics_resource_id'],
+            monitor_info["metrics_resource_id"],
             query,
             timespan=None,
             include_statistics=True,
-            include_visualization=True
+            include_visualization=True,
         )
 
         assert response.visualization is not None
@@ -312,3 +303,7 @@ class TestLogsClient(AzureMonitorQueryLogsTestCase):
 
         assert client._endpoint == endpoint
         assert "https://api.loganalytics.azure.cn/.default" in client._client._config.authentication_policy._scopes
+
+    def test_client_user_agent(self):
+        client: LogsQueryClient = self.get_client(LogsQueryClient, self.get_credential(LogsQueryClient))
+        assert f"monitor-query/{VERSION}" in client._client._config.user_agent_policy.user_agent

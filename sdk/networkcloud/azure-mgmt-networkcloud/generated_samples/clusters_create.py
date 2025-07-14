@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,useless-suppression
 # coding=utf-8
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -7,6 +8,7 @@
 # --------------------------------------------------------------------------
 
 from azure.identity import DefaultAzureCredential
+
 from azure.mgmt.networkcloud import NetworkCloudMgmtClient
 
 """
@@ -37,12 +39,21 @@ def main():
                 "name": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/Microsoft.ExtendedLocation/customLocations/clusterManagerExtendedLocationName",
                 "type": "CustomLocation",
             },
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/userIdentity1": {}
+                },
+            },
             "location": "location",
             "properties": {
                 "aggregatorOrSingleRackDefinition": {
                     "bareMetalMachineConfigurationData": [
                         {
-                            "bmcCredentials": {"password": "{password}", "username": "username"},
+                            "bmcCredentials": {
+                                "password": "https://keyvaultname.vault.azure.net/secrets/secretName",
+                                "username": "username",
+                            },
                             "bmcMacAddress": "AA:BB:CC:DD:EE:FF",
                             "bootMacAddress": "00:BB:CC:DD:EE:FF",
                             "machineDetails": "extraDetails",
@@ -51,7 +62,10 @@ def main():
                             "serialNumber": "BM1219XXX",
                         },
                         {
-                            "bmcCredentials": {"password": "{password}", "username": "username"},
+                            "bmcCredentials": {
+                                "password": "https://keyvaultname.vault.azure.net/secrets/secretName",
+                                "username": "username",
+                            },
                             "bmcMacAddress": "AA:BB:CC:DD:EE:00",
                             "bootMacAddress": "00:BB:CC:DD:EE:00",
                             "machineDetails": "extraDetails",
@@ -66,14 +80,23 @@ def main():
                     "rackSkuId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/providers/Microsoft.NetworkCloud/rackSkus/rackSkuName",
                     "storageApplianceConfigurationData": [
                         {
-                            "adminCredentials": {"password": "{password}", "username": "username"},
+                            "adminCredentials": {
+                                "password": "https://keyvaultname.vault.azure.net/secrets/secretName",
+                                "username": "username",
+                            },
                             "rackSlot": 1,
                             "serialNumber": "BM1219XXX",
                             "storageApplianceName": "vmName",
                         }
                     ],
                 },
-                "analyticsWorkspaceId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/microsoft.operationalInsights/workspaces/logAnalyticsWorkspaceName",
+                "analyticsOutputSettings": {
+                    "analyticsWorkspaceId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/microsoft.operationalInsights/workspaces/logAnalyticsWorkspaceName",
+                    "associatedIdentity": {
+                        "identityType": "UserAssignedIdentity",
+                        "userAssignedIdentityResourceId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/userIdentity1",
+                    },
+                },
                 "clusterLocation": "Foo Street, 3rd Floor, row 9",
                 "clusterServicePrincipal": {
                     "applicationId": "12345678-1234-1234-1234-123456789012",
@@ -83,12 +106,22 @@ def main():
                 },
                 "clusterType": "SingleRack",
                 "clusterVersion": "1.0.0",
+                "commandOutputSettings": {
+                    "associatedIdentity": {
+                        "identityType": "UserAssignedIdentity",
+                        "userAssignedIdentityResourceId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/userIdentity1",
+                    },
+                    "containerUrl": "https://myaccount.blob.core.windows.net/mycontainer?restype=container",
+                },
                 "computeDeploymentThreshold": {"grouping": "PerCluster", "type": "PercentSuccess", "value": 90},
                 "computeRackDefinitions": [
                     {
                         "bareMetalMachineConfigurationData": [
                             {
-                                "bmcCredentials": {"password": "{password}", "username": "username"},
+                                "bmcCredentials": {
+                                    "password": "https://keyvaultname.vault.azure.net/secrets/secretName",
+                                    "username": "username",
+                                },
                                 "bmcMacAddress": "AA:BB:CC:DD:EE:FF",
                                 "bootMacAddress": "00:BB:CC:DD:EE:FF",
                                 "machineDetails": "extraDetails",
@@ -97,7 +130,10 @@ def main():
                                 "serialNumber": "BM1219XXX",
                             },
                             {
-                                "bmcCredentials": {"password": "{password}", "username": "username"},
+                                "bmcCredentials": {
+                                    "password": "https://keyvaultname.vault.azure.net/secrets/secretName",
+                                    "username": "username",
+                                },
                                 "bmcMacAddress": "AA:BB:CC:DD:EE:00",
                                 "bootMacAddress": "00:BB:CC:DD:EE:00",
                                 "machineDetails": "extraDetails",
@@ -112,7 +148,10 @@ def main():
                         "rackSkuId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/providers/Microsoft.NetworkCloud/rackSkus/rackSkuName",
                         "storageApplianceConfigurationData": [
                             {
-                                "adminCredentials": {"password": "{password}", "username": "username"},
+                                "adminCredentials": {
+                                    "password": "https://keyvaultname.vault.azure.net/secrets/secretName",
+                                    "username": "username",
+                                },
                                 "rackSlot": 1,
                                 "serialNumber": "BM1219XXX",
                                 "storageApplianceName": "vmName",
@@ -122,6 +161,22 @@ def main():
                 ],
                 "managedResourceGroupConfiguration": {"location": "East US", "name": "my-managed-rg"},
                 "networkFabricId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/Microsoft.ManagedNetworkFabric/networkFabrics/fabricName",
+                "runtimeProtectionConfiguration": {"enforcementLevel": "OnDemand"},
+                "secretArchiveSettings": {
+                    "associatedIdentity": {
+                        "identityType": "UserAssignedIdentity",
+                        "userAssignedIdentityResourceId": "/subscriptions/123e4567-e89b-12d3-a456-426655440000/resourceGroups/resourceGroupName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/userIdentity1",
+                    },
+                    "vaultUri": "https://keyvaultname.vault.azure.net/",
+                },
+                "updateStrategy": {
+                    "maxUnavailable": 4,
+                    "strategyType": "Rack",
+                    "thresholdType": "CountSuccess",
+                    "thresholdValue": 4,
+                    "waitTimeMinutes": 10,
+                },
+                "vulnerabilityScanningSettings": {"containerScan": "Enabled"},
             },
             "tags": {"key1": "myvalue1", "key2": "myvalue2"},
         },
@@ -129,6 +184,6 @@ def main():
     print(response)
 
 
-# x-ms-original-file: specification/networkcloud/resource-manager/Microsoft.NetworkCloud/stable/2023-07-01/examples/Clusters_Create.json
+# x-ms-original-file: specification/networkcloud/resource-manager/Microsoft.NetworkCloud/stable/2025-02-01/examples/Clusters_Create.json
 if __name__ == "__main__":
     main()

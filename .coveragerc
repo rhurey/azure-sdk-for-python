@@ -6,6 +6,7 @@ omit =
 	*/test*
 	env*
 	*/_serialization.py
+	*/azure/ai/ml/_restclient
 
 [paths]
 source =
@@ -20,8 +21,10 @@ exclude_lines =
 	if headers:
 	if response.status_code not in
 	if TYPE_CHECKING:
+	@overload
 omit =
 	*/test*
 	env*
 	*/_serialization.py
 	*/sms/_shared/*
+	*/azure/ai/ml/_restclient/*

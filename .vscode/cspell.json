@@ -11,6 +11,7 @@
     "en-gb"
   ],
   "ignorePaths": [
+    ".devcontainer/**",
     "eng/**",
     ".github/CODEOWNERS",
     "scripts/**",
@@ -33,6 +34,8 @@
     "sdk/batch/azure-batch/**",
     "sdk/ai/**/index/**",
     "sdk/ai/azure-ai-generative/tests/**",
+    "sdk/ai/azure-ai-inference/samples/hello_how_are_you.mp3",
+    "sdk/ai/azure-ai-inference/tests/hello_how_are_you.mp3",
     "sdk/ai/azure-ai-resources/azure/ai/resources/_index/_langchain/vendor/**",
     "sdk/ai/azure-ai-resources/azure/ai/resources/_restclient/**",
     "sdk/cognitiveservices/azure-cognitiveservices-search-autosuggest/**",
@@ -63,17 +66,20 @@
     "sdk/digitaltwins/azure-digitaltwins-core/**",
     "sdk/evaluation/azure-ai-evaluation/azure/ai/evaluation/_vendor/**",
     "sdk/evaluation/azure-ai-evaluation/tests/**",
+    "sdk/evaluation/azure-ai-evaluation/samples/agent_evaluators/**",
     "sdk/eventhub/azure-eventhub-checkpointstoretable/**",
     "sdk/eventhub/azure-eventhub-checkpointstoreblob-aio/**",
     "sdk/eventhub/azure-eventhub/**",
     "sdk/easm/azure-defender-easm/azure/defender/easm/**",
     "sdk/graphrbac/azure-graphrbac/**",
+    "sdk/healthdataaiservices/azure-health-deidentification/tests/data/**/*",
     "sdk/healthinsights/azure-healthinsights-cancerprofiling/azure/**",
     "sdk/healthinsights/azure-healthinsights-clinicalmatching/azure/**",
     "sdk/formrecognizer/azure-ai-formrecognizer/samples/sample_forms/**",
     "sdk/formrecognizer/azure-ai-formrecognizer/tests/sample_forms/**",
     "sdk/documentintelligence/azure-ai-documentintelligence/samples/sample_forms/**",
     "sdk/documentintelligence/azure-ai-documentintelligence/tests/sample_forms/**",
+    "sdk/documentintelligence/test-resources.json",
     "sdk/personalizer/azure-ai-personalizer/azure/ai/personalizer/**",
     "sdk/identity/azure-identity/images/**",
     "sdk/identity/azure-identity/tests/pod-identity/**",
@@ -94,7 +100,12 @@
     "sdk/translation/azure-ai-translation-document/doc/**",
     "sdk/translation/azure-ai-translation-document/tests/glossaries-valid.csv",
     "sdk/storage/azure-storage-blob/**",
+    "sdk/eventhub/azure-eventhub-checkpointstoreblob/azure/eventhub/extensions/checkpointstoreblob/_vendor/**",
+    "sdk/eventhub/azure-eventhub-checkpointstoreblob-aio/azure/eventhub/extensions/checkpointstoreblobaio/_vendor/**",
     "sdk/storage/azure-storage-extensions/**",
+    "sdk/projects/azure-projects/tests/test_infra/**",
+    "sdk/projects/azure-projects/samples/**/*.html",
+    "sdk/projects/azure-projects/azure/projects/resources/**/types.py",
     "sdk/ml/azure-ai-ml/azure/ai/ml/_restclient/**",
     "sdk/ml/azure-ai-ml/azure/ai/ml/_utils/_virtual_cluster_utils/_restclient/**",
     "sdk/ml/azure-ai-ml/azure/ai/ml/entities/_job/job_name_generator.py",
@@ -108,6 +119,7 @@
     "sdk/monitor/azure-monitor-opentelemetry/samples/tracing/django/sample/db.sqlite3",
     "sdk/monitor/azure-monitor-opentelemetry-exporter/samples/traces/django/sample/db.sqlite3",
     "sdk/loadtestservice/azure-developer-loadtesting/**",
+    "sdk/openai/azure-openai/tests/assets/**",
     "sdk/translation/azure-ai-translation-text/azure/ai/translation/text/_serialization.py",
     "sdk/translation/azure-ai-translation-text/tests/test_break_sentence.py",
     "sdk/translation/azure-ai-translation-text/tests/test_translation.py",
@@ -187,7 +199,9 @@
     "azurecr",
     "azuremgmtcore",
     "azuremgmtcommunication",
+    "azuremypackage",
     "bdist",
+    "Beddall",
     "bstr",
     "byref",
     "cdll",
@@ -211,6 +225,8 @@
     "dateutil",
     "ddos",
     "decryptor",
+    "deidentification",
+    "deidservice",
     "delenv",
     "dependened",
     "deque",
@@ -238,11 +254,14 @@
     "entra",
     "envname",
     "evals",
+    "fastmcp",
     "fileno",
     "fqdns",
     "fstat",
+    "Ganguly",
     "gbps",
     "GCCH",
+    "Geraghty",
     "getsizeof",
     "graphrbac",
     "gmtime",
@@ -301,6 +320,7 @@
     "logz",
     "LPCWSTR",
     "Lucene",
+    "Mazuel",
     "mbps",
     "mday",
     "mibps",
@@ -312,14 +332,19 @@
     "mktime",
     "mlindex",
     "msal",
+    "msauth",
     "msrest",
     "msrestazure",
     "MSSQL",
+    "MSRC",
     "mutex",
     "myacr",
     "mydirectory",
     "myfile",
+    "mynewpackage",
+    "mypackage",
     "myvault",
+    "myservice",
     "mytable",
     "nazsdk",
     "nbytes",
@@ -337,10 +362,14 @@
     "onmicrosoft",
     "openai",
     "OPENAI",
+    "otel",
+    "otlp",
+    "OTLP",
     "owasp",
     "ownerid",
     "PBYTE",
     "PCREDENTIAL",
+    "pepy",
     "perfmon",
     "perfstress",
     "perfstressdebug",
@@ -353,6 +382,7 @@
     "prebuilts",
     "premf",
     "prevsnapshot",
+    "prompty",
     "pschema",
     "PSECRET",
     "pydantic",
@@ -363,12 +393,17 @@
     "pyright",
     "pyrightconfig",
     "parameterizing",
+    "pypirc",
+    "pyrit",
     "pytyped",
     "pytz",
     "pywin",
     "pyversion",
     "RAGRS",
     "rdbms",
+    "rgeraghty",
+    "Rohit",
+    "rohitganguly",
     "reauthenticated",
     "reimage",
     "revascularization",
@@ -378,6 +413,7 @@
     "rtsp",
     "rtype",
     "rwdlacu",
+    "sansiohttppolicy",
     "scbedd",
     "sdist",
     "sdpath",
@@ -397,6 +433,7 @@
     "struct",
     "STRUCT",
     "substringof",
+    "surrogated",
     "systemperf",
     "tenvparallel",
     "Teradata",
@@ -444,6 +481,7 @@
     "volcz",
     "vsts",
     "wchar",
+    "wesh",
     "westcentralus",
     "westus",
     "wfile",
@@ -566,6 +604,12 @@
       ]
     },
     {
+      "filename": "tools/azure-sdk-tools/tests/test_labels.py",
+      "words": [
+        "vnext"
+      ]
+    },
+    {
       "filename": "doc/esrp_release.md",
       "words": [
         "ESRP"
@@ -601,6 +645,46 @@
       "filename": "sdk/identity/azure-identity-broker/tests/*.py",
       "words": [
         "signin"
+      ]
+    },
+    {
+      "filename": "sdk/projects/azure-projects/tests/**/*.py",
+      "words": [
+        "tofile",
+        "rgtest",
+        "rgexists",
+        "rgtag",
+        "kvtest",
+        "testb",
+        "sclient",
+        "aclient"
+      ]
+    },
+    {
+      "filename": "sdk/projects/azure-projects/**",
+      "words": [
+        "azproj",
+        "azproject",
+        "azprojects",
+        "aiservices",
+        "aifoundry",
+        "mcpcommand",
+        "fastmcp",
+        "GUNICORN",
+        "GZRS",
+        "RAGZRS",
+        "nfsv",
+        "Eloqua",
+        "Hdfs",
+        "Informix",
+        "Magento",
+        "Netezza",
+        "Odbc",
+        "Serp",
+        "Sybase",
+        "Vertica",
+        "Xero",
+        "redef"
       ]
     },
     {
@@ -1004,6 +1088,7 @@
         "otlp",
         "speced",
         "pkgutils",
+        "psutil",
         "psycopg",
         "uninstrument",
         "uninstrumented"
@@ -1146,7 +1231,9 @@
         "racwdlmeop",
         "newfs",
         "adlsstorage",
-        "adlskey"
+        "adlskey",
+        "skdutid",
+        "sduoid"
       ]
     },
     {
@@ -1310,12 +1397,25 @@
     {
       "filename": "sdk/ai/azure-ai-inference/**",
       "words": [
-        "ubinary",
-        "mros",
-        "Nify",
         "ctxt",
+        "dels",
+        "dtype",
+        "fmatter",
+        "fspath",
+        "fstring",
+        "ldel",
+        "mros",
+        "nify",
+        "okwargs",
+        "prompty",
+        "rdel",
+        "ubinary",
         "wday",
-        "dtype"
+        "Hola",
+        "cómo",
+        "estás",
+        "logprobs",
+        "conver"
       ]
     },
     {
@@ -1340,6 +1440,13 @@
         "fmeasure",
         "upia",
         "xpia",
+        "expirable",
+        "ralphe",
+        "Inadherent",
+        "nbformat",
+        "nbconvert",
+        "onedp",
+        "azureai"
       ]
     },
     {
@@ -1423,7 +1530,9 @@
         "Fsubdir",
         "Fdir",
         "adal",
-        "mytestshare"
+        "mytestshare",
+        "skdutid",
+        "sduoid"
       ]
     },
     {
@@ -1770,6 +1879,13 @@
       ]
     },
     {
+      "filename": "sdk/appconfiguration/azure-appconfiguration-provider/**",
+      "words": [
+        "aicc",
+        "AICC"
+      ]
+    },
+    {
       "filename": "sdk/personalizer/test-resources.json",
       "words": [
         "euap"
@@ -1857,7 +1973,27 @@
         "pericholecystic",
         "craniocaudally",
         "angiomyolipomas",
-        "Omnipaque"
+        "Omnipaque",
+        "acrad",
+        "MEDNAX",
+        "BIRADS",
+        "FRAX",
+        "ASCVD",
+        "TYRER",
+        "CUSICK",
+        "AGATSTON",
+        "CEUS",
+        "HNPCC",
+        "KELLGREN",
+        "TONNIS",
+        "Fleischner",
+        "CTCHWO",
+        "hilar",
+        "docid",
+        "encounterid",
+        "authorid",
+        "USTHY",
+        "assesment"
       ]
     },
     {

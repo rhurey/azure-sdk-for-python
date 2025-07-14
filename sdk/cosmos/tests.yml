@@ -1,15 +1,16 @@
 trigger: none
 
 extends:
-    template: ../../eng/pipelines/templates/stages/archetype-sdk-tests.yml
+    template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
     parameters:
-      Clouds: 'Cosmos_Public'
       CloudConfig:
-        Cosmos_Public:
-          SubscriptionConfigurations:
-            - $(sub-config-azure-cloud-test-resources)
-            - $(sub-config-cosmos-azure-cloud-test-resources)
+        Public:
           ServiceConnection: azure-sdk-tests-cosmos
-      MaxParallel: 6
+      MatrixConfigs:
+        - Name: Cosmos_live_test
+          Path: sdk/cosmos/live-platform-matrix.json
+          Selection: all
+          GenerateVMJobs: true
+      MaxParallel: 8
       BuildTargetingString: azure-cosmos
       ServiceDirectory: cosmos

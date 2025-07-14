@@ -50,8 +50,8 @@ class Range(object):
         if range_max is None:
             raise ValueError("max is missing")
 
-        self.min = range_min
-        self.max = range_max
+        self.min = range_min.upper()
+        self.max = range_max.upper()
         self.isMinInclusive = isMinInclusive
         self.isMaxInclusive = isMaxInclusive
 
@@ -67,8 +67,8 @@ class Range(object):
     @classmethod
     def PartitionKeyRangeToRange(cls, partition_key_range):
         self = cls(
-            partition_key_range[PartitionKeyRange.MinInclusive],
-            partition_key_range[PartitionKeyRange.MaxExclusive],
+            partition_key_range[PartitionKeyRange.MinInclusive].upper(),
+            partition_key_range[PartitionKeyRange.MaxExclusive].upper(),
             True,
             False,
         )
@@ -77,8 +77,8 @@ class Range(object):
     @classmethod
     def ParseFromDict(cls, range_as_dict):
         self = cls(
-            range_as_dict[Range.MinPath],
-            range_as_dict[Range.MaxPath],
+            range_as_dict[Range.MinPath].upper(),
+            range_as_dict[Range.MaxPath].upper(),
             range_as_dict[Range.IsMinInclusivePath],
             range_as_dict[Range.IsMaxInclusivePath],
         )
@@ -125,7 +125,7 @@ class Range(object):
                     break
                 byte_array[i] = 255
 
-        return binascii.hexlify(byte_array).decode()
+        return binascii.hexlify(byte_array).decode().upper()
 
     def hex_binary_to_byte_array(self, hex_binary_string: str):
         if hex_binary_string is None:
@@ -180,13 +180,12 @@ class Range(object):
         )
 
     @staticmethod
-    def _compare_helper(a, b):
+    def _compare_helper(a: str, b: str):
         # python 3 compatible
         return (a > b) - (a < b)
 
     @staticmethod
     def overlaps(range1, range2):
-
         if range1 is None or range2 is None:
             return False
         if range1.isEmpty() or range2.isEmpty():
@@ -195,10 +194,59 @@ class Range(object):
         cmp1 = Range._compare_helper(range1.min, range2.max)
         cmp2 = Range._compare_helper(range2.min, range1.max)
 
-        if cmp1 <= 0 or cmp2 <= 0:
+        if cmp1 <= 0 and cmp2 <= 0:
             if (cmp1 == 0 and not (range1.isMinInclusive and range2.isMaxInclusive)) or (
                 cmp2 == 0 and not (range2.isMinInclusive and range1.isMaxInclusive)
             ):
                 return False
             return True
         return False
+
+    def can_merge(self, other: 'Range') -> bool:
+        if self.isSingleValue() and other.isSingleValue():
+            return self.min == other.min
+        # if share the same boundary, they can merge
+        overlap_boundary1 = self.max == other.min and self.isMaxInclusive or other.isMinInclusive
+        overlap_boundary2 = other.max == self.min and other.isMaxInclusive or self.isMinInclusive
+        if overlap_boundary1 or overlap_boundary2:
+            return True
+        return self.overlaps(self, other)
+
+    def merge(self, other: 'Range') -> 'Range':
+        if not self.can_merge(other):
+            raise ValueError("Ranges do not overlap")
+        min_val = self.min if self.min < other.min else other.min
+        max_val = self.max if self.max > other.max else other.max
+        is_min_inclusive = self.isMinInclusive if self.min < other.min else other.isMinInclusive
+        is_max_inclusive = self.isMaxInclusive if self.max > other.max else other.isMaxInclusive
+        return Range(min_val, max_val, is_min_inclusive, is_max_inclusive)
+
+    def is_subset(self, parent_range: 'Range') -> bool:
+        normalized_parent_range = parent_range.to_normalized_range()
+        normalized_child_range = self.to_normalized_range()
+        return (normalized_parent_range.min <= normalized_child_range.min and
+                normalized_parent_range.max >= normalized_child_range.max)
+
+class PartitionKeyRangeWrapper(object):
+    """Internal class for a representation of a unique partition for an account
+    """
+
+    def __init__(self, partition_key_range: Range, collection_rid: str) -> None:
+        self.partition_key_range = partition_key_range
+        self.collection_rid = collection_rid
+
+
+    def __str__(self) -> str:
+        return (
+            f"PartitionKeyRangeWrapper("
+            f"partition_key_range={self.partition_key_range}, "
+            f"collection_rid={self.collection_rid}, "
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, PartitionKeyRangeWrapper):
+            return False
+        return self.partition_key_range == other.partition_key_range and self.collection_rid == other.collection_rid
+
+    def __hash__(self):
+        return hash((self.partition_key_range, self.collection_rid))

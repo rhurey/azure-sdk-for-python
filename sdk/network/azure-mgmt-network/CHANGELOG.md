@@ -1,5 +1,136 @@
 # Release History
 
+## 29.0.0 (2025-05-22)
+
+### Features Added
+
+  - Added operation NetworkVirtualAppliancesOperations.begin_get_boot_diagnostic_logs
+  - Added operation NetworkVirtualAppliancesOperations.begin_reimage
+  - Added operation VirtualNetworkGatewaysOperations.begin_get_resiliency_information
+  - Added operation VirtualNetworkGatewaysOperations.begin_get_routes_information
+  - Added operation VirtualNetworkGatewaysOperations.begin_invoke_abort_migration
+  - Added operation VirtualNetworkGatewaysOperations.begin_invoke_commit_migration
+  - Added operation VirtualNetworkGatewaysOperations.begin_invoke_execute_migration
+  - Added operation VirtualNetworkGatewaysOperations.begin_invoke_prepare_migration
+  - Added operation group NetworkSecurityPerimeterAccessRulesOperations
+  - Added operation group NetworkSecurityPerimeterAssociableResourceTypesOperations
+  - Added operation group NetworkSecurityPerimeterAssociationsOperations
+  - Added operation group NetworkSecurityPerimeterLinkReferencesOperations
+  - Added operation group NetworkSecurityPerimeterLinksOperations
+  - Added operation group NetworkSecurityPerimeterLoggingConfigurationsOperations
+  - Added operation group NetworkSecurityPerimeterOperationStatusesOperations
+  - Added operation group NetworkSecurityPerimeterProfilesOperations
+  - Added operation group NetworkSecurityPerimetersOperations
+  - Model ActiveConnectivityConfiguration has a new parameter connectivity_capabilities
+  - Model ConnectivityConfiguration has a new parameter connectivity_capabilities
+  - Model EffectiveConnectivityConfiguration has a new parameter connectivity_capabilities
+  - Model ExpressRouteCircuitPeeringConfig has a new parameter advertised_public_prefix_info
+  - Model IpamPool has a new parameter etag
+  - Model LoadBalancingRule has a new parameter enable_connection_tracking
+  - Model ManagedRuleSet has a new parameter computed_disabled_rules
+  - Model NatGateway has a new parameter public_ip_addresses_v6
+  - Model NatGateway has a new parameter public_ip_prefixes_v6
+  - Model NatGateway has a new parameter source_virtual_network
+  - Model VerifierWorkspace has a new parameter etag
+  - Model VirtualNetwork has a new parameter default_public_nat_gateway
+  - Model VirtualNetworkGateway has a new parameter enable_high_bandwidth_vpn_gateway
+  - Model VirtualNetworkGateway has a new parameter virtual_network_gateway_migration_status
+  - Model VirtualNetworkGatewayConnection has a new parameter tunnel_properties
+  - Operation IpamPoolsOperations.begin_create has a new optional parameter if_match
+  - Operation IpamPoolsOperations.begin_delete has a new optional parameter if_match
+  - Operation IpamPoolsOperations.update has a new optional parameter if_match
+  - Operation VerifierWorkspacesOperations.begin_delete has a new optional parameter if_match
+  - Operation VerifierWorkspacesOperations.create has a new optional parameter if_match
+  - Operation VerifierWorkspacesOperations.update has a new optional parameter if_match
+
+### Breaking Changes
+
+  - Removed operation ConnectionMonitorsOperations.begin_query
+  - Removed operation ConnectionMonitorsOperations.begin_start
+
+## 28.1.0 (2024-12-20)
+
+### Features Added
+
+  - Client `NetworkManagementClient` added operation group `ipam_pools`
+  - Client `NetworkManagementClient` added operation group `static_cidrs`
+  - Client `NetworkManagementClient` added operation group `reachability_analysis_intents`
+  - Client `NetworkManagementClient` added operation group `reachability_analysis_runs`
+  - Client `NetworkManagementClient` added operation group `verifier_workspaces`
+  - Enum `AddressPrefixType` added member `NETWORK_GROUP`
+  - Model `AddressSpace` added property `ipam_pool_prefix_allocations`
+  - Model `BastionHost` added property `enable_private_only_bastion`
+  - Enum `FirewallPolicyIDPSSignatureDirection` added member `FIVE`
+  - Model `NetworkInterface` added property `default_outbound_connectivity_enabled`
+  - Enum `ProvisioningState` added member `CANCELED`
+  - Enum `ProvisioningState` added member `CREATING`
+  - Model `SecurityAdminConfiguration` added property `network_group_address_space_aggregation_option`
+  - Model `Subnet` added property `ipam_pool_prefix_allocations`
+  - Added enum `AddressSpaceAggregationOption`
+  - Added model `CommonErrorAdditionalInfo`
+  - Added model `CommonErrorDetail`
+  - Added model `CommonErrorResponse`
+  - Added model `CommonProxyResource`
+  - Added model `CommonResource`
+  - Added model `CommonTrackedResource`
+  - Added model `ExpressRouteFailoverCircuitResourceDetails`
+  - Added model `ExpressRouteFailoverConnectionResourceDetails`
+  - Added model `ExpressRouteFailoverRedundantRoute`
+  - Added model `ExpressRouteFailoverSingleTestDetails`
+  - Added model `ExpressRouteFailoverStopApiParameters`
+  - Added model `ExpressRouteFailoverTestDetails`
+  - Added model `FailoverConnectionDetails`
+  - Added enum `FailoverConnectionStatus`
+  - Added enum `FailoverTestStatus`
+  - Added enum `FailoverTestStatusForSingleTest`
+  - Added enum `FailoverTestType`
+  - Added model `IPTraffic`
+  - Added model `IntentContent`
+  - Added enum `IpType`
+  - Added model `IpamPool`
+  - Added model `IpamPoolList`
+  - Added model `IpamPoolPrefixAllocation`
+  - Added model `IpamPoolProperties`
+  - Added model `IpamPoolUpdate`
+  - Added model `IpamPoolUpdateProperties`
+  - Added model `LoadBalancerHealthPerRule`
+  - Added model `LoadBalancerHealthPerRulePerBackendAddress`
+  - Added enum `NetworkProtocol`
+  - Added model `PoolAssociation`
+  - Added model `PoolAssociationList`
+  - Added model `PoolUsage`
+  - Added model `ReachabilityAnalysisIntent`
+  - Added model `ReachabilityAnalysisIntentListResult`
+  - Added model `ReachabilityAnalysisIntentProperties`
+  - Added model `ReachabilityAnalysisRun`
+  - Added model `ReachabilityAnalysisRunListResult`
+  - Added model `ReachabilityAnalysisRunProperties`
+  - Added model `ResourceBasics`
+  - Added model `StaticCidr`
+  - Added model `StaticCidrList`
+  - Added model `StaticCidrProperties`
+  - Added model `VerifierWorkspace`
+  - Added model `VerifierWorkspaceListResult`
+  - Added model `VerifierWorkspaceProperties`
+  - Added model `VerifierWorkspaceUpdate`
+  - Added model `VerifierWorkspaceUpdateProperties`
+  - Operation group `LoadBalancerLoadBalancingRulesOperations` added method `begin_health`
+  - Operation group `VirtualNetworkGatewaysOperations` added method `begin_get_failover_all_test_details`
+  - Operation group `VirtualNetworkGatewaysOperations` added method `begin_get_failover_single_test_details`
+  - Operation group `VirtualNetworkGatewaysOperations` added method `begin_start_express_route_site_failover_simulation`
+  - Operation group `VirtualNetworkGatewaysOperations` added method `begin_stop_express_route_site_failover_simulation`
+  - Added operation group `IpamPoolsOperations`
+  - Added operation group `ReachabilityAnalysisIntentsOperations`
+  - Added operation group `ReachabilityAnalysisRunsOperations`
+  - Added operation group `StaticCidrsOperations`
+  - Added operation group `VerifierWorkspacesOperations`
+
+## 28.0.0 (2024-11-01)
+
+### Breaking Changes
+
+- This package now only targets the latest Api-Version available on Azure and removes APIs of other Api-Version. After this change, the package can have much smaller size. If your application requires a specific and non-latest Api-Version, it's recommended to pin this package to the previous released version; If your application always only use latest Api-Version, please ignore this change.
+
 ## 27.0.0 (2024-09-22)
 
 ### Features Added

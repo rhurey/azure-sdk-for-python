@@ -4,7 +4,7 @@
 # license information.
 # --------------------------------------------------------------------------
 
-from logging import getLogger
+from logging import getLogger, Formatter
 from os import environ
 from typing import Dict
 
@@ -34,6 +34,7 @@ from azure.monitor.opentelemetry._constants import (
     ENABLE_LIVE_METRICS_ARG,
     INSTRUMENTATION_OPTIONS_ARG,
     LOGGER_NAME_ARG,
+    LOGGING_FORMATTER_ARG,
     RESOURCE_ARG,
     SAMPLING_RATIO_ARG,
     SPAN_PROCESSORS_ARG,
@@ -66,6 +67,7 @@ def _get_configurations(**kwargs) -> Dict[str, ConfigurationValue]:
     _default_disable_metrics(configurations)
     _default_disable_tracing(configurations)
     _default_logger_name(configurations)
+    _default_logging_formatter(configurations)
     _default_resource(configurations)
     _default_sampling_ratio(configurations)
     _default_instrumentation_options(configurations)
@@ -104,11 +106,14 @@ def _default_logger_name(configurations):
     configurations.setdefault(LOGGER_NAME_ARG, "")
 
 
+def _default_logging_formatter(configurations):
+    formatter = configurations.get(LOGGING_FORMATTER_ARG)
+    if not isinstance(formatter, Formatter):
+        configurations[LOGGING_FORMATTER_ARG] = None
+
+
 def _default_resource(configurations):
-    environ.setdefault(
-        OTEL_EXPERIMENTAL_RESOURCE_DETECTORS,
-        ",".join(_SUPPORTED_RESOURCE_DETECTORS)
-    )
+    environ.setdefault(OTEL_EXPERIMENTAL_RESOURCE_DETECTORS, ",".join(_SUPPORTED_RESOURCE_DETECTORS))
     if RESOURCE_ARG not in configurations:
         configurations[RESOURCE_ARG] = Resource.create()
     else:
@@ -122,7 +127,7 @@ def _default_sampling_ratio(configurations):
         try:
             default = float(environ[SAMPLING_RATIO_ENV_VAR])
         except ValueError as e:
-            _logger.error(
+            _logger.error(  # pylint: disable=C
                 _INVALID_FLOAT_MESSAGE,
                 SAMPLING_RATIO_ENV_VAR,
                 default,
@@ -162,15 +167,12 @@ def _default_views(configurations):
 
 
 def _get_otel_disabled_instrumentations():
-    disabled_instrumentation = environ.get(
-        OTEL_PYTHON_DISABLED_INSTRUMENTATIONS, ""
-    )
+    disabled_instrumentation = environ.get(OTEL_PYTHON_DISABLED_INSTRUMENTATIONS, "")
     disabled_instrumentation = disabled_instrumentation.split(",")
     # to handle users entering "requests , flask" or "requests, flask" with spaces
-    disabled_instrumentation = [
-        x.strip() for x in disabled_instrumentation
-    ]
+    disabled_instrumentation = [x.strip() for x in disabled_instrumentation]
     return disabled_instrumentation
+
 
 def _is_instrumentation_enabled(configurations, lib_name):
     if INSTRUMENTATION_OPTIONS_ARG not in configurations:

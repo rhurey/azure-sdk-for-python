@@ -17,7 +17,7 @@ from azure.identity._credentials.azure_cli import CLI_NOT_FOUND, NOT_LOGGED_IN
 from azure.core.exceptions import ClientAuthenticationError
 import pytest
 
-from helpers import INVALID_CHARACTERS, GET_TOKEN_METHODS
+from helpers import INVALID_CHARACTERS, INVALID_SUBSCRIPTION_CHARACTERS, GET_TOKEN_METHODS
 from helpers_async import get_completed_future
 from test_cli_credential import TEST_ERROR_OUTPUTS
 
@@ -72,6 +72,43 @@ async def test_invalid_scopes(get_token_method):
     for c in INVALID_CHARACTERS:
         with pytest.raises(ValueError):
             await getattr(AzureCliCredential(), get_token_method)("https://scope" + c)
+
+
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_subscription(get_token_method):
+    """The credential should accept a subscription ID"""
+
+    subscription = "foo subscription"
+    credential = AzureCliCredential(subscription=subscription)
+    assert credential.subscription == subscription
+
+    async def fake_exec(*args, **_):
+        assert "--subscription" in args
+        subscription_id_index = args.index("--subscription")
+        assert args[subscription_id_index + 1]
+        output = json.dumps(
+            {
+                "expiresOn": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),
+                "accessToken": "access-token",
+                "subscription": subscription,
+                "tenant": "tenant",
+                "tokenType": "Bearer",
+            }
+        ).encode()
+        return mock.Mock(communicate=mock.Mock(return_value=get_completed_future((output, b""))), returncode=0)
+
+    with mock.patch("shutil.which", return_value="az"):
+        with mock.patch(SUBPROCESS_EXEC, fake_exec):
+            token = await getattr(credential, get_token_method)("scope")
+            assert token.token == "access-token"
+
+
+def test_invalid_subscriptons():
+    """Subscriptions with invalid characters should raise ValueErrors."""
+
+    for c in INVALID_SUBSCRIPTION_CHARACTERS:
+        with pytest.raises(ValueError):
+            AzureCliCredential(subscription="subscription" + c)
 
 
 async def test_close():
@@ -283,8 +320,8 @@ async def test_multitenant_authentication(get_token_method):
     second_token = first_token * 2
 
     async def fake_exec(*args, **_):
-        match = re.search("--tenant (.*)", args[-1])
-        tenant = match[1] if match else default_tenant
+        tenant_index = args.index("--tenant") if "--tenant" in args else None
+        tenant = args[tenant_index + 1] if tenant_index is not None else default_tenant
         assert tenant in (default_tenant, second_tenant), 'unexpected tenant "{}"'.format(tenant)
         output = json.dumps(
             {
@@ -326,8 +363,9 @@ async def test_multitenant_authentication_not_allowed(get_token_method):
     expected_token = "***"
 
     async def fake_exec(*args, **_):
-        match = re.search("--tenant (.*)", args[-1])
-        assert match is None or match[1] == expected_tenant
+        tenant_index = args.index("--tenant") if "--tenant" in args else None
+        tenant = args[tenant_index + 1] if tenant_index is not None else None
+        assert tenant is None or tenant == expected_tenant
         output = json.dumps(
             {
                 "expiresOn": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),

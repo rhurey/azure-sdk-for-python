@@ -3,9 +3,9 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
-from typing import Type
-import platform
+
 import pytest
+import time
 from unittest import TestCase
 
 try:
@@ -18,19 +18,48 @@ from azure.communication.identity._shared.user_credential import (
 )
 from azure.communication.identity._shared.utils import create_access_token
 from azure.communication.identity._shared.utils import get_current_utc_as_int
-from datetime import timedelta
+
 from _shared.helper import (
     generate_token_with_custom_expiry_epoch,
     generate_token_with_custom_expiry,
 )
 
 
+class DummyToken:
+    def __init__(self, token, expires_on):
+        self.token = token
+        self.expires_on = expires_on
+
+
+class DummyTokenExchangeClient:
+    def __init__(self, resource_endpoint, token_credential, scopes):
+        self.resource_endpoint = resource_endpoint
+        self.token_credential = token_credential
+        self.scopes = scopes
+
+    def exchange_entra_token(self):
+        return DummyToken("dummy", 9999999999)
+        
+
+class DummyTokenExchangeClientSwitch:
+    def __init__(self, resource_endpoint, token_credential, scopes):
+        self.resource_endpoint = resource_endpoint
+        self.token_credential = token_credential
+        self.scopes = scopes
+        self.call_count = 0
+
+    def exchange_entra_token(self):
+        self.call_count += 1
+        if self.call_count == 1:
+            return DummyToken("dummy_expired", int(time.time()) - 5 * 60)
+        else:
+            return DummyToken("dummy_valid", int(time.time()) + 60 * 60)
+
+
 class TestCommunicationTokenCredential(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.sample_token = generate_token_with_custom_expiry_epoch(
-            32503680000
-        )  # 1/1/2030
+        cls.sample_token = generate_token_with_custom_expiry_epoch(32503680000)  # 1/1/2030
         cls.expired_token = generate_token_with_custom_expiry_epoch(100)  # 1/1/1970
 
     def test_communicationtokencredential_decodes_token(self):
@@ -39,9 +68,7 @@ class TestCommunicationTokenCredential(TestCase):
         self.assertEqual(access_token.token, self.sample_token)
 
     def test_communicationtokencredential_throws_if_invalid_token(self):
-        self.assertRaises(
-            ValueError, lambda: CommunicationTokenCredential("foo.bar.tar")
-        )
+        self.assertRaises(ValueError, lambda: CommunicationTokenCredential("foo.bar.tar"))
 
     def test_communicationtokencredential_throws_if_nonstring_token(self):
         self.assertRaises(TypeError, lambda: CommunicationTokenCredential(454))
@@ -51,18 +78,10 @@ class TestCommunicationTokenCredential(TestCase):
     ):
         with pytest.raises(ValueError) as err:
             CommunicationTokenCredential(self.sample_token, proactive_refresh=True)
-        assert (
-            str(err.value)
-            == "When 'proactive_refresh' is True, 'token_refresher' must not be None."
-        )
+        assert str(err.value) == "When 'proactive_refresh' is True, 'token_refresher' must not be None."
         with pytest.raises(ValueError) as err:
-            CommunicationTokenCredential(
-                self.sample_token, proactive_refresh=True, token_refresher=None
-            )
-        assert (
-            str(err.value)
-            == "When 'proactive_refresh' is True, 'token_refresher' must not be None."
-        )
+            CommunicationTokenCredential(self.sample_token, proactive_refresh=True, token_refresher=None)
+        assert str(err.value) == "When 'proactive_refresh' is True, 'token_refresher' must not be None."
 
     def test_communicationtokencredential_static_token_returns_expired_token(self):
         credential = CommunicationTokenCredential(self.expired_token)
@@ -70,9 +89,7 @@ class TestCommunicationTokenCredential(TestCase):
 
     def test_communicationtokencredential_token_expired_refresh_called(self):
         refresher = MagicMock(return_value=create_access_token(self.sample_token))
-        credential = CommunicationTokenCredential(
-            self.expired_token, token_refresher=refresher
-        )
+        credential = CommunicationTokenCredential(self.expired_token, token_refresher=refresher)
         access_token = credential.get_token()
         refresher.assert_called_once()
         self.assertEqual(access_token.token, self.sample_token)
@@ -81,18 +98,14 @@ class TestCommunicationTokenCredential(TestCase):
         self,
     ):
         refresher = MagicMock(return_value=create_access_token(self.expired_token))
-        credential = CommunicationTokenCredential(
-            self.expired_token, token_refresher=refresher
-        )
+        credential = CommunicationTokenCredential(self.expired_token, token_refresher=refresher)
         with self.assertRaises(ValueError):
             credential.get_token()
         self.assertEqual(refresher.call_count, 1)
 
     def test_uses_initial_token_as_expected(self):
         refresher = MagicMock(return_value=create_access_token(self.expired_token))
-        credential = CommunicationTokenCredential(
-            self.sample_token, token_refresher=refresher, proactive_refresh=True
-        )
+        credential = CommunicationTokenCredential(self.sample_token, token_refresher=refresher, proactive_refresh=True)
         access_token = credential.get_token()
 
         self.assertEqual(refresher.call_count, 0)
@@ -105,18 +118,14 @@ class TestCommunicationTokenCredential(TestCase):
         skip_to_timestamp = start_timestamp + (refresh_minutes - 5) * 60
 
         initial_token = generate_token_with_custom_expiry(token_validity_minutes * 60)
-        refreshed_token = generate_token_with_custom_expiry(
-            2 * token_validity_minutes * 60
-        )
+        refreshed_token = generate_token_with_custom_expiry(2 * token_validity_minutes * 60)
         refresher = MagicMock(return_value=create_access_token(refreshed_token))
 
         with patch(
             user_credential.__name__ + "." + get_current_utc_as_int.__name__,
             return_value=skip_to_timestamp,
         ):
-            credential = CommunicationTokenCredential(
-                initial_token, token_refresher=refresher, proactive_refresh=True
-            )
+            credential = CommunicationTokenCredential(initial_token, token_refresher=refresher, proactive_refresh=True)
             access_token = credential.get_token()
 
             assert refresher.call_count == 0
@@ -128,23 +137,17 @@ class TestCommunicationTokenCredential(TestCase):
         refresh_minutes = 10
         token_validity_minutes = 60
         start_timestamp = get_current_utc_as_int()
-        skip_to_timestamp = (
-            start_timestamp + (token_validity_minutes - refresh_minutes + 5) * 60
-        )
+        skip_to_timestamp = start_timestamp + (token_validity_minutes - refresh_minutes + 5) * 60
 
         initial_token = generate_token_with_custom_expiry(token_validity_minutes * 60)
-        refreshed_token = generate_token_with_custom_expiry(
-            2 * token_validity_minutes * 60
-        )
+        refreshed_token = generate_token_with_custom_expiry(2 * token_validity_minutes * 60)
         refresher = MagicMock(return_value=create_access_token(refreshed_token))
 
         with patch(
             user_credential.__name__ + "." + get_current_utc_as_int.__name__,
             return_value=skip_to_timestamp,
         ):
-            credential = CommunicationTokenCredential(
-                initial_token, token_refresher=refresher, proactive_refresh=True
-            )
+            credential = CommunicationTokenCredential(initial_token, token_refresher=refresher, proactive_refresh=True)
             access_token = credential.get_token()
 
             assert refresher.call_count == 1
@@ -156,22 +159,12 @@ class TestCommunicationTokenCredential(TestCase):
         refresh_minutes = 10
         token_validity_minutes = 60
         expired_token = generate_token_with_custom_expiry(-5 * 60)
-        skip_to_timestamp = (
-            get_current_utc_as_int()
-            + (token_validity_minutes - refresh_minutes) * 60
-            + 1
-        )
-        first_refreshed_token = create_access_token(
-            generate_token_with_custom_expiry(token_validity_minutes * 60)
-        )
-        last_refreshed_token = create_access_token(
-            generate_token_with_custom_expiry(2 * token_validity_minutes * 60)
-        )
+        skip_to_timestamp = get_current_utc_as_int() + (token_validity_minutes - refresh_minutes) * 60 + 1
+        first_refreshed_token = create_access_token(generate_token_with_custom_expiry(token_validity_minutes * 60))
+        last_refreshed_token = create_access_token(generate_token_with_custom_expiry(2 * token_validity_minutes * 60))
         refresher = MagicMock(side_effect=[first_refreshed_token, last_refreshed_token])
 
-        credential = CommunicationTokenCredential(
-            expired_token, token_refresher=refresher, proactive_refresh=True
-        )
+        credential = CommunicationTokenCredential(expired_token, token_refresher=refresher, proactive_refresh=True)
         access_token = credential.get_token()
         with patch(
             user_credential.__name__ + "." + get_current_utc_as_int.__name__,
@@ -195,9 +188,7 @@ class TestCommunicationTokenCredential(TestCase):
             ]
         )
 
-        credential = CommunicationTokenCredential(
-            expiring_token, token_refresher=refresher, proactive_refresh=True
-        )
+        credential = CommunicationTokenCredential(expiring_token, token_refresher=refresher, proactive_refresh=True)
 
         next_milestone = token_validity_seconds / 2
 
@@ -215,9 +206,7 @@ class TestCommunicationTokenCredential(TestCase):
         new_token = generate_token_with_custom_expiry(10 * 60)
         refresher = MagicMock(return_value=create_access_token(new_token))
 
-        credential = CommunicationTokenCredential(
-            generated_token, token_refresher=refresher, proactive_refresh=False
-        )
+        credential = CommunicationTokenCredential(generated_token, token_refresher=refresher, proactive_refresh=False)
         for _ in range(10):
             access_token = credential.get_token()
 
@@ -225,32 +214,73 @@ class TestCommunicationTokenCredential(TestCase):
         assert generated_token == access_token.token
 
     def test_exit_cancels_timer(self):
-        refreshed_token = create_access_token(
-            generate_token_with_custom_expiry(30 * 60)
-        )
+        refreshed_token = create_access_token(generate_token_with_custom_expiry(30 * 60))
         refresher = MagicMock(return_value=refreshed_token)
-        credential = CommunicationTokenCredential(
-            self.expired_token, token_refresher=refresher, proactive_refresh=True
-        )
+        credential = CommunicationTokenCredential(self.expired_token, token_refresher=refresher, proactive_refresh=True)
         credential.get_token()
         credential.close()
         assert credential._timer is None
 
     def test_exit_enter_scenario_throws_exception(self):
-        refreshed_token = create_access_token(
-            generate_token_with_custom_expiry(30 * 60)
-        )
+        refreshed_token = create_access_token(generate_token_with_custom_expiry(30 * 60))
         refresher = MagicMock(return_value=refreshed_token)
-        credential = CommunicationTokenCredential(
-            self.expired_token, token_refresher=refresher, proactive_refresh=True
-        )
+        credential = CommunicationTokenCredential(self.expired_token, token_refresher=refresher, proactive_refresh=True)
         credential.get_token()
         credential.close()
         assert credential._timer is None
 
         with pytest.raises(RuntimeError) as err:
             credential.get_token()
-        assert (
-            str(err.value)
-            == "An instance of CommunicationTokenCredential cannot be reused once it has been closed."
-        )
+        assert str(err.value) == "An instance of CommunicationTokenCredential cannot be reused once it has been closed."
+
+    def test_missing_fields_raises_value_error(self):
+        # Only resource_endpoint provided
+        with pytest.raises(ValueError) as excinfo:
+            CommunicationTokenCredential(resource_endpoint="https://endpoint")
+        assert "Missing: token_credential" in str(excinfo.value)
+
+        # Only token_credential provided
+        with pytest.raises(ValueError) as excinfo:
+            CommunicationTokenCredential(token_credential=MagicMock())
+        assert "Missing: resource_endpoint" in str(excinfo.value)
+
+        # Only scopes provided
+        with pytest.raises(ValueError) as excinfo:
+            CommunicationTokenCredential(scopes=["scope"])
+        assert "Missing: resource_endpoint, token_credential" in str(excinfo.value)
+
+    def test_all_fields_present_calls_token_exchange(monkeypatch):
+        # Patch TokenExchangeClient to our dummy
+        with patch("azure.communication.identity._shared.user_credential.TokenExchangeClient", DummyTokenExchangeClient):
+            cred = CommunicationTokenCredential(
+                resource_endpoint="https://endpoint",
+                token_credential=MagicMock(),
+                scopes=["scope"]
+            )
+            token = cred.get_token()
+            assert token.token == "dummy"
+            assert token.expires_on == 9999999999
+
+    def test_missing_scopes_calls_token_exchange(monkeypatch):
+        # Patch TokenExchangeClient to our dummy
+        with patch("azure.communication.identity._shared.user_credential.TokenExchangeClient", DummyTokenExchangeClient):
+            cred = CommunicationTokenCredential(
+                resource_endpoint="https://endpoint",
+                token_credential=MagicMock()
+            )
+            token = cred.get_token()
+            assert token.token == "dummy"
+            assert token.expires_on == 9999999999
+
+    def test_token_exchange_refreshes_from_expired_to_valid(monkeypatch):
+        # Patch TokenExchangeClient to DummyTokenExchangeClientSwitch
+        # First call returns expired token - when initializing the token
+        with patch("azure.communication.identity._shared.user_credential.TokenExchangeClient", DummyTokenExchangeClientSwitch):
+            cred = CommunicationTokenCredential(
+                resource_endpoint="https://endpoint",
+                token_credential=MagicMock(),
+                scopes=["scope"]
+            )
+            # Second call will trigger a refresh and generate a valid token
+            token2 = cred.get_token()
+            assert token2.token == "dummy_valid"

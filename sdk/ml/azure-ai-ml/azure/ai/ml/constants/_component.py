@@ -1,7 +1,6 @@
 # ---------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # ---------------------------------------------------------
-# pylint: disable=line-too-long
 
 from typing import Dict
 
@@ -148,4 +147,4 @@ class IOConstants:
     GROUP_TYPE_NAME = "group"
     # Note: ([a-zA-Z_]+[a-zA-Z0-9_]*) is a valid single key,
     # so a valid pipeline key is: ^{single_key}([.]{single_key})*$
-    VALID_KEY_PATTERN = r"^([a-zA-Z_]+[a-zA-Z0-9_]*)([.]([a-zA-Z_]+[a-zA-Z0-9_]*))*$"
+    VALID_KEY_PATTERN = r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$"

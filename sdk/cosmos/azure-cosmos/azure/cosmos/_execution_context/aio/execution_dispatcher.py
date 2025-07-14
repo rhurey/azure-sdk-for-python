@@ -25,14 +25,16 @@ Cosmos database service.
 
 import os
 from azure.cosmos._execution_context.aio import endpoint_component, multi_execution_aggregator
-from azure.cosmos._execution_context.aio import non_streaming_order_by_aggregator
+from azure.cosmos._execution_context.aio import non_streaming_order_by_aggregator, hybrid_search_aggregator
 from azure.cosmos._execution_context.aio.base_execution_context import _QueryExecutionContextBase
 from azure.cosmos._execution_context.aio.base_execution_context import _DefaultQueryExecutionContext
-from azure.cosmos._execution_context.execution_dispatcher import _is_partitioned_execution_info
+from azure.cosmos._execution_context.execution_dispatcher import _is_partitioned_execution_info,\
+    _is_hybrid_search_query, _verify_valid_hybrid_search_query
 from azure.cosmos._execution_context.query_execution_info import _PartitionedQueryExecutionInfo
 from azure.cosmos.documents import _DistinctType
 from azure.cosmos.exceptions import CosmosHttpResponseError
 from azure.cosmos.http_constants import StatusCodes
+from ..._constants import _Constants as Constants
 
 # pylint: disable=protected-access
 
@@ -45,7 +47,7 @@ class _ProxyQueryExecutionContext(_QueryExecutionContextBase):  # pylint: disabl
     to _MultiExecutionContextAggregator
     """
 
-    def __init__(self, client, resource_link, query, options, fetch_function):
+    def __init__(self, client, resource_link, query, options, fetch_function, response_hook):
         """
         Constructor
         """
@@ -55,6 +57,7 @@ class _ProxyQueryExecutionContext(_QueryExecutionContextBase):  # pylint: disabl
         self._resource_link = resource_link
         self._query = query
         self._fetch_function = fetch_function
+        self._response_hook = response_hook
 
     async def __anext__(self):
         """Returns the next query result.
@@ -69,8 +72,9 @@ class _ProxyQueryExecutionContext(_QueryExecutionContextBase):  # pylint: disabl
         except CosmosHttpResponseError as e:
             if _is_partitioned_execution_info(e):
                 query_to_use = self._query if self._query is not None else "Select * from root r"
-                query_execution_info = _PartitionedQueryExecutionInfo(await self._client._GetQueryPlanThroughGateway
-                                                                      (query_to_use, self._resource_link))
+                query_plan_dict = await self._client._GetQueryPlanThroughGateway(
+                    query_to_use, self._resource_link, self._options.get('excludedLocations'))
+                query_execution_info = _PartitionedQueryExecutionInfo(query_plan_dict)
                 self._execution_context = await self._create_pipelined_execution_context(query_execution_info)
             else:
                 raise e
@@ -89,10 +93,11 @@ class _ProxyQueryExecutionContext(_QueryExecutionContextBase):  # pylint: disabl
         try:
             return await self._execution_context.fetch_next_block()
         except CosmosHttpResponseError as e:
-            if _is_partitioned_execution_info(e): #cross partition query not servable
+            if _is_partitioned_execution_info(e) or _is_hybrid_search_query(self._query, e):
                 query_to_use = self._query if self._query is not None else "Select * from root r"
-                query_execution_info = _PartitionedQueryExecutionInfo(await self._client._GetQueryPlanThroughGateway
-                                                                      (query_to_use, self._resource_link))
+                query_plan_dict = await self._client._GetQueryPlanThroughGateway(
+                    query_to_use, self._resource_link, self._options.get('excludedLocations'))
+                query_execution_info = _PartitionedQueryExecutionInfo(query_plan_dict)
                 self._execution_context = await self._create_pipelined_execution_context(query_execution_info)
             else:
                 raise e
@@ -116,22 +121,36 @@ class _ProxyQueryExecutionContext(_QueryExecutionContextBase):  # pylint: disabl
                 raise ValueError("Executing a vector search query without TOP or LIMIT can consume many" +
                                  " RUs very fast and have long runtimes. Please ensure you are using one" +
                                  " of the two filters with your vector search query.")
-            if total_item_buffer > os.environ.get('AZURE_COSMOS_MAX_ITEM_BUFFER_VECTOR_SEARCH', 50000):
-                raise ValueError("Executing a vector search query with more items than the max is not allowed." +
+            if total_item_buffer > int(os.environ.get(Constants.MAX_ITEM_BUFFER_VS_CONFIG,
+                                                      Constants.MAX_ITEM_BUFFER_VS_CONFIG_DEFAULT)):
+                raise ValueError("Executing a vector search query with more items than the max is not allowed. " +
                                  "Please ensure you are using a limit smaller than the max, or change the max.")
             execution_context_aggregator =\
                 non_streaming_order_by_aggregator._NonStreamingOrderByContextAggregator(self._client,
                                                                                         self._resource_link,
                                                                                         self._query,
                                                                                         self._options,
-                                                                                        query_execution_info)
+                                                                                        query_execution_info,
+                                                                                        self._response_hook)
             await execution_context_aggregator._configure_partition_ranges()
+        elif query_execution_info.has_hybrid_search_query_info():
+            hybrid_search_query_info = query_execution_info._query_execution_info['hybridSearchQueryInfo']
+            _verify_valid_hybrid_search_query(hybrid_search_query_info)
+            execution_context_aggregator = \
+                hybrid_search_aggregator._HybridSearchContextAggregator(self._client,
+                                                                        self._resource_link,
+                                                                        self._options,
+                                                                        query_execution_info,
+                                                                        hybrid_search_query_info,
+                                                                        self._response_hook)
+            await execution_context_aggregator._run_hybrid_search()
         else:
             execution_context_aggregator = multi_execution_aggregator._MultiExecutionContextAggregator(self._client,
                                                                                                    self._resource_link,
                                                                                                    self._query,
                                                                                                    self._options,
-                                                                                                   query_execution_info)
+                                                                                                   query_execution_info,
+                                                                                                   self._response_hook)
             await execution_context_aggregator._configure_partition_ranges()
         return _PipelineExecutionContext(self._client, self._options, execution_context_aggregator,
                                          query_execution_info)

@@ -3,10 +3,9 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-import asyncio
+import asyncio  # pylint:disable=do-not-import-asyncio
 import logging
 from typing import Dict, List, Callable, Optional, Awaitable, TYPE_CHECKING
-from asyncio import Lock
 
 from ._partition_resolver_async import PartitionResolver
 from ...aio._producer_async import EventHubProducer
@@ -26,20 +25,18 @@ class BufferedProducerDispatcher:
         self,
         partitions: List[str],
         on_success: Callable[["SendEventTypes", Optional[str]], Awaitable[None]],
-        on_error: Callable[
-            ["SendEventTypes", Optional[str], Exception], Awaitable[None]
-        ],
+        on_error: Callable[["SendEventTypes", Optional[str], Exception], Awaitable[None]],
         create_producer: Callable[..., EventHubProducer],
         eventhub_name: str,
         max_message_size_on_link: int,
         *,
         amqp_transport: AmqpTransportAsync,
         max_buffer_length: int = 1500,
-        max_wait_time: float = 1
+        max_wait_time: float = 1,
     ):
         self._buffered_producers: Dict[str, BufferedProducer] = {}
         self._partition_ids: List[str] = partitions
-        self._lock = Lock()
+        self._lock = asyncio.Lock()
         self._on_success = on_success
         self._on_error = on_error
         self._create_producer = create_producer
@@ -54,20 +51,14 @@ class BufferedProducerDispatcher:
         if partition_id:
             if partition_id not in self._partition_ids:
                 raise ConnectError(
-                    "Invalid partition {} for the event hub {}".format(
-                        partition_id, self._eventhub_name
-                    )
+                    "Invalid partition {} for the event hub {}".format(partition_id, self._eventhub_name)
                 )
             return partition_id
         if isinstance(partition_key, str):
-            return await self._partition_resolver.get_partition_id_by_partition_key(
-                partition_key
-            )
+            return await self._partition_resolver.get_partition_id_by_partition_key(partition_key)
         return await self._partition_resolver.get_next_partition_id()
 
-    async def enqueue_events(
-        self, events, *, partition_id=None, partition_key=None, timeout_time=None
-    ):
+    async def enqueue_events(self, events, *, partition_id=None, partition_key=None, timeout_time=None):
         pid = await self._get_partition_id(partition_id, partition_key)
         async with self._lock:
             try:
@@ -96,9 +87,7 @@ class BufferedProducerDispatcher:
                 futures.append(
                     (
                         pid,
-                        asyncio.ensure_future(
-                            producer.flush(timeout_time=timeout_time)
-                        ),
+                        asyncio.ensure_future(producer.flush(timeout_time=timeout_time)),
                     )
                 )
 
@@ -114,9 +103,7 @@ class BufferedProducerDispatcher:
                 _LOGGER.info("Flushing all partitions succeeded")
                 return
 
-            _LOGGER.warning(
-                "Flushing all partitions partially failed with result %r.", exc_results
-            )
+            _LOGGER.warning("Flushing all partitions partially failed with result %r.", exc_results)
             raise EventDataSendError(
                 message="Flushing all partitions partially failed, failed partitions are {!r}"
                 " Exception details are {!r}".format(exc_results.keys(), exc_results)
@@ -151,15 +138,11 @@ class BufferedProducerDispatcher:
                     exc_results[pid] = exc
 
             if exc_results:
-                _LOGGER.warning(
-                    "Stopping all partitions failed with result %r.", exc_results
-                )
+                _LOGGER.warning("Stopping all partitions failed with result %r.", exc_results)
                 if raise_error:
                     raise EventHubError(
                         message="Stopping all partitions partially failed, failed partitions are {!r}"
-                        " Exception details are {!r}".format(
-                            exc_results.keys(), exc_results
-                        )
+                        " Exception details are {!r}".format(exc_results.keys(), exc_results)
                     )
 
     def get_buffered_event_count(self, pid):
@@ -170,6 +153,4 @@ class BufferedProducerDispatcher:
 
     @property
     def total_buffered_event_count(self):
-        return sum(
-            (self.get_buffered_event_count(pid) for pid in self._buffered_producers)
-        )
+        return sum((self.get_buffered_event_count(pid) for pid in self._buffered_producers))

@@ -20,11 +20,11 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_list_gremlin_databases(self, resource_group):
+    def test_gremlin_resources_list_gremlin_databases(self, resource_group):
         response = self.client.gremlin_resources.list_gremlin_databases(
             resource_group_name=resource_group.name,
             account_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         )
         result = [r for r in response]
         # please add some check logic here by yourself
@@ -32,12 +32,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_gremlin_database(self, resource_group):
+    def test_gremlin_resources_get_gremlin_database(self, resource_group):
         response = self.client.gremlin_resources.get_gremlin_database(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         )
 
         # please add some check logic here by yourself
@@ -45,7 +45,7 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_create_update_gremlin_database(self, resource_group):
+    def test_gremlin_resources_begin_create_update_gremlin_database(self, resource_group):
         response = self.client.gremlin_resources.begin_create_update_gremlin_database(
             resource_group_name=resource_group.name,
             account_name="str",
@@ -61,19 +61,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
                     },
                 },
                 "id": "str",
-                "identity": {
-                    "principalId": "str",
-                    "tenantId": "str",
-                    "type": "str",
-                    "userAssignedIdentities": {"str": {"clientId": "str", "principalId": "str"}},
-                },
                 "location": "str",
                 "name": "str",
                 "options": {"autoscaleSettings": {"maxThroughput": 0}, "throughput": 0},
                 "tags": {"str": "str"},
                 "type": "str",
             },
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -81,12 +75,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_delete_gremlin_database(self, resource_group):
+    def test_gremlin_resources_begin_delete_gremlin_database(self, resource_group):
         response = self.client.gremlin_resources.begin_delete_gremlin_database(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -94,12 +88,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_gremlin_database_throughput(self, resource_group):
+    def test_gremlin_resources_get_gremlin_database_throughput(self, resource_group):
         response = self.client.gremlin_resources.get_gremlin_database_throughput(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         )
 
         # please add some check logic here by yourself
@@ -107,7 +101,7 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_update_gremlin_database_throughput(self, resource_group):
+    def test_gremlin_resources_begin_update_gremlin_database_throughput(self, resource_group):
         response = self.client.gremlin_resources.begin_update_gremlin_database_throughput(
             resource_group_name=resource_group.name,
             account_name="str",
@@ -126,18 +120,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
                     "throughput": 0,
                 },
                 "id": "str",
-                "identity": {
-                    "principalId": "str",
-                    "tenantId": "str",
-                    "type": "str",
-                    "userAssignedIdentities": {"str": {"clientId": "str", "principalId": "str"}},
-                },
                 "location": "str",
                 "name": "str",
                 "tags": {"str": "str"},
                 "type": "str",
             },
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -145,12 +133,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_migrate_gremlin_database_to_autoscale(self, resource_group):
+    def test_gremlin_resources_begin_migrate_gremlin_database_to_autoscale(self, resource_group):
         response = self.client.gremlin_resources.begin_migrate_gremlin_database_to_autoscale(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -158,12 +146,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_migrate_gremlin_database_to_manual_throughput(self, resource_group):
+    def test_gremlin_resources_begin_migrate_gremlin_database_to_manual_throughput(self, resource_group):
         response = self.client.gremlin_resources.begin_migrate_gremlin_database_to_manual_throughput(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -171,12 +159,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_list_gremlin_graphs(self, resource_group):
+    def test_gremlin_resources_list_gremlin_graphs(self, resource_group):
         response = self.client.gremlin_resources.list_gremlin_graphs(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         )
         result = [r for r in response]
         # please add some check logic here by yourself
@@ -184,13 +172,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_gremlin_graph(self, resource_group):
+    def test_gremlin_resources_get_gremlin_graph(self, resource_group):
         response = self.client.gremlin_resources.get_gremlin_graph(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
             graph_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         )
 
         # please add some check logic here by yourself
@@ -198,7 +186,7 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_create_update_gremlin_graph(self, resource_group):
+    def test_gremlin_resources_begin_create_update_gremlin_graph(self, resource_group):
         response = self.client.gremlin_resources.begin_create_update_gremlin_graph(
             resource_group_name=resource_group.name,
             account_name="str",
@@ -224,6 +212,7 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
                         ],
                         "indexingMode": "consistent",
                         "spatialIndexes": [{"path": "str", "types": ["str"]}],
+                        "vectorIndexes": [{"path": "str", "type": "str"}],
                     },
                     "partitionKey": {"kind": "Hash", "paths": ["str"], "systemKey": bool, "version": 0},
                     "restoreParameters": {
@@ -234,19 +223,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
                     "uniqueKeyPolicy": {"uniqueKeys": [{"paths": ["str"]}]},
                 },
                 "id": "str",
-                "identity": {
-                    "principalId": "str",
-                    "tenantId": "str",
-                    "type": "str",
-                    "userAssignedIdentities": {"str": {"clientId": "str", "principalId": "str"}},
-                },
                 "location": "str",
                 "name": "str",
                 "options": {"autoscaleSettings": {"maxThroughput": 0}, "throughput": 0},
                 "tags": {"str": "str"},
                 "type": "str",
             },
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -254,13 +237,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_delete_gremlin_graph(self, resource_group):
+    def test_gremlin_resources_begin_delete_gremlin_graph(self, resource_group):
         response = self.client.gremlin_resources.begin_delete_gremlin_graph(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
             graph_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -268,13 +251,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get_gremlin_graph_throughput(self, resource_group):
+    def test_gremlin_resources_get_gremlin_graph_throughput(self, resource_group):
         response = self.client.gremlin_resources.get_gremlin_graph_throughput(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
             graph_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         )
 
         # please add some check logic here by yourself
@@ -282,7 +265,7 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_update_gremlin_graph_throughput(self, resource_group):
+    def test_gremlin_resources_begin_update_gremlin_graph_throughput(self, resource_group):
         response = self.client.gremlin_resources.begin_update_gremlin_graph_throughput(
             resource_group_name=resource_group.name,
             account_name="str",
@@ -302,18 +285,12 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
                     "throughput": 0,
                 },
                 "id": "str",
-                "identity": {
-                    "principalId": "str",
-                    "tenantId": "str",
-                    "type": "str",
-                    "userAssignedIdentities": {"str": {"clientId": "str", "principalId": "str"}},
-                },
                 "location": "str",
                 "name": "str",
                 "tags": {"str": "str"},
                 "type": "str",
             },
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -321,13 +298,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_migrate_gremlin_graph_to_autoscale(self, resource_group):
+    def test_gremlin_resources_begin_migrate_gremlin_graph_to_autoscale(self, resource_group):
         response = self.client.gremlin_resources.begin_migrate_gremlin_graph_to_autoscale(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
             graph_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -335,13 +312,13 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_migrate_gremlin_graph_to_manual_throughput(self, resource_group):
+    def test_gremlin_resources_begin_migrate_gremlin_graph_to_manual_throughput(self, resource_group):
         response = self.client.gremlin_resources.begin_migrate_gremlin_graph_to_manual_throughput(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
             graph_name="str",
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself
@@ -349,14 +326,14 @@ class TestCosmosDBManagementGremlinResourcesOperations(AzureMgmtRecordedTestCase
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_begin_retrieve_continuous_backup_information(self, resource_group):
+    def test_gremlin_resources_begin_retrieve_continuous_backup_information(self, resource_group):
         response = self.client.gremlin_resources.begin_retrieve_continuous_backup_information(
             resource_group_name=resource_group.name,
             account_name="str",
             database_name="str",
             graph_name="str",
             location={"location": "str"},
-            api_version="2024-09-01-preview",
+            api_version="2025-04-15",
         ).result()  # call '.result()' to poll until service return final result
 
         # please add some check logic here by yourself

@@ -85,7 +85,6 @@ class ArmDeploymentExecutor(object):
                 error_category=ErrorCategory.USER_ERROR,
             )
         error = None
-        # pylint: disable=too-many-nested-blocks
         try:
             poller = self._get_poller(template=template, parameters=parameters)
             module_logger.info(
@@ -121,7 +120,7 @@ class ArmDeploymentExecutor(object):
             else:
                 return poller
         except Exception as ex:
-            module_logger.debug("Polling hit the exception %s\n", ex)
+            module_logger.debug("Polling hit the exception: %s", type(ex).__name__)
             raise ex
 
         if error is not None:

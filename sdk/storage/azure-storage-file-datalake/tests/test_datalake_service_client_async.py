@@ -46,7 +46,7 @@ class TestDatalakeServiceAsync(AsyncStorageRecordedTestCase):
         self._assert_logging_equal(prop['analytics_logging'], AnalyticsLogging())
         self._assert_metrics_equal(prop['hour_metrics'], Metrics())
         self._assert_metrics_equal(prop['minute_metrics'], Metrics())
-        self._assert_cors_equal(prop['cors'], list())
+        self._assert_cors_equal(prop['cors'], [])
 
     def _assert_logging_equal(self, log1, log2):
         if log1 is None or log2 is None:
@@ -127,7 +127,7 @@ class TestDatalakeServiceAsync(AsyncStorageRecordedTestCase):
             analytics_logging=AnalyticsLogging(),
             hour_metrics=Metrics(),
             minute_metrics=Metrics(),
-            cors=list(),
+            cors=[],
             target_version='2014-02-14'
         )
 
@@ -426,14 +426,14 @@ class TestDatalakeServiceAsync(AsyncStorageRecordedTestCase):
         file_client = dir_client.get_file_client(file='testfile')
 
         # Mocks
-        self.dsc._blob_service_client.close = AsyncMock()
+        self.dsc._blob_service_client.__aexit__ = AsyncMock()
         self.dsc._client.__aexit__ = AsyncMock()
         file_system_client._client.__aexit__ = AsyncMock()
-        file_system_client._datalake_client_for_blob_operation.close = AsyncMock()
+        file_system_client._datalake_client_for_blob_operation.__aexit__ = AsyncMock()
         dir_client._client.__aexit__ = AsyncMock()
-        dir_client._datalake_client_for_blob_operation.close = AsyncMock()
+        dir_client._datalake_client_for_blob_operation.__aexit__ = AsyncMock()
         file_client._client.__aexit__ = AsyncMock()
-        file_client._datalake_client_for_blob_operation.close = AsyncMock()
+        file_client._datalake_client_for_blob_operation.__aexit__ = AsyncMock()
 
         # Act
         async with self.dsc as dsc:
@@ -446,14 +446,14 @@ class TestDatalakeServiceAsync(AsyncStorageRecordedTestCase):
                         pass
 
         # Assert
-        self.dsc._blob_service_client.close.assert_called_once()
+        self.dsc._blob_service_client.__aexit__.assert_called_once()
         self.dsc._client.__aexit__.assert_called_once()
         file_system_client._client.__aexit__.assert_called_once()
-        file_system_client._datalake_client_for_blob_operation.close.assert_called_once()
+        file_system_client._datalake_client_for_blob_operation.__aexit__.assert_called_once()
         dir_client._client.__aexit__.assert_called_once()
-        dir_client._datalake_client_for_blob_operation.close.assert_called_once()
+        dir_client._datalake_client_for_blob_operation.__aexit__.assert_called_once()
         file_client._client.__aexit__.assert_called_once()
-        file_client._datalake_client_for_blob_operation.close.assert_called_once()
+        file_client._datalake_client_for_blob_operation.__aexit__.assert_called_once()
 
     @DataLakePreparer()
     @recorded_by_proxy_async

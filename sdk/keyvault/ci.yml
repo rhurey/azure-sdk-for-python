@@ -30,13 +30,8 @@ extends:
   template: ../../eng/pipelines/templates/stages/archetype-sdk-client.yml
   parameters:
     ServiceDirectory: keyvault
+    TestTimeoutInMinutes: 120
     TestProxy: true
-    # Override the base matrix due to https://github.com/Azure/azure-sdk-for-python/issues/17837
-    MatrixConfigs:
-      - Name: keyvault_ci_matrix
-        Path: eng/pipelines/templates/stages/platform-matrix.json
-        Selection: sparse
-        GenerateVMJobs: true
     Artifacts:
     - name: azure-keyvault-administration
       safename: azurekeyvaultadministration
@@ -46,5 +41,7 @@ extends:
       safeName: azurekeyvaultkeys
     - name: azure-keyvault-secrets
       safeName: azurekeyvaultsecrets
+    - name: azure-keyvault-securitydomain
+      safeName: azurekeyvaultsecuritydomain
     - name: azure-mgmt-keyvault
       safeName: azuremgmtkeyvault

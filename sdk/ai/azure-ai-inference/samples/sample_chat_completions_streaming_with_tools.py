@@ -22,18 +22,19 @@ USAGE:
         where `your-unique-resource-name` is your globally unique AOAI resource name,
         and `your-deployment-name` is your AI Model deployment name.
         For example: https://your-unique-host.openai.azure.com/openai/deployments/gpt-4o
-    2) AZURE_OPENAI_CHAT_KEY - Your model key (a 32-character string). Keep it secret.
+    2) AZURE_OPENAI_CHAT_KEY - Your model key. Keep it secret.
 
     For use_azure_openai_endpoint = False, set these two environment variables before running the sample:
     1) AZURE_AI_CHAT_ENDPOINT - Your endpoint URL, in the form 
         https://<your-deployment-name>.<your-azure-region>.models.ai.azure.com
         where `your-deployment-name` is your unique AI Model deployment name, and
         `your-azure-region` is the Azure region where your model is deployed.
-    2) AZURE_AI_CHAT_KEY - Your model key (a 32-character string). Keep it secret.
+    2) AZURE_AI_CHAT_KEY - Your model key. Keep it secret.
 """
 import sys
 
 use_azure_openai_endpoint = True
+
 
 def sample_chat_completions_streaming_with_tools():
     import os
@@ -79,11 +80,9 @@ def sample_chat_completions_streaming_with_tools():
         str: The airline name, fight number, date and time of the next flight between the cities, in JSON format.
         """
         if origin_city == "Seattle" and destination_city == "Miami":
-            return json.dumps({
-                "airline": "Delta",
-                "flight_number": "DL123",
-                "flight_date": "May 7th, 2024",
-                "flight_time": "10:00AM"})
+            return json.dumps(
+                {"airline": "Delta", "flight_number": "DL123", "flight_date": "May 7th, 2024", "flight_time": "10:00AM"}
+            )
         return json.dumps({"error": "No flights found between the cities"})
 
     # Define a function 'tool' that the model can use to retrieves flight information
@@ -117,21 +116,15 @@ def sample_chat_completions_streaming_with_tools():
         )
     else:
         # Create a chat completions client for Serverless API endpoint or Managed Compute endpoint
-        client = ChatCompletionsClient(
-            endpoint=endpoint,
-            credential=AzureKeyCredential(key)
-        )
+        client = ChatCompletionsClient(endpoint=endpoint, credential=AzureKeyCredential(key))
 
     # Make a streaming chat completions call asking for flight information, while providing a tool to handle the request
     messages = [
-        SystemMessage(content="You an assistant that helps users find flight information."),
-        UserMessage(content="What is the next flights from Seattle to Miami?"),
+        SystemMessage("You an assistant that helps users find flight information."),
+        UserMessage("What is the next flights from Seattle to Miami?"),
     ]
 
-    response = client.complete(
-        messages=messages,
-        tools=[flight_info],
-        stream=True)
+    response = client.complete(messages=messages, tools=[flight_info], stream=True)
 
     # Note that in the above call we did not specify `tool_choice`. The service defaults to a setting equivalent
     # to specifying `tool_choice=ChatCompletionsToolChoicePreset.AUTO`. Other than ChatCompletionsToolChoicePreset
@@ -158,11 +151,7 @@ def sample_chat_completions_streaming_with_tools():
         AssistantMessage(
             tool_calls=[
                 ChatCompletionsToolCall(
-                    id=tool_call_id,
-                    function=FunctionCall(
-                        name=function_name,
-                        arguments=function_args
-                    )
+                    id=tool_call_id, function=FunctionCall(name=function_name, arguments=function_args)
                 )
             ]
         )
@@ -176,23 +165,17 @@ def sample_chat_completions_streaming_with_tools():
     print(f"Function response = {function_response}")
 
     # Append the function response as a tool message to the chat history
-    messages.append(
-        ToolMessage(
-            tool_call_id=tool_call_id,
-            content=function_response
-        )
-    )
+    messages.append(ToolMessage(function_response, tool_call_id=tool_call_id))
 
     # With the additional tools information on hand, get another streaming response from the model
-    response = client.complete(
-        messages=messages,
-        tools=[flight_info],
-        stream=True
-    )
+    response = client.complete(messages=messages, tools=[flight_info], stream=True)
 
     print("Model response = ", end="")
     for update in response:
-        print(update.choices[0].delta.content or "", end="", flush=True)
+        if update.choices and update.choices[0].delta:
+            print(update.choices[0].delta.content or "", end="", flush=True)
+        if update.usage:
+            print(f"\n\nToken usage: {update.usage}")
 
     client.close()
 

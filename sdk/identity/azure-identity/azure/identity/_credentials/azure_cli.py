@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import os
 import re
+import logging
 import shutil
 import subprocess
 import sys
@@ -15,12 +16,22 @@ from azure.core.credentials import AccessToken, AccessTokenInfo, TokenRequestOpt
 from azure.core.exceptions import ClientAuthenticationError
 
 from .. import CredentialUnavailableError
-from .._internal import _scopes_to_resource, resolve_tenant, within_dac, validate_tenant_id, validate_scope
+from .._internal import (
+    _scopes_to_resource,
+    resolve_tenant,
+    within_dac,
+    validate_tenant_id,
+    validate_scope,
+    validate_subscription,
+)
 from .._internal.decorators import log_get_token
 
 
+_LOGGER = logging.getLogger(__name__)
+
 CLI_NOT_FOUND = "Azure CLI not found on path"
-COMMAND_LINE = "az account get-access-token --output json --resource {}"
+# COMMAND_LINE = "account get-access-token --output json --resource {}"
+COMMAND_LINE = ["account", "get-access-token", "--output", "json"]
 EXECUTABLE_NAME = "az"
 NOT_LOGGED_IN = "Please run 'az login' to set up an account"
 
@@ -31,6 +42,8 @@ class AzureCliCredential:
     This requires previously logging in to Azure via "az login", and will use the CLI's currently logged in identity.
 
     :keyword str tenant_id: Optional tenant to include in the token request.
+    :keyword str subscription: The name or ID of a subscription. Set this to acquire tokens for an account other
+        than the Azure CLI's current account.
     :keyword List[str] additionally_allowed_tenants: Specifies tenants in addition to the specified "tenant_id"
         for which the credential may acquire tokens. Add the wildcard value "*" to allow the credential to
         acquire tokens for any tenant the application can access.
@@ -50,12 +63,17 @@ class AzureCliCredential:
         self,
         *,
         tenant_id: str = "",
+        subscription: Optional[str] = None,
         additionally_allowed_tenants: Optional[List[str]] = None,
         process_timeout: int = 10,
     ) -> None:
         if tenant_id:
             validate_tenant_id(tenant_id)
+        if subscription:
+            validate_subscription(subscription)
+
         self.tenant_id = tenant_id
+        self.subscription = subscription
         self._additionally_allowed_tenants = additionally_allowed_tenants or []
         self._process_timeout = process_timeout
 
@@ -115,7 +133,7 @@ class AzureCliCredential:
         :keyword options: A dictionary of options for the token request. Unknown options will be ignored. Optional.
         :paramtype options: ~azure.core.credentials.TokenRequestOptions
 
-        :rtype: AccessTokenInfo
+        :rtype: ~azure.core.credentials.AccessTokenInfo
         :return: An AccessTokenInfo instance containing information about the token.
 
         :raises ~azure.identity.CredentialUnavailableError: the credential was unable to invoke the Azure CLI.
@@ -135,7 +153,7 @@ class AzureCliCredential:
             validate_scope(scope)
 
         resource = _scopes_to_resource(*scopes)
-        command = COMMAND_LINE.format(resource)
+        command_args = COMMAND_LINE + ["--resource", resource]
         tenant = resolve_tenant(
             default_tenant=self.tenant_id,
             tenant_id=tenant_id,
@@ -143,8 +161,11 @@ class AzureCliCredential:
             **kwargs,
         )
         if tenant:
-            command += " --tenant " + tenant
-        output = _run_command(command, self._process_timeout)
+            command_args += ["--tenant", tenant]
+
+        if self.subscription:
+            command_args += ["--subscription", self.subscription]
+        output = _run_command(command_args, self._process_timeout)
 
         token = parse_token(output)
         if not token:
@@ -211,15 +232,17 @@ def sanitize_output(output: str) -> str:
     return re.sub(r"\"accessToken\": \"(.*?)(\"|$)", "****", output)
 
 
-def _run_command(command: str, timeout: int) -> str:
+def _run_command(command_args: List[str], timeout: int) -> str:
     # Ensure executable exists in PATH first. This avoids a subprocess call that would fail anyway.
-    if shutil.which(EXECUTABLE_NAME) is None:
+    if sys.platform.startswith("win"):
+        # On Windows, the expected executable is az.cmd, so we check for that first, falling back to 'az' in case.
+        az_path = shutil.which(EXECUTABLE_NAME + ".cmd") or shutil.which(EXECUTABLE_NAME)
+    else:
+        az_path = shutil.which(EXECUTABLE_NAME)
+    if not az_path:
         raise CredentialUnavailableError(message=CLI_NOT_FOUND)
 
-    if sys.platform.startswith("win"):
-        args = ["cmd", "/c", command]
-    else:
-        args = ["/bin/sh", "-c", command]
+    args = [az_path] + command_args
     try:
         working_directory = get_safe_working_dir()
 
@@ -231,13 +254,16 @@ def _run_command(command: str, timeout: int) -> str:
             "timeout": timeout,
             "env": dict(os.environ, AZURE_CORE_NO_COLOR="true"),
         }
+        _LOGGER.debug("Executing subprocess with the following arguments %s", args)
         return subprocess.check_output(args, **kwargs)
     except subprocess.CalledProcessError as ex:
         # non-zero return from shell
         # Fallback check in case the executable is not found while executing subprocess.
-        if ex.returncode == 127 or ex.stderr.startswith("'az' is not recognized"):
+        if ex.returncode == 127 or (ex.stderr is not None and ex.stderr.startswith("'az' is not recognized")):
             raise CredentialUnavailableError(message=CLI_NOT_FOUND) from ex
-        if ("az login" in ex.stderr or "az account set" in ex.stderr) and "AADSTS" not in ex.stderr:
+        if ex.stderr is not None and (
+            ("az login" in ex.stderr or "az account set" in ex.stderr) and "AADSTS" not in ex.stderr
+        ):
             raise CredentialUnavailableError(message=NOT_LOGGED_IN) from ex
 
         # return code is from the CLI -> propagate its output
@@ -252,7 +278,7 @@ def _run_command(command: str, timeout: int) -> str:
         # failed to execute 'cmd' or '/bin/sh'
         error = CredentialUnavailableError(message="Failed to execute '{}'".format(args[0]))
         raise error from ex
-    except Exception as ex:  # pylint:disable=broad-except
+    except Exception as ex:
         # could be a timeout, for example
         error = CredentialUnavailableError(message="Failed to invoke the Azure CLI")
         raise error from ex

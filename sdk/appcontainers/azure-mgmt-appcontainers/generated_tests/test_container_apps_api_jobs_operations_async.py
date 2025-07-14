@@ -21,11 +21,11 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_detectors(self, resource_group):
+    async def test_jobs_list_detectors(self, resource_group):
         response = self.client.jobs.list_detectors(
             resource_group_name=resource_group.name,
             job_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -33,12 +33,12 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get_detector(self, resource_group):
+    async def test_jobs_get_detector(self, resource_group):
         response = await self.client.jobs.get_detector(
             resource_group_name=resource_group.name,
             job_name="str",
             detector_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
 
         # please add some check logic here by yourself
@@ -46,12 +46,12 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_proxy_get(self, resource_group):
+    async def test_jobs_proxy_get(self, resource_group):
         response = await self.client.jobs.proxy_get(
             resource_group_name=resource_group.name,
             job_name="str",
             api_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
 
         # please add some check logic here by yourself
@@ -59,9 +59,9 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_by_subscription(self, resource_group):
+    async def test_jobs_list_by_subscription(self, resource_group):
         response = self.client.jobs.list_by_subscription(
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -69,10 +69,10 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_by_resource_group(self, resource_group):
+    async def test_jobs_list_by_resource_group(self, resource_group):
         response = self.client.jobs.list_by_resource_group(
             resource_group_name=resource_group.name,
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
         result = [r async for r in response]
         # please add some check logic here by yourself
@@ -80,11 +80,11 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_get(self, resource_group):
+    async def test_jobs_get(self, resource_group):
         response = await self.client.jobs.get(
             resource_group_name=resource_group.name,
             job_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
 
         # please add some check logic here by yourself
@@ -92,7 +92,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_create_or_update(self, resource_group):
+    async def test_jobs_begin_create_or_update(self, resource_group):
         response = await (
             await self.client.jobs.begin_create_or_update(
                 resource_group_name=resource_group.name,
@@ -112,6 +112,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
                                 "rules": [
                                     {
                                         "auth": [{"secretRef": "str", "triggerParameter": "str"}],
+                                        "identity": "str",
                                         "metadata": {},
                                         "name": "str",
                                         "type": "str",
@@ -119,6 +120,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
                                 ],
                             },
                         },
+                        "identitySettings": [{"identity": "str", "lifecycle": "str"}],
                         "manualTriggerConfig": {"parallelism": 0, "replicaCompletionCount": 0},
                         "registries": [
                             {"identity": "str", "passwordSecretRef": "str", "server": "str", "username": "str"}
@@ -207,7 +209,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
                     "type": "str",
                     "workloadProfileName": "str",
                 },
-                api_version="2024-03-01",
+                api_version="2025-01-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -216,12 +218,12 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_delete(self, resource_group):
+    async def test_jobs_begin_delete(self, resource_group):
         response = await (
             await self.client.jobs.begin_delete(
                 resource_group_name=resource_group.name,
                 job_name="str",
-                api_version="2024-03-01",
+                api_version="2025-01-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -230,7 +232,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_update(self, resource_group):
+    async def test_jobs_begin_update(self, resource_group):
         response = await (
             await self.client.jobs.begin_update(
                 resource_group_name=resource_group.name,
@@ -256,6 +258,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
                                     "rules": [
                                         {
                                             "auth": [{"secretRef": "str", "triggerParameter": "str"}],
+                                            "identity": "str",
                                             "metadata": {},
                                             "name": "str",
                                             "type": "str",
@@ -263,6 +266,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
                                     ],
                                 },
                             },
+                            "identitySettings": [{"identity": "str", "lifecycle": "str"}],
                             "manualTriggerConfig": {"parallelism": 0, "replicaCompletionCount": 0},
                             "registries": [
                                 {"identity": "str", "passwordSecretRef": "str", "server": "str", "username": "str"}
@@ -333,7 +337,7 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
                     },
                     "tags": {"str": "str"},
                 },
-                api_version="2024-03-01",
+                api_version="2025-01-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -342,12 +346,12 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_start(self, resource_group):
+    async def test_jobs_begin_start(self, resource_group):
         response = await (
             await self.client.jobs.begin_start(
                 resource_group_name=resource_group.name,
                 job_name="str",
-                api_version="2024-03-01",
+                api_version="2025-01-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -356,13 +360,13 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_stop_execution(self, resource_group):
+    async def test_jobs_begin_stop_execution(self, resource_group):
         response = await (
             await self.client.jobs.begin_stop_execution(
                 resource_group_name=resource_group.name,
                 job_name="str",
                 job_execution_name="str",
-                api_version="2024-03-01",
+                api_version="2025-01-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -371,12 +375,12 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_begin_stop_multiple_executions(self, resource_group):
+    async def test_jobs_begin_stop_multiple_executions(self, resource_group):
         response = await (
             await self.client.jobs.begin_stop_multiple_executions(
                 resource_group_name=resource_group.name,
                 job_name="str",
-                api_version="2024-03-01",
+                api_version="2025-01-01",
             )
         ).result()  # call '.result()' to poll until service return final result
 
@@ -385,11 +389,11 @@ class TestContainerAppsAPIJobsOperationsAsync(AzureMgmtRecordedTestCase):
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy_async
-    async def test_list_secrets(self, resource_group):
+    async def test_jobs_list_secrets(self, resource_group):
         response = await self.client.jobs.list_secrets(
             resource_group_name=resource_group.name,
             job_name="str",
-            api_version="2024-03-01",
+            api_version="2025-01-01",
         )
 
         # please add some check logic here by yourself

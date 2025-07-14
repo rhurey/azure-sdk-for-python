@@ -16,7 +16,7 @@ from azure.eventhub.exceptions import AuthenticationError, ConnectError
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_get_properties(auth_credentials_async, uamqp_transport):
+async def test_get_properties(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     client = EventHubConsumerClient(
         fully_qualified_namespace=fully_qualified_namespace,
@@ -24,17 +24,16 @@ async def test_get_properties(auth_credentials_async, uamqp_transport):
         consumer_group="$default",
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         properties = await client.get_eventhub_properties()
-        assert properties["eventhub_name"] == eventhub_name and properties[
-            "partition_ids"
-        ] == ["0", "1"]
+        assert properties["eventhub_name"] == eventhub_name and properties["partition_ids"] == ["0", "1"]
 
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_get_properties_with_auth_error_async(auth_credentials_async, live_eventhub, uamqp_transport):
+async def test_get_properties_with_auth_error_async(auth_credentials_async, live_eventhub, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, _ = auth_credentials_async
     client = EventHubConsumerClient(
         fully_qualified_namespace=fully_qualified_namespace,
@@ -42,6 +41,7 @@ async def test_get_properties_with_auth_error_async(auth_credentials_async, live
         consumer_group="$default",
         credential=EventHubSharedKeyCredential(live_eventhub["key_name"], "AaBbCcDdEeFf="),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         with pytest.raises(AuthenticationError) as e:
@@ -53,6 +53,7 @@ async def test_get_properties_with_auth_error_async(auth_credentials_async, live
         consumer_group="$default",
         credential=EventHubSharedKeyCredential("invalid", live_eventhub["access_key"]),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         with pytest.raises(AuthenticationError) as e:
@@ -61,7 +62,7 @@ async def test_get_properties_with_auth_error_async(auth_credentials_async, live
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_get_properties_with_connect_error(auth_credentials_async, uamqp_transport):
+async def test_get_properties_with_connect_error(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     client = EventHubConsumerClient(
         fully_qualified_namespace=fully_qualified_namespace,
@@ -69,6 +70,7 @@ async def test_get_properties_with_connect_error(auth_credentials_async, uamqp_t
         consumer_group="$default",
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         with pytest.raises(ConnectError) as e:
@@ -80,6 +82,7 @@ async def test_get_properties_with_connect_error(auth_credentials_async, uamqp_t
         consumer_group="$default",
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         with pytest.raises(ConnectError) as e:
@@ -88,7 +91,7 @@ async def test_get_properties_with_connect_error(auth_credentials_async, uamqp_t
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_get_partition_ids(auth_credentials_async, uamqp_transport):
+async def test_get_partition_ids(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     client = EventHubConsumerClient(
         fully_qualified_namespace=fully_qualified_namespace,
@@ -96,16 +99,16 @@ async def test_get_partition_ids(auth_credentials_async, uamqp_transport):
         consumer_group="$default",
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         partition_ids = await client.get_partition_ids()
         assert partition_ids == ["0", "1"]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"), reason="Large negative timestamp to datetime conversion fails on Windows with: https://bugs.python.org/issue36439")
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_get_partition_properties(auth_credentials_async, uamqp_transport):
+async def test_get_partition_properties(auth_credentials_async, uamqp_transport, client_args):
     fully_qualified_namespace, eventhub_name, credential = auth_credentials_async
     client = EventHubConsumerClient(
         fully_qualified_namespace=fully_qualified_namespace,
@@ -113,6 +116,7 @@ async def test_get_partition_properties(auth_credentials_async, uamqp_transport)
         consumer_group="$default",
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         properties = await client.get_partition_properties("0")

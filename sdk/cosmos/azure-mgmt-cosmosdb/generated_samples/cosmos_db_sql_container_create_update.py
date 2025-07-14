@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,useless-suppression
 # coding=utf-8
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -54,6 +55,14 @@ def main():
                     "computedProperties": [{"name": "cp_lowerName", "query": "SELECT VALUE LOWER(c.name) FROM c"}],
                     "conflictResolutionPolicy": {"conflictResolutionPath": "/path", "mode": "LastWriterWins"},
                     "defaultTtl": 100,
+                    "fullTextPolicy": {
+                        "defaultLanguage": "1033",
+                        "fullTextPaths": [
+                            {"language": "en-US", "path": "/ftPath1"},
+                            {"language": "fr-FR", "path": "/ftPath2"},
+                            {"language": "de-DE", "path": "/ftPath3"},
+                        ],
+                    },
                     "id": "containerName",
                     "indexingPolicy": {
                         "automatic": True,
@@ -68,9 +77,36 @@ def main():
                             }
                         ],
                         "indexingMode": "consistent",
+                        "vectorIndexes": [
+                            {"path": "/vectorPath1", "type": "flat"},
+                            {"path": "/vectorPath2", "type": "quantizedFlat"},
+                            {"path": "/vectorPath3", "type": "diskANN"},
+                        ],
                     },
                     "partitionKey": {"kind": "Hash", "paths": ["/AccountNumber"]},
                     "uniqueKeyPolicy": {"uniqueKeys": [{"paths": ["/testPath"]}]},
+                    "vectorEmbeddingPolicy": {
+                        "vectorEmbeddings": [
+                            {
+                                "dataType": "float32",
+                                "dimensions": 400,
+                                "distanceFunction": "euclidean",
+                                "path": "/vectorPath1",
+                            },
+                            {
+                                "dataType": "uint8",
+                                "dimensions": 512,
+                                "distanceFunction": "cosine",
+                                "path": "/vectorPath2",
+                            },
+                            {
+                                "dataType": "int8",
+                                "dimensions": 512,
+                                "distanceFunction": "dotproduct",
+                                "path": "/vectorPath3",
+                            },
+                        ]
+                    },
                 },
             },
             "tags": {},
@@ -79,6 +115,6 @@ def main():
     print(response)
 
 
-# x-ms-original-file: specification/cosmos-db/resource-manager/Microsoft.DocumentDB/preview/2024-09-01-preview/examples/CosmosDBSqlContainerCreateUpdate.json
+# x-ms-original-file: specification/cosmos-db/resource-manager/Microsoft.DocumentDB/stable/2025-04-15/examples/CosmosDBSqlContainerCreateUpdate.json
 if __name__ == "__main__":
     main()

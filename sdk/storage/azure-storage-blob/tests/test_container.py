@@ -827,7 +827,7 @@ class TestStorageContainer(StorageRecordedTestCase):
         container_name = self._create_container(bsc)
 
         # Act
-        identifiers = dict()
+        identifiers = {}
         for i in range(0, 6):
             identifiers['id{}'.format(i)] = AccessPolicy()
 
@@ -1576,7 +1576,7 @@ class TestStorageContainer(StorageRecordedTestCase):
 
     def test_batch_delete_empty_blob_list(self):
         container_client = ContainerClient("https://mystorageaccount.blob.core.windows.net", "container")
-        blob_list = list()
+        blob_list = []
         container_client.delete_blobs(*blob_list)
 
     @pytest.mark.live_test_only
@@ -1669,7 +1669,7 @@ class TestStorageContainer(StorageRecordedTestCase):
         new_blob_version_id = blob.get_blob_properties().get("version_id")
         assert old_blob_version_id != new_blob_version_id
 
-        blob1_del_data = dict()
+        blob1_del_data = {}
         blob1_del_data['name'] = 'blob1'
         blob1_del_data['version_id'] = old_blob_version_id
 
@@ -1843,7 +1843,7 @@ class TestStorageContainer(StorageRecordedTestCase):
         blob_props = blob_client1.get_blob_properties()
         blob_props.snapshot = snapshot['snapshot']
 
-        blob_props_d = dict()
+        blob_props_d = {}
         blob_props_d['name'] = "blobd"
         blob_props_d['delete_snapshots'] = "include"
         blob_props_d['lease_id'] = lease.id
@@ -2517,7 +2517,7 @@ class TestStorageContainer(StorageRecordedTestCase):
         # Act
         downloader= container.download_blob(blob_name)
         downloaded_data = b''
-        chunk_size_list = list()
+        chunk_size_list = []
         for chunk in downloader.chunks():
             chunk_size_list.append(len(chunk))
             downloaded_data += chunk
@@ -2608,7 +2608,7 @@ class TestStorageContainer(StorageRecordedTestCase):
         # Act
         downloader= container.download_blob(blob_name)
         downloaded_data = b''
-        chunk_size_list = list()
+        chunk_size_list = []
         for chunk in downloader.chunks():
             chunk_size_list.append(len(chunk))
             downloaded_data += chunk
@@ -2637,7 +2637,7 @@ class TestStorageContainer(StorageRecordedTestCase):
         # Act
         downloader= container.download_blob(blob_name)
         downloaded_data = b''
-        chunk_size_list = list()
+        chunk_size_list = []
         for chunk in downloader.chunks():
             chunk_size_list.append(len(chunk))
             downloaded_data += chunk
@@ -2722,3 +2722,32 @@ class TestStorageContainer(StorageRecordedTestCase):
         # Assert
         response = cc.exists()
         assert response is not None
+
+    @BlobPreparer()
+    @recorded_by_proxy
+    def test_get_and_set_access_policy_oauth(self, **kwargs):
+        storage_account_name = kwargs.pop("storage_account_name")
+
+        token_credential = self.get_credential(BlobServiceClient)
+        bsc = BlobServiceClient(self.account_url(storage_account_name, "blob"), token_credential)
+        container = self._create_container(bsc)
+
+        # Act
+        container.set_container_access_policy(signed_identifiers={})
+
+        # Assert
+        acl = container.get_container_access_policy()
+        assert acl is not None
+
+    @BlobPreparer()
+    @recorded_by_proxy
+    def test_get_account_information_oauth(self, **kwargs):
+        storage_account_name = kwargs.pop("storage_account_name")
+
+        token_credential = self.get_credential(BlobServiceClient)
+        bsc = BlobServiceClient(self.account_url(storage_account_name, "blob"), token_credential)
+        container = self._create_container(bsc)
+
+        # Act / Assert
+        cc_info = container.get_account_information()
+        assert cc_info is not None

@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-from __future__ import unicode_literals, annotations
+from __future__ import annotations
 
 import json
 import warnings
@@ -55,12 +55,13 @@ from .amqp import (
 )
 from ._pyamqp._message_backcompat import LegacyMessage, LegacyBatchMessage
 from ._pyamqp.message import Message as pyamqp_Message
+from ._pyamqp._decode import decode_payload
 from ._transport._pyamqp_transport import PyamqpTransport
 
 if TYPE_CHECKING:
     try:
-        from uamqp import (  # pylint: disable=unused-import
-            Message,    # not importing as uamqp_Message, b/c type is exposed to user
+        from uamqp import (
+            Message,  # not importing as uamqp_Message, b/c type is exposed to user
             BatchMessage,
         )
     except ImportError:
@@ -143,7 +144,6 @@ class EventData:
         self.correlation_id = None
 
     def __repr__(self) -> str:
-        # pylint: disable=bare-except
         try:
             body_str = self.body_as_str()
         except Exception as e:  # pylint: disable=broad-except
@@ -225,12 +225,29 @@ class EventData:
         return event_data
 
     @classmethod
+    def from_bytes(cls, message: bytes) -> "EventData":
+        """
+        Constructs an EventData object from the raw bytes of a message payload.
+        The message payload should adhere to the Message Format specification
+        outlined in the AMQP v1.0 standard:
+        http://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-messaging-v1.0-os.html#section-message-format
+
+        :param bytes message: The raw bytes representing the message payload.
+        :return: An EventData object created from the provided message payload.
+        :rtype: ~azure.eventhub.EventData
+        """
+        amqp_message = decode_payload(memoryview(message))
+        event_data = cls(body="")
+        event_data._message = amqp_message
+        event_data._raw_amqp_message = AmqpAnnotatedMessage(message=amqp_message)
+        return event_data
+
+    @classmethod
     def _from_message(
         cls,
         message: Union["Message", pyamqp_Message],
         raw_amqp_message: Optional[AmqpAnnotatedMessage] = None,
     ) -> EventData:
-        # pylint:disable=protected-access
         """Internal use only.
 
         Creates an EventData object from a raw uamqp message and, if provided, AmqpAnnotatedMessage.
@@ -242,17 +259,11 @@ class EventData:
         :rtype: ~azure.eventhub.EventData
         """
         event_data = cls(body="")
-        # pylint: disable=protected-access
         event_data._message = message
-        event_data._raw_amqp_message = (
-            raw_amqp_message
-            if raw_amqp_message
-            else AmqpAnnotatedMessage(message=message)
-        )
+        event_data._raw_amqp_message = raw_amqp_message if raw_amqp_message else AmqpAnnotatedMessage(message=message)
         return event_data
 
     def _decode_non_data_body_as_str(self, encoding: str = "UTF-8") -> str:
-        # pylint: disable=protected-access
         body = self.raw_amqp_message.body
         if self.body_type == AmqpMessageBodyType.VALUE:
             if not body:
@@ -567,13 +578,9 @@ class EventDataBatch:
         self._partition_key = partition_key
 
         self._message = self._amqp_transport.build_batch_message(data=[])
-        self._message = self._amqp_transport.set_message_partition_key(
-            self._message, self._partition_key
-        )
+        self._message = self._amqp_transport.set_message_partition_key(self._message, self._partition_key)
         self._size = self._amqp_transport.get_batch_message_encoded_size(self._message)
-        self.max_size_in_bytes: int = (
-            max_size_in_bytes or self._amqp_transport.MAX_MESSAGE_LENGTH_BYTES
-        )
+        self.max_size_in_bytes: int = max_size_in_bytes or self._amqp_transport.MAX_MESSAGE_LENGTH_BYTES
 
         self._count = 0
         self._internal_events: List[Union[EventData, AmqpAnnotatedMessage]] = []
@@ -602,10 +609,7 @@ class EventDataBatch:
         partition_id: Optional[str] = None,
     ) -> EventDataBatch:
         outgoing_batch_data = [
-            transform_outbound_single_message(
-                m, EventData, amqp_transport.to_outgoing_amqp_message
-            )
-            for m in batch_data
+            transform_outbound_single_message(m, EventData, amqp_transport.to_outgoing_amqp_message) for m in batch_data
         ]
         batch_data_instance = cls(
             partition_key=partition_key,
@@ -687,23 +691,20 @@ class EventDataBatch:
         )
 
         if self._partition_key:
-            if (
-                outgoing_event_data.partition_key
-                and outgoing_event_data.partition_key != self._partition_key
-            ):
-                raise ValueError(
-                    "The partition key of event_data does not match the partition key of this batch."
-                )
+            if outgoing_event_data.partition_key and outgoing_event_data.partition_key != self._partition_key:
+                raise ValueError("The partition key of event_data does not match the partition key of this batch.")
             if not outgoing_event_data.partition_key:
-                outgoing_event_data._message = self._amqp_transport.set_message_partition_key(  # pylint: disable=protected-access
-                    outgoing_event_data._message,  # pylint: disable=protected-access
-                    self._partition_key,
+                outgoing_event_data._message = (  # pylint: disable=protected-access
+                    self._amqp_transport.set_message_partition_key(
+                        outgoing_event_data._message,  # pylint: disable=protected-access
+                        self._partition_key,
+                    )
                 )
 
-        outgoing_event_data._message = trace_message(   # pylint: disable=protected-access
-            outgoing_event_data._message,   # pylint: disable=protected-access
+        outgoing_event_data._message = trace_message(  # pylint: disable=protected-access
+            outgoing_event_data._message,  # pylint: disable=protected-access
             amqp_transport=self._amqp_transport,
-            additional_attributes=self._tracing_attributes
+            additional_attributes=self._tracing_attributes,
         )
         event_data_size = self._amqp_transport.get_message_encoded_size(
             outgoing_event_data._message  # pylint: disable=protected-access
@@ -711,15 +712,11 @@ class EventDataBatch:
         # For a BatchMessage, if the encoded_message_size of event_data is < 256, then the overhead cost to encode that
         # message into the BatchMessage would be 5 bytes, if >= 256, it would be 8 bytes.
         size_after_add = (
-            self._size
-            + event_data_size
-            + _BATCH_MESSAGE_OVERHEAD_COST[0 if (event_data_size < 256) else 1]
+            self._size + event_data_size + _BATCH_MESSAGE_OVERHEAD_COST[0 if (event_data_size < 256) else 1]
         )
 
         if size_after_add > self.max_size_in_bytes:
-            raise ValueError(
-                f"EventDataBatch has reached its size limit: {self.max_size_in_bytes}"
-            )
+            raise ValueError(f"EventDataBatch has reached its size limit: {self.max_size_in_bytes}")
 
         self._amqp_transport.add_batch(self, outgoing_event_data, event_data)
         self._size = size_after_add

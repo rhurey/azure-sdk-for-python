@@ -6,7 +6,7 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 import pytest
-from azure.mgmt.web import WebSiteManagementClient
+from azure.mgmt.web.v2024_11_01 import WebSiteManagementClient
 
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer, recorded_by_proxy
 
@@ -20,13 +20,13 @@ class TestWebSiteManagementWorkflowRunActionsOperations(AzureMgmtRecordedTestCas
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_list(self, resource_group):
+    def test_workflow_run_actions_list(self, resource_group):
         response = self.client.workflow_run_actions.list(
             resource_group_name=resource_group.name,
             name="str",
             workflow_name="str",
             run_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r for r in response]
         # please add some check logic here by yourself
@@ -34,14 +34,14 @@ class TestWebSiteManagementWorkflowRunActionsOperations(AzureMgmtRecordedTestCas
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_get(self, resource_group):
+    def test_workflow_run_actions_get(self, resource_group):
         response = self.client.workflow_run_actions.get(
             resource_group_name=resource_group.name,
             name="str",
             workflow_name="str",
             run_name="str",
             action_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
 
         # please add some check logic here by yourself
@@ -49,14 +49,14 @@ class TestWebSiteManagementWorkflowRunActionsOperations(AzureMgmtRecordedTestCas
 
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
-    def test_list_expression_traces(self, resource_group):
+    def test_workflow_run_actions_list_expression_traces(self, resource_group):
         response = self.client.workflow_run_actions.list_expression_traces(
             resource_group_name=resource_group.name,
             name="str",
             workflow_name="str",
             run_name="str",
             action_name="str",
-            api_version="2023-12-01",
+            api_version="2024-11-01",
         )
         result = [r for r in response]
         # please add some check logic here by yourself

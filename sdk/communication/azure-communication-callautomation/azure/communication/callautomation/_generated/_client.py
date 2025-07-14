@@ -8,6 +8,7 @@
 
 from copy import deepcopy
 from typing import Any
+from typing_extensions import Self
 
 from azure.core import PipelineClient
 from azure.core.credentials import AzureKeyCredential
@@ -16,19 +17,12 @@ from azure.core.rest import HttpRequest, HttpResponse
 
 from . import models as _models
 from ._configuration import AzureCommunicationCallAutomationServiceConfiguration
-from ._serialization import Deserializer, Serializer
-from .operations import (
-    AzureCommunicationCallAutomationServiceOperationsMixin,
-    CallConnectionOperations,
-    CallDialogOperations,
-    CallMediaOperations,
-    CallRecordingOperations,
-)
+from ._utils.serialization import Deserializer, Serializer
+from .operations import CallConnectionOperations, CallMediaOperations, CallRecordingOperations
+from .operations._operations import _AzureCommunicationCallAutomationServiceOperationsMixin
 
 
-class AzureCommunicationCallAutomationService(
-    AzureCommunicationCallAutomationServiceOperationsMixin
-):  # pylint: disable=client-accepts-api-version-keyword
+class AzureCommunicationCallAutomationService(_AzureCommunicationCallAutomationServiceOperationsMixin):
     """Azure Communication Service Call Automation APIs.
 
     :ivar call_connection: CallConnectionOperations operations
@@ -36,16 +30,14 @@ class AzureCommunicationCallAutomationService(
      azure.communication.callautomation.operations.CallConnectionOperations
     :ivar call_media: CallMediaOperations operations
     :vartype call_media: azure.communication.callautomation.operations.CallMediaOperations
-    :ivar call_dialog: CallDialogOperations operations
-    :vartype call_dialog: azure.communication.callautomation.operations.CallDialogOperations
     :ivar call_recording: CallRecordingOperations operations
     :vartype call_recording: azure.communication.callautomation.operations.CallRecordingOperations
     :param endpoint: The endpoint of the Azure Communication resource. Required.
     :type endpoint: str
     :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.AzureKeyCredential
-    :keyword api_version: Api Version. Default value is "2023-10-03-preview". Note that overriding
-     this default value may result in unsupported behavior.
+    :keyword api_version: Api Version. Default value is "2025-05-15". Note that overriding this
+     default value may result in unsupported behavior.
     :paramtype api_version: str
     """
 
@@ -54,6 +46,7 @@ class AzureCommunicationCallAutomationService(
         self._config = AzureCommunicationCallAutomationServiceConfiguration(
             endpoint=endpoint, credential=credential, **kwargs
         )
+
         _policies = kwargs.pop("policies", None)
         if _policies is None:
             _policies = [
@@ -80,7 +73,6 @@ class AzureCommunicationCallAutomationService(
         self._serialize.client_side_validation = False
         self.call_connection = CallConnectionOperations(self._client, self._config, self._serialize, self._deserialize)
         self.call_media = CallMediaOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.call_dialog = CallDialogOperations(self._client, self._config, self._serialize, self._deserialize)
         self.call_recording = CallRecordingOperations(self._client, self._config, self._serialize, self._deserialize)
 
     def send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
@@ -112,7 +104,7 @@ class AzureCommunicationCallAutomationService(
     def close(self) -> None:
         self._client.close()
 
-    def __enter__(self) -> "AzureCommunicationCallAutomationService":
+    def __enter__(self) -> Self:
         self._client.__enter__()
         return self
 

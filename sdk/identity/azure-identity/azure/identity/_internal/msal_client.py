@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Union
 
 from azure.core.exceptions import ClientAuthenticationError
 from azure.core.pipeline.policies import ContentDecodePolicy
-from azure.core.pipeline.transport import (  # pylint:disable=unknown-option-value,no-legacy-azure-core-http-response-import
+from azure.core.pipeline.transport import (  # pylint:disable=no-legacy-azure-core-http-response-import
     HttpRequest,
     HttpResponse,
 )
@@ -131,7 +131,8 @@ class MsalClient:  # pylint:disable=client-accepts-api-version-keyword
             # response to an auth request, so no credential will want to include it with an exception
             content = response.context.get(ContentDecodePolicy.CONTEXT_NAME)
             if content and "error" in content:
-                self._local.error = (content["error"], response.http_response)
+                error_code = content["error"] if isinstance(content, dict) else "oauth_error"
+                self._local.error = (error_code, response.http_response)
 
     def __getstate__(self) -> Dict[str, Any]:  # pylint:disable=client-method-name-no-double-underscore
         state = self.__dict__.copy()

@@ -21,7 +21,7 @@ from azure.eventhub._pyamqp._message_backcompat import LegacyMessage
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_receive_end_of_stream_async(auth_credential_senders_async, uamqp_transport):
+async def test_receive_end_of_stream_async(auth_credential_senders_async, uamqp_transport, client_args):
     async def on_event(partition_context, event):
         if partition_context.partition_id == "0":
             assert event.body_as_str() == "Receiving only a single event"
@@ -46,6 +46,7 @@ async def test_receive_end_of_stream_async(auth_credential_senders_async, uamqp_
         eventhub_name=eventhub_name,
         credential=credential(),
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
     partitions = await producer_client.get_partition_ids()
     senders = []
@@ -57,17 +58,14 @@ async def test_receive_end_of_stream_async(auth_credential_senders_async, uamqp_
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
-        consumer_group="$default"
+        consumer_group="$default",
+        **client_args,
     )
     async with client:
-        task = asyncio.ensure_future(
-            client.receive(on_event, partition_id="0", starting_position="@latest")
-        )
+        task = asyncio.ensure_future(client.receive(on_event, partition_id="0", starting_position="@latest"))
         await asyncio.sleep(10)
         assert on_event.called is False
-        await senders[0].send(
-            EventData(b"Receiving only a single event"), partition_key="0"
-        )
+        await senders[0].send(EventData(b"Receiving only a single event"), partition_key="0")
         await asyncio.sleep(10)
         assert on_event.called is True
 
@@ -90,25 +88,13 @@ async def test_receive_end_of_stream_async(auth_credential_senders_async, uamqp_
 @pytest.mark.liveTest
 @pytest.mark.asyncio
 async def test_receive_with_event_position_async(
-    auth_credential_senders_async, position, inclusive, expected_result, uamqp_transport
+    auth_credential_senders_async, position, inclusive, expected_result, uamqp_transport, client_args
 ):
     async def on_event(partition_context, event):
-        assert (
-            partition_context.last_enqueued_event_properties.get("sequence_number")
-            == event.sequence_number
-        )
-        assert (
-            partition_context.last_enqueued_event_properties.get("offset")
-            == event.offset
-        )
-        assert (
-            partition_context.last_enqueued_event_properties.get("enqueued_time")
-            == event.enqueued_time
-        )
-        assert (
-            partition_context.last_enqueued_event_properties.get("retrieval_time")
-            is not None
-        )
+        assert partition_context.last_enqueued_event_properties.get("sequence_number") == event.sequence_number
+        assert partition_context.last_enqueued_event_properties.get("offset") == event.offset
+        assert partition_context.last_enqueued_event_properties.get("enqueued_time") == event.enqueued_time
+        assert partition_context.last_enqueued_event_properties.get("retrieval_time") is not None
 
         if position == "offset":
             on_event.event_position = event.offset
@@ -126,7 +112,8 @@ async def test_receive_with_event_position_async(
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client:
         task = asyncio.ensure_future(
@@ -146,7 +133,8 @@ async def test_receive_with_event_position_async(
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client2:
         task = asyncio.ensure_future(
@@ -164,7 +152,7 @@ async def test_receive_with_event_position_async(
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_receive_owner_level_async(auth_credential_senders_async, uamqp_transport):
+async def test_receive_owner_level_async(auth_credential_senders_async, uamqp_transport, client_args):
     app_prop = {"raw_prop": "raw_value"}
 
     async def on_event(partition_context, event):
@@ -180,29 +168,27 @@ async def test_receive_owner_level_async(auth_credential_senders_async, uamqp_tr
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args,
     )
     client2 = EventHubConsumerClient(
         fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
         credential=credential(),
         consumer_group="$default",
-        uamqp_transport=uamqp_transport
+        uamqp_transport=uamqp_transport,
+        **client_args,
     )
     async with client1, client2:
         task1 = asyncio.ensure_future(
-            client1.receive(
-                on_event, partition_id="0", starting_position="-1", on_error=on_error
-            )
+            client1.receive(on_event, partition_id="0", starting_position="-1", on_error=on_error)
         )
         for i in range(5):
             ed = EventData("Event Number {}".format(i))
             senders[0].send(ed)
         await asyncio.sleep(10)
         task2 = asyncio.ensure_future(
-            client2.receive(
-                on_event, partition_id="0", starting_position="-1", owner_level=1
-            )
+            client2.receive(on_event, partition_id="0", starting_position="-1", owner_level=1)
         )
         for i in range(5):
             ed = EventData("Event Number {}".format(i))
@@ -215,7 +201,8 @@ async def test_receive_owner_level_async(auth_credential_senders_async, uamqp_tr
 
 @pytest.mark.liveTest
 @pytest.mark.asyncio
-async def test_receive_over_websocket_async(auth_credential_senders_async, uamqp_transport):
+@pytest.mark.no_amqpproxy # Proxy requires TransportType.Amqp
+async def test_receive_over_websocket_async(auth_credential_senders_async, uamqp_transport, client_args):
     app_prop = {"raw_prop": "raw_value"}
     content_type = "text/plain"
     message_id_base = "mess_id_sample_"
@@ -234,6 +221,7 @@ async def test_receive_over_websocket_async(auth_credential_senders_async, uamqp
         consumer_group="$default",
         transport_type=TransportType.AmqpOverWebsocket,
         uamqp_transport=uamqp_transport,
+        **client_args,
     )
 
     event_list = []
@@ -253,9 +241,7 @@ async def test_receive_over_websocket_async(auth_credential_senders_async, uamqp
     senders[0].send(single_ed)
 
     async with client:
-        task = asyncio.ensure_future(
-            client.receive(on_event, partition_id="0", starting_position="-1")
-        )
+        task = asyncio.ensure_future(client.receive(on_event, partition_id="0", starting_position="-1"))
         await asyncio.sleep(10)
     await task
     assert len(on_event.received) == 6

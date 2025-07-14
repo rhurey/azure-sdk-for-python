@@ -16,7 +16,7 @@ param (
 
 $ProvisionLiveResources = $AdditionalParameters['ProvisionLiveResources']
 Write-Host "ProvisionLiveResources: $ProvisionLiveResources"
-if ($CI -and !$ProvisionLiveResources) {
+if (!$ProvisionLiveResources) {
     Write-Host "Skipping test resource post-provisioning."
     return
 }
@@ -64,6 +64,7 @@ $MIName = $DeploymentOutputs['IDENTITY_USER_DEFINED_IDENTITY_NAME']
 $SaAccountName = 'workload-identity-sa'
 $PodName = $DeploymentOutputs['IDENTITY_AKS_POD_NAME']
 $storageName = $DeploymentOutputs['IDENTITY_STORAGE_NAME_2']
+$FICAudience = 'api://AzureADTokenExchange'
 
 # Get the aks cluster credentials
 Write-Host "Getting AKS credentials"
@@ -75,7 +76,7 @@ $AKS_OIDC_ISSUER = az aks show -n $DeploymentOutputs['IDENTITY_AKS_CLUSTER_NAME'
 
 # Create the federated identity
 Write-Host "Creating federated identity"
-az identity federated-credential create --name $MIName --identity-name $MIName --resource-group $DeploymentOutputs['IDENTITY_RESOURCE_GROUP'] --issuer $AKS_OIDC_ISSUER --subject system:serviceaccount:default:workload-identity-sa
+az identity federated-credential create --name $MIName --identity-name $MIName --resource-group $DeploymentOutputs['IDENTITY_RESOURCE_GROUP'] --issuer $AKS_OIDC_ISSUER --subject system:serviceaccount:default:workload-identity-sa  --audiences $FICAudience
 
 # Build the kubernetes deployment yaml
 $kubeConfig = @"
@@ -131,6 +132,9 @@ Write-Host "Deploying Azure Container Instance"
 az container create -g $($DeploymentOutputs['IDENTITY_RESOURCE_GROUP']) -n $($DeploymentOutputs['IDENTITY_CONTAINER_INSTANCE_NAME']) --image $image `
   --acr-identity $($DeploymentOutputs['IDENTITY_USER_DEFINED_IDENTITY']) `
   --assign-identity [system] $($DeploymentOutputs['IDENTITY_USER_DEFINED_IDENTITY']) `
+  --cpu 1 `
+  --memory 1.0 `
+  --os-type Linux `
   --role "Storage Blob Data Reader" `
   --scope $($DeploymentOutputs['IDENTITY_STORAGE_ID_1']) `
   -e IDENTITY_STORAGE_NAME=$($DeploymentOutputs['IDENTITY_STORAGE_NAME_1']) `

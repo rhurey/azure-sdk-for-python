@@ -116,7 +116,7 @@ class BearerTokenCredentialPolicy(_BearerTokenCredentialPolicyBase, HTTPPolicy[H
     :param str scopes: Lets you specify the type of access needed.
     :keyword bool enable_cae: Indicates whether to enable Continuous Access Evaluation (CAE) on all requested
         tokens. Defaults to False.
-    :raises: :class:`~azure.core.exceptions.ServiceRequestError`
+    :raises ~azure.core.exceptions.ServiceRequestError: If the request fails.
     """
 
     def on_request(self, request: PipelineRequest[HTTPRequestType]) -> None:
@@ -194,7 +194,6 @@ class BearerTokenCredentialPolicy(_BearerTokenCredentialPolicyBase, HTTPPolicy[H
         :returns: a bool indicating whether the policy should send the request
         :rtype: bool
         """
-        # pylint:disable=unused-argument
         headers = response.http_response.headers
         error = get_challenge_parameter(headers, "Bearer", "error")
         if error == "insufficient_claims":
@@ -205,9 +204,7 @@ class BearerTokenCredentialPolicy(_BearerTokenCredentialPolicyBase, HTTPPolicy[H
                 padding_needed = -len(encoded_claims) % 4
                 claims = base64.urlsafe_b64decode(encoded_claims + "=" * padding_needed).decode("utf-8")
                 if claims:
-                    token = self._get_token(*self._scopes, claims=claims)
-                    bearer_token = cast(Union["AccessToken", "AccessTokenInfo"], token).token
-                    request.http_request.headers["Authorization"] = "Bearer " + bearer_token
+                    self.authorize_request(request, *self._scopes, claims=claims)
                     return True
             except Exception:  # pylint:disable=broad-except
                 return False
@@ -245,7 +242,8 @@ class AzureKeyCredentialPolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseTyp
     :type credential: ~azure.core.credentials.AzureKeyCredential
     :param str name: The name of the key header used for the credential.
     :keyword str prefix: The name of the prefix for the header value if any.
-    :raises: ValueError or TypeError
+    :raises ValueError: if name is None or empty.
+    :raises TypeError: if name is not a string or if credential is not an instance of AzureKeyCredential.
     """
 
     def __init__(  # pylint: disable=unused-argument
@@ -268,6 +266,11 @@ class AzureKeyCredentialPolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseTyp
         self._prefix = prefix + " " if prefix else ""
 
     def on_request(self, request: PipelineRequest[HTTPRequestType]) -> None:
+        """Called before the policy sends a request.
+
+        :param request: The request to be modified before sending.
+        :type request: ~azure.core.pipeline.PipelineRequest
+        """
         request.http_request.headers[self._name] = f"{self._prefix}{self._credential.key}"
 
 
@@ -276,7 +279,7 @@ class AzureSasCredentialPolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseTyp
 
     :param credential: The credential used to authenticate requests.
     :type credential: ~azure.core.credentials.AzureSasCredential
-    :raises: ValueError or TypeError
+    :raises ValueError: if credential is None.
     """
 
     def __init__(
@@ -290,6 +293,11 @@ class AzureSasCredentialPolicy(SansIOHTTPPolicy[HTTPRequestType, HTTPResponseTyp
         self._credential = credential
 
     def on_request(self, request: PipelineRequest[HTTPRequestType]) -> None:
+        """Called before the policy sends a request.
+
+        :param request: The request to be modified before sending.
+        :type request: ~azure.core.pipeline.PipelineRequest
+        """
         url = request.http_request.url
         query = request.http_request.query
         signature = self._credential.signature

@@ -5,6 +5,7 @@
 # pylint: disable=protected-access,too-many-lines
 
 import hashlib
+import json
 import logging
 import os
 import uuid
@@ -38,7 +39,7 @@ from azure.ai.ml._artifacts._constants import (
     WORKSPACE_MANAGED_DATASTORE,
     WORKSPACE_MANAGED_DATASTORE_WITH_SLASH,
 )
-from azure.ai.ml._restclient.v2022_02_01_preview.operations import (  # pylint: disable = unused-import
+from azure.ai.ml._restclient.v2022_02_01_preview.operations import (
     ComponentContainersOperations,
     ComponentVersionsOperations,
     DataContainersOperations,
@@ -77,7 +78,7 @@ if TYPE_CHECKING:
         ModelOperations,
     )
 
-hash_type = type(hashlib.md5())  # nosec
+hash_type = type(hashlib.sha256())  # nosec
 
 module_logger = logging.getLogger(__name__)
 
@@ -247,6 +248,33 @@ def _get_file_hash(filename: Union[str, os.PathLike], _hash: hash_type) -> hash_
     return _hash
 
 
+def delete_two_catalog_files(path):
+    """
+    Function that deletes the "catalog.json" and "catalog.json.sig" files located at 'path', if they exist
+
+    :param path: Path to the folder for signing
+    :type path: Union[Path, str]
+    :return: None
+    """
+    # catalog.json
+    file_path_json = os.path.join(path, "catalog.json")
+    if os.path.exists(file_path_json):
+        module_logger.warning("%s already exists. Deleting it", file_path_json)
+        os.remove(file_path_json)
+    # catalog.json.sig
+    file_path_json_sig = os.path.join(path, "catalog.json.sig")
+    if os.path.exists(file_path_json_sig):
+        module_logger.warning("%s already exists. Deleting it", file_path_json_sig)
+        os.remove(file_path_json_sig)
+
+
+def create_catalog_files(path, json_stub):
+    with open(os.path.join(path, "catalog.json"), "w", encoding=DefaultOpenEncoding.WRITE) as jsonFile1:
+        json.dump(json_stub, jsonFile1)
+    with open(os.path.join(path, "catalog.json.sig"), "w", encoding=DefaultOpenEncoding.WRITE) as jsonFile2:
+        json.dump(json_stub, jsonFile2)
+
+
 def _get_dir_hash(directory: Union[str, os.PathLike], _hash: hash_type, ignore_file: IgnoreFile) -> hash_type:
     dir_contents = Path(directory).iterdir()
     sorted_contents = sorted(dir_contents, key=lambda path: str(path).lower())
@@ -293,7 +321,7 @@ def _build_metadata_dict(name: str, version: str) -> Dict[str, str]:
 
 
 def get_object_hash(path: Union[str, os.PathLike], ignore_file: IgnoreFile = IgnoreFile()) -> str:
-    _hash = hashlib.md5(b"Initialize for october 2021 AML CLI version")  # nosec
+    _hash = hashlib.sha256(b"Initialize for october 2021 AML CLI version")  # nosec
     if Path(path).is_dir():
         object_hash = _get_dir_hash(directory=path, _hash=_hash, ignore_file=ignore_file)
     else:
@@ -349,7 +377,10 @@ def get_content_hash(path: Union[str, os.PathLike], ignore_file: IgnoreFile = Ig
 
 
 def get_upload_files_from_folder(
-    path: Union[str, os.PathLike], *, prefix: str = "", ignore_file: IgnoreFile = IgnoreFile()
+    path: Union[str, os.PathLike],
+    *,
+    prefix: str = "",
+    ignore_file: IgnoreFile = IgnoreFile(),
 ) -> List[str]:
     path = Path(path)
     upload_paths = []
@@ -432,7 +463,12 @@ def traverse_directory(  # pylint: disable=unused-argument
     result = []
     for origin_file_path in origin_file_paths:
         relative_path = origin_file_path.relative_to(root)
-        result.append((_resolve_path(origin_file_path).as_posix(), Path(prefix).joinpath(relative_path).as_posix()))
+        result.append(
+            (
+                _resolve_path(origin_file_path).as_posix(),
+                Path(prefix).joinpath(relative_path).as_posix(),
+            )
+        )
     return result
 
 
@@ -755,6 +791,39 @@ def _get_next_version_from_container(
     return version
 
 
+def _get_next_latest_versions_from_container(
+    name: str,
+    container_operation: Any,
+    resource_group_name: str,
+    workspace_name: str,
+    registry_name: str = None,
+    **kwargs,
+) -> str:
+    try:
+        container = (
+            container_operation.get(
+                name=name,
+                resource_group_name=resource_group_name,
+                registry_name=registry_name,
+                **kwargs,
+            )
+            if registry_name
+            else container_operation.get(
+                name=name,
+                resource_group_name=resource_group_name,
+                workspace_name=workspace_name,
+                **kwargs,
+            )
+        )
+        next_version = container.properties.next_version
+        latest_version = container.properties.latest_version
+
+    except ResourceNotFoundError:
+        next_version = "1"
+        latest_version = "1"
+    return next_version, latest_version
+
+
 def _get_latest_version_from_container(
     asset_name: str,
     container_operation: Any,
@@ -934,6 +1003,7 @@ def _archive_or_restore(
             )
         )
         version_resource.properties.is_archived = is_archived
+        version_resource.properties.stage = None
         (  # pylint: disable=expression-not-assigned
             version_operation.begin_create_or_update(
                 name=name,
@@ -967,7 +1037,7 @@ def _archive_or_restore(
         )
         container_resource.properties.is_archived = is_archived
         (  # pylint: disable=expression-not-assigned
-            container_operation.create_or_update(
+            container_operation.begin_create_or_update(
                 name=name,
                 resource_group_name=resource_group_name,
                 registry_name=registry_name,

@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,useless-suppression
 #!/usr/bin/env python
 
 # --------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ USAGE:
 
 This example uses DefaultAzureCredential, which requests a token from Azure Active Directory.
 For more information on DefaultAzureCredential, see
-    https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python
+    https://learn.microsoft.com/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python
 """
 import os
 from azure.eventhub import EventHubConsumerClient

@@ -6,8 +6,6 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import Any, IO, Union
-
 from azure.identity import DefaultAzureCredential
 
 from azure.mgmt.appcontainers import ContainerAppsAPIClient
@@ -36,6 +34,12 @@ def main():
         resource_group_name="examplerg",
         environment_name="testcontainerenv",
         environment_envelope={
+            "identity": {
+                "type": "SystemAssigned, UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/contoso-resources/providers/Microsoft.ManagedIdentity/userAssignedIdentities/contoso-identity": {}
+                },
+            },
             "location": "East US",
             "properties": {
                 "appLogsConfiguration": {"logAnalyticsConfiguration": {"customerId": "string", "sharedKey": "string"}},
@@ -78,6 +82,6 @@ def main():
     print(response)
 
 
-# x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2024-03-01/examples/ManagedEnvironments_CreateOrUpdate.json
+# x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2025-01-01/examples/ManagedEnvironments_CreateOrUpdate.json
 if __name__ == "__main__":
     main()

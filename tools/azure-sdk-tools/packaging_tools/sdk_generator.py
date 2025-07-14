@@ -1,4 +1,5 @@
 import sys
+import time
 from typing import List, Dict, Any
 import argparse
 import json
@@ -8,6 +9,8 @@ from subprocess import check_call, getoutput
 import shutil
 import re
 import os
+from functools import partial
+import multiprocessing
 
 try:
     # py 311 adds this library natively
@@ -36,6 +39,7 @@ from .generate_utils import (
     del_outdated_generated_files,
 )
 from .conf import CONF_NAME
+from .package_utils import create_package, change_log_generate, extract_breaking_change, get_version_info, check_file
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -45,8 +49,16 @@ logging.basicConfig(
 _LOGGER = logging.getLogger(__name__)
 
 
+def execute_func_with_timeout(func, timeout: int = 900) -> Any:
+    """Execute function with timeout"""
+    return multiprocessing.Pool(processes=1).apply_async(func).get(timeout)
+
+
 def is_multiapi_package(python_md_content: List[str]) -> bool:
-    return "multiapi: true" in "".join(python_md_content)
+    for line in python_md_content:
+        if re.findall(r"\s*multiapi\s*:\s*true", line):
+            return True
+    return False
 
 
 # return relative path like: network/azure-mgmt-network
@@ -56,49 +68,6 @@ def extract_sdk_folder(python_md: List[str]) -> str:
         if all(p in line for p in pattern):
             return re.findall("[a-z]+/[a-z]+-[a-z]+-[a-z]+[-a-z]*", line)[0]
     return ""
-
-
-@return_origin_path
-def multiapi_combiner(sdk_code_path: str, package_name: str):
-    os.chdir(sdk_code_path)
-    _LOGGER.info(f"start to combine multiapi package: {package_name}")
-    check_call(
-        f"python {str(Path('../../../tools/azure-sdk-tools/packaging_tools/multiapi_combiner.py'))} --pkg-path={os.getcwd()}",
-        shell=True,
-    )
-    check_call("pip install -e .", shell=True)
-
-
-@return_origin_path
-def after_multiapi_combiner(sdk_code_path: str, package_name: str, folder_name: str):
-    toml_file = Path(sdk_code_path) / CONF_NAME
-    # do not package code of v20XX_XX_XX
-    exclude = lambda x: x.replace("-", ".") + ".v20*"
-    if toml_file.exists():
-        with open(toml_file, "rb") as file_in:
-            content = toml.load(file_in)
-        if package_name != "azure-mgmt-resource":
-            content["packaging"]["exclude_folders"] = exclude(package_name)
-        else:
-            # azure-mgmt-resource has subfolders
-            subfolder_path = Path(sdk_code_path) / package_name.replace("-", "/")
-            subfolders_name = [s.name for s in subfolder_path.iterdir() if s.is_dir() and not s.name.startswith("_")]
-            content["packaging"]["exclude_folders"] = ",".join(
-                [exclude(f"{package_name}-{s}") for s in subfolders_name]
-            )
-
-        with open(toml_file, "wb") as file_out:
-            tomlw.dump(content, file_out)
-        call_build_config(package_name, folder_name)
-
-        # remove .egg-info to reinstall package
-        for item in Path(sdk_code_path).iterdir():
-            if item.suffix == ".egg-info":
-                shutil.rmtree(str(item))
-        os.chdir(sdk_code_path)
-        check_call("pip install -e .", shell=True)
-    else:
-        _LOGGER.info(f"do not find {toml_file}")
 
 
 # readme: ../azure-rest-api-specs/specification/paloaltonetworks/resource-manager/readme.md or absolute path
@@ -152,7 +121,10 @@ def get_related_swagger(readme_content: List[str], tag: str) -> List[str]:
             while idx < len(readme_content):
                 if "```" in readme_content[idx]:
                     break
-                if ".json" in readme_content[idx] and "Microsoft." in readme_content[idx]:
+                if ".json" in readme_content[idx] and (
+                    re.compile(r"\d{4}-\d{1,2}-\d{1,2}").findall(readme_content[idx])
+                    or "Microsoft." in readme_content[idx]
+                ):
                     result.append(readme_content[idx].strip("\n -"))
                 idx += 1
             break
@@ -219,69 +191,66 @@ def if_need_regenerate(meta: Dict[str, Any]) -> bool:
 # spec_folder: "../azure-rest-api-specs"
 # input_readme: "specification/paloaltonetworks/resource-manager/readme.md"
 @return_origin_path
-def update_metadata_for_multiapi_package(spec_folder: str, input_readme: str):
+def need_regen_for_multiapi_package(spec_folder: str, input_readme: str) -> bool:
     os.chdir(spec_folder)
     python_readme = (Path(input_readme).parent / "readme.python.md").absolute()
     if not python_readme.exists():
         _LOGGER.info(f"do not find python configuration: {python_readme}")
-        return
+        return False
 
     with open(python_readme, "r") as file_in:
         python_md_content = file_in.readlines()
     is_multiapi = is_multiapi_package(python_md_content)
     if not is_multiapi:
         _LOGGER.info(f"do not find multiapi configuration in {python_readme}")
-        return
-
-    sdk_folder = extract_sdk_folder(python_md_content)
-    if not sdk_folder:
-        _LOGGER.warning(f"don't find valid sdk folder in {python_readme}")
-        return
-    meta_path = Path("../azure-sdk-for-python/sdk", sdk_folder, "_meta.json")
-    if not meta_path.exists():
-        _LOGGER.warning(f"don't find _meta.json file: {meta_path}")
-        return
-
-    with open(meta_path, "r") as file_in:
-        meta = json.load(file_in)
-
-    need_regenerate = if_need_regenerate(meta)
+        return False
 
     after_handle = []
     for idx in range(len(python_md_content)):
+        if re.findall(r"\s*clear-output-folder\s*:\s*true\s*", python_md_content[idx]):
+            continue
+        if re.findall(r"\s*-\s*tag\s*:", python_md_content[idx]):
+            continue
         after_handle.append(python_md_content[idx])
-        if "batch:" in python_md_content[idx]:
-            line_number = choose_tag_and_update_meta(
-                idx + 1, python_md_content, after_handle, input_readme, meta, need_regenerate
-            )
-            after_handle.extend(python_md_content[line_number:])
-            break
 
     with open(python_readme, "w") as file_out:
         file_out.writelines(after_handle)
-
-    with open(meta_path, "w") as file_out:
-        json.dump(meta, file_out, indent=2)
+    return True
 
 
 def main(generate_input, generate_output):
     with open(generate_input, "r") as reader:
         data = json.load(reader)
 
-    spec_folder = data["specFolder"]
+    spec_folder = data.get("specFolder", "")
     sdk_folder = "."
     result = {}
     python_tag = data.get("python_tag")
     package_total = set()
-    readme_and_tsp = data.get("relatedReadmeMdFiles", []) + data.get("relatedTypeSpecProjectFolder", [])
-    for readme_or_tsp in readme_and_tsp:
+    readme_and_tsp = [("relatedReadmeMdFiles", item) for item in data.get("relatedReadmeMdFiles", [])] + [
+        ("relatedTypeSpecProjectFolder", item) for item in data.get("relatedTypeSpecProjectFolder", [])
+    ]
+    run_in_pipeline = data.get("runMode") is not None
+    for input_type, readme_or_tsp in readme_and_tsp:
         _LOGGER.info(f"[CODEGEN]({readme_or_tsp})codegen begin")
         try:
-            if "resource-manager" in readme_or_tsp:
+            code_generation_start_time = time.time()
+            if input_type == "relatedTypeSpecProjectFolder":
+                if run_in_pipeline:
+                    del_outdated_generated_files(str(Path(spec_folder, readme_or_tsp)))
+                config = gen_typespec(
+                    readme_or_tsp,
+                    spec_folder,
+                    data["headSha"],
+                    data["repoHttpsUrl"],
+                    run_in_pipeline,
+                    data.get("apiVersion"),
+                )
+            elif "resource-manager" in readme_or_tsp:
                 relative_path_readme = str(Path(spec_folder, readme_or_tsp))
-                update_metadata_for_multiapi_package(spec_folder, readme_or_tsp)
                 del_outdated_files(relative_path_readme)
-                config = generate(
+                generate_mgmt = partial(
+                    generate,
                     CONFIG_FILE,
                     sdk_folder,
                     [],
@@ -290,13 +259,14 @@ def main(generate_input, generate_output):
                     force_generation=True,
                     python_tag=python_tag,
                 )
-            elif "data-plane" in readme_or_tsp:
-                config = gen_dpg(readme_or_tsp, data.get("autorestConfig", ""), dpg_relative_folder(spec_folder))
+                config = generate_mgmt()
+                if need_regen_for_multiapi_package(spec_folder, readme_or_tsp):
+                    generate_mgmt()
             else:
-                del_outdated_generated_files(str(Path(spec_folder, readme_or_tsp)))
-                config = gen_typespec(readme_or_tsp, spec_folder, data["headSha"], data["repoHttpsUrl"])
+                config = gen_dpg(readme_or_tsp, data.get("autorestConfig", ""), dpg_relative_folder(spec_folder))
+            _LOGGER.info(f"code generation cost time: {int(time.time() - code_generation_start_time)} seconds")
         except Exception as e:
-            _LOGGER.error(f"fail to generate sdk for {readme_or_tsp}: {str(e)}")
+            _LOGGER.error(f"Fail to generate sdk for {readme_or_tsp}: {str(e)}")
             for hint_message in [
                 "======================================= Whant Can I do (begin) ========================================================================",
                 f"Fail to generate sdk for {readme_or_tsp}. If you are from service team, please first check if the failure happens only to Python automation, or for all SDK automations. ",
@@ -329,49 +299,159 @@ def main(generate_input, generate_output):
                     package_entry["tagIsStable"] = not judge_tag_preview(sdk_code_path, package_name)
                     readme_python_content = get_readme_python_content(str(Path(spec_folder) / readme_or_tsp))
                     package_entry["isMultiapi"] = is_multiapi_package(readme_python_content)
+                    package_entry["targetReleaseDate"] = data.get("targetReleaseDate", "")
+                    package_entry["allowInvalidNextVersion"] = data.get("allowInvalidNextVersion", False)
                     result[package_name] = package_entry
                 else:
                     result[package_name]["path"].append(folder_name)
                     result[package_name][spec_word].append(readme_or_tsp)
+            except Exception as e:
+                _LOGGER.error(f"Fail to process package {package_name} in {readme_or_tsp}: {str(e)}")
+                continue
 
-                # Generate some necessary file for new service
+            # Generate some necessary file for new service
+            try:
                 init_new_service(package_name, folder_name)
+            except Exception as e:
+                _LOGGER.warning(f"Fail to init new service {package_name} in {readme_or_tsp}: {str(e)}")
+
+            # format samples and tests
+            try:
                 format_samples_and_tests(sdk_code_path)
+            except Exception as e:
+                _LOGGER.warning(f"Fail to format samples and tests for {package_name} in {readme_or_tsp}: {str(e)}")
 
-                # Update metadata
-                try:
-                    update_servicemetadata(
-                        sdk_folder,
-                        data,
-                        config,
-                        folder_name,
-                        package_name,
-                        spec_folder,
-                        readme_or_tsp,
-                    )
-                except Exception as e:
-                    _LOGGER.error(f"fail to update meta: {str(e)}")
+            # Update metadata
+            try:
+                update_servicemetadata(
+                    sdk_folder,
+                    data,
+                    config,
+                    folder_name,
+                    package_name,
+                    spec_folder,
+                    readme_or_tsp,
+                )
+            except Exception as e:
+                _LOGGER.warning(f"Fail to update meta: {str(e)}")
 
-                # Setup package locally
+            # Setup package locally
+            try:
                 check_call(
                     f"pip install --ignore-requires-python -e {sdk_code_path}",
                     shell=True,
                 )
-
-                # check whether multiapi package has only one api-version in per subfolder
-                # skip check for network for https://github.com/Azure/azure-sdk-for-python/issues/30556#issuecomment-1571341309
-                if "azure-mgmt-network" not in sdk_code_path:
-                    check_api_version_in_subfolder(sdk_code_path)
-
-                # use multiapi combiner to combine multiapi package
-                if package_name in ("azure-mgmt-network"):
-                    multiapi_combiner(sdk_code_path, package_name)
-                    after_multiapi_combiner(sdk_code_path, package_name, folder_name)
-                    result[package_name]["afterMultiapiCombiner"] = True
-                else:
-                    result[package_name]["afterMultiapiCombiner"] = False
             except Exception as e:
-                _LOGGER.error(f"fail to setup package: {str(e)}")
+                _LOGGER.warning(f"Fail to setup package {package_name} in {readme_or_tsp}: {str(e)}")
+
+            # check whether multiapi package has only one api-version in per subfolder
+            try:
+                if result[package_name]["isMultiapi"]:
+                    check_api_version_in_subfolder(sdk_code_path)
+            except Exception as e:
+                _LOGGER.warning(
+                    f"Fail to check api version in subfolder for {package_name} in {readme_or_tsp}: {str(e)}"
+                )
+
+            # Changelog generation
+            try:
+                last_version, last_stable_release = get_version_info(package_name, result[package_name]["tagIsStable"])
+                change_log_func = partial(
+                    change_log_generate,
+                    package_name,
+                    last_version,
+                    result[package_name]["tagIsStable"],
+                    last_stable_release=last_stable_release,
+                    prefolder=folder_name,
+                    is_multiapi=result[package_name]["isMultiapi"],
+                )
+
+                changelog_generation_start_time = time.time()
+                try:
+                    md_output = execute_func_with_timeout(change_log_func)
+                except multiprocessing.TimeoutError:
+                    md_output = "change log generation was timeout!!! You need to write it manually!!!"
+                except:
+                    md_output = "change log generation failed!!! You need to write it manually!!!"
+                finally:
+                    for file in ["stable.json", "current.json"]:
+                        file_path = Path(sdk_folder, folder_name, package_name, file)
+                        if file_path.exists():
+                            os.remove(file_path)
+                            _LOGGER.info(f"Remove {file_path} which is temp file to generate changelog.")
+
+                _LOGGER.info(
+                    f"changelog generation cost time: {int(time.time() - changelog_generation_start_time)} seconds"
+                )
+                result[package_name]["changelog"] = {
+                    "content": md_output,
+                    "hasBreakingChange": "Breaking Changes" in md_output,
+                    "breakingChangeItems": extract_breaking_change(md_output),
+                }
+                result[package_name]["version"] = last_version
+
+                _LOGGER.info(f"[PACKAGE]({package_name})[CHANGELOG]:{md_output}")
+            except Exception as e:
+                _LOGGER.warning(f"Fail to generate changelog for {package_name} in {readme_or_tsp}: {str(e)}")
+
+            # Generate ApiView
+            if run_in_pipeline:
+                apiview_start_time = time.time()
+                try:
+                    package_path = Path(sdk_folder, folder_name, package_name)
+                    check_call(
+                        [
+                            "python",
+                            "-m",
+                            "pip",
+                            "install",
+                            "-r",
+                            "../../../eng/apiview_reqs.txt",
+                            "--index-url=https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-python/pypi"
+                            "/simple/",
+                        ],
+                        cwd=package_path,
+                        timeout=600,
+                    )
+                    check_call(["apistubgen", "--pkg-path", "."], cwd=package_path, timeout=600)
+                    for file in os.listdir(package_path):
+                        if "_python.json" in file and package_name in file:
+                            result[package_name]["apiViewArtifact"] = str(Path(package_path, file))
+                except Exception as e:
+                    _LOGGER.debug(f"Fail to generate ApiView token file for {package_name}: {e}")
+                _LOGGER.info(f"apiview generation cost time: {int(time.time() - apiview_start_time)} seconds")
+            else:
+                _LOGGER.info("Skip ApiView generation for package that does not run in pipeline.")
+
+            # check generated files and update package["version"]
+            if package_name.startswith("azure-mgmt-"):
+                try:
+                    check_file(result[package_name])
+                except Exception as e:
+                    _LOGGER.warning(f"Fail to check generated files for {package_name}: {e}")
+
+            # Build artifacts for package
+            try:
+                create_package(result[package_name]["path"][0], package_name)
+                dist_path = Path(sdk_folder, folder_name, package_name, "dist")
+                result[package_name]["artifacts"] = [
+                    str(dist_path / package_file) for package_file in os.listdir(dist_path)
+                ]
+                for artifact in result[package_name]["artifacts"]:
+                    if ".whl" in artifact:
+                        result[package_name]["language"] = "Python"
+                        break
+                _LOGGER.info(f"Built package {package_name} successfully.")
+            except Exception as e:
+                _LOGGER.warning(f"Fail to build package {package_name} in {readme_or_tsp}: {str(e)}")
+
+            # update result
+            result[package_name]["installInstructions"] = {
+                "full": "You can use pip to install the artifacts.",
+                "lite": f"pip install {package_name}",
+            }
+            result[package_name]["result"] = "succeeded"
+            result[package_name]["packageFolder"] = result[package_name]["path"][0]
 
     # remove duplicates
     try:
@@ -382,13 +462,23 @@ def main(generate_input, generate_output):
             if value.get("readmeMd"):
                 value["readmeMd"] = list(set(value["readmeMd"]))
     except Exception as e:
-        _LOGGER.error(f"fail to remove duplicates: {str(e)}")
+        _LOGGER.warning(f"Fail to remove duplicates: {str(e)}")
 
     if len(result) == 0 and len(readme_and_tsp) > 1:
         raise Exception("No package is generated, please check the log for details")
 
+    if len(result) == 0:
+        _LOGGER.info("No packages to process, returning empty result")
+    else:
+        _LOGGER.info(f"Processing {len(result)} generated packages...")
+
+    final_result = {"packages": list(result.values())}
     with open(generate_output, "w") as writer:
-        json.dump(result, writer)
+        json.dump(final_result, writer, indent=2)
+
+    _LOGGER.info(
+        f"Congratulations! Succeed to build package for {[p['packageName'] for p in final_result['packages']]}. And you shall be able to see the generated code when running 'git status'."
+    )
 
 
 def generate_main():

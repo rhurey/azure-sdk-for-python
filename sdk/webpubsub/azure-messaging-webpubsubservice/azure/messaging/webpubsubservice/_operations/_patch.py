@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,useless-suppression
 # ------------------------------------
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
@@ -11,6 +12,7 @@ from typing import Any, List, IO, Optional, Union, overload
 from datetime import datetime, timedelta, tzinfo
 import jwt
 from azure.core.credentials import AzureKeyCredential
+from azure.core.paging import ItemPaged
 from azure.core.tracing.decorator import distributed_trace
 from azure.core.exceptions import (
     ClientAuthenticationError,
@@ -29,6 +31,7 @@ from ._operations import (
     build_web_pub_sub_service_send_to_user_request,
     build_web_pub_sub_service_send_to_group_request,
 )
+from .._models import GroupMember
 
 
 class _UTC_TZ(tzinfo):
@@ -96,8 +99,8 @@ class WebPubSubServiceClientOperationsMixin(WebPubSubServiceClientOperationsMixi
         :keyword groups: Groups that the connection will join when it connects. Default value is None.
         :paramtype groups: list[str]
         :keyword client_protocol: The type of client protocol. Case-insensitive. If not set, it's "Default". For Web
-         PubSub for Socket.IO, only the default value is supported. For Web PubSub, the valid values are
-         'Default' and 'MQTT'. Known values are: "Default" and "MQTT". Default value is "Default".
+         PubSub for Socket.IO, "SocketIO" type is supported. For Web PubSub, the valid values are
+         'Default', 'MQTT'. Known values are: "Default", "MQTT" and "SocketIO". Default value is "Default".
         :paramtype client_type: str
         :returns: JSON response containing the web socket endpoint, the token and a url with the generated access token.
         :rtype: JSON
@@ -124,13 +127,20 @@ class WebPubSubServiceClientOperationsMixin(WebPubSubServiceClientOperationsMixi
 
         client_endpoint = "ws" + endpoint[4:]
         hub = self._config.hub
-        path = "/clients/mqtt/hubs/" if client_protocol.lower() == "mqtt" else "/client/hubs/"
         # Example URL for Default Client Type: https://<service-name>.webpubsub.azure.com/client/hubs/<hub>
-        # and for MQTT Client Type: https://<service-name>.webpubsub.azure.com/clients/mqtt/hubs/<hub>
+        #                 MQTT Client Type: https://<service-name>.webpubsub.azure.com/clients/mqtt/hubs/<hub>
+        #                 SocketIO Client Type: https://<service-name>.webpubsub.azure.com/clients/socketio/hubs/<hub>
+        path = "/client/hubs/"
+        if client_protocol.lower() == "mqtt":
+            path = "/clients/mqtt/hubs/"
+        elif client_protocol.lower() == "socketio":
+            path = "/clients/socketio/hubs/"
         client_url = client_endpoint + path + hub
         jwt_headers = kwargs.pop("jwt_headers", {})
         if isinstance(self._config.credential, AzureKeyCredential):
-            token = get_token_by_key(endpoint, path, hub, self._config.credential.key, jwt_headers=jwt_headers, **kwargs)
+            token = get_token_by_key(
+                endpoint, path, hub, self._config.credential.key, jwt_headers=jwt_headers, **kwargs
+            )
         else:
             token = super().get_client_access_token(client_protocol=client_protocol, **kwargs).get("token")
         return {
@@ -140,6 +150,67 @@ class WebPubSubServiceClientOperationsMixin(WebPubSubServiceClientOperationsMixi
         }
 
     get_client_access_token.metadata = {"url": "/api/hubs/{hub}/:generateToken"}  # type: ignore
+
+    @distributed_trace
+    def list_connections(
+        self,
+        *,
+        group: str,
+        top: Optional[int] = None,
+        **kwargs: Any
+    ) -> ItemPaged[GroupMember]:
+        """List connections in a group.
+
+        List connections in a group.
+
+        :keyword group: Target group name, whose length should be greater than 0 and less than 1025.
+         Required.
+        :paramtype group: str
+        :keyword top: The maximum number of connections to return. If the value is not set, then all
+         the connections in a group are returned. Default value is None.
+        :paramtype top: int
+        :return: An iterator like instance of GroupMember object
+        :rtype: ~azure.core.paging.ItemPaged[GroupMember]
+        :raises ~azure.core.exceptions.HttpResponseError:
+
+        Example:
+            .. code-block:: python
+
+                connections = client.list_connections(
+                    group="group_name",
+                    top=100
+                )
+
+                for member in connections:
+                    assert member.connection_id is not None
+
+        """
+        # Call the base implementation to get ItemPaged[dict]
+        paged_json = super().list_connections(
+            group=group,
+            top=top,
+            **kwargs
+        )
+
+        # Wrap the iterator to convert each item to GroupMember
+        class GroupMemberPaged(ItemPaged):
+            def __iter__(self_inner):
+                for item in paged_json:
+                    yield GroupMember(
+                        connection_id=item.get("connectionId"),
+                        user_id=item.get("userId")
+                    )
+
+            def by_page(self_inner, continuation_token: Optional[str] = None):
+                for page in paged_json.by_page(continuation_token=continuation_token):
+                    yield [
+                        GroupMember(
+                            connection_id=item.get("connectionId"),
+                            user_id=item.get("userId")
+                        )
+                        for item in page
+                    ]
+        return GroupMemberPaged()
 
     @overload
     def send_to_all(  # pylint: disable=inconsistent-return-statements
