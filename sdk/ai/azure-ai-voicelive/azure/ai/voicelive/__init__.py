@@ -23,7 +23,10 @@ except ImportError:
     _patch_all = []
 from ._patch import patch_sdk as _patch_sdk
 
-__all__ = []
+# Add realtime beta attribute
+from .realtime import Realtime
+
+__all__ = ["Realtime"]
 __all__.extend([p for p in _patch_all if p not in __all__])  # pyright: ignore
 
 _patch_sdk()

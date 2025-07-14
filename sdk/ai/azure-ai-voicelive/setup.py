@@ -66,6 +66,11 @@ setup(
         "isodate>=0.6.1",
         "azure-core>=1.30.0",
         "typing-extensions>=4.6.0",
+        "pydantic>=1.10.0",
+        "httpx>=0.27.0",
     ],
+    extras_require={
+        "realtime": ["websockets>=12.0.0"],
+    },
     python_requires=">=3.8",
 )
