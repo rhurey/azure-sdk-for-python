@@ -115,6 +115,7 @@ class RunsOperations(RunsOperationsGenerated):
         additional_instructions: Optional[str] = None,
         additional_messages: Optional[List[_models.ThreadMessageOptions]] = None,
         tools: Optional[List[_models.ToolDefinition]] = None,
+        tool_resources: Optional[_models.ToolResources] = None,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         max_prompt_tokens: Optional[int] = None,
@@ -156,6 +157,9 @@ class RunsOperations(RunsOperationsGenerated):
         :keyword tools: The overridden list of enabled tools that the agent should use to run the
          thread. Default value is None.
         :paramtype tools: list[~azure.ai.agents.models.ToolDefinition]
+        :keyword tool_resources: The overridden enabled tool resources that the agent should use to run
+         the thread. Default value is None.
+        :paramtype tool_resources: ~azure.ai.agents.models.ToolResources
         :keyword temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8
          will make the output
          more random, while lower values like 0.2 will make it more focused and deterministic. Default
@@ -191,11 +195,11 @@ class RunsOperations(RunsOperationsGenerated):
         :paramtype tool_choice: str or str or ~azure.ai.agents.models.AgentsToolChoiceOptionMode or
          ~azure.ai.agents.models.AgentsNamedToolChoice
         :keyword response_format: Specifies the format that the model must output. Is one of the
-         following types: str, Union[str, "_models.AgentsApiResponseFormatMode"],
-         AgentsApiResponseFormat Default value is None.
+         following types: str, Union[str, "_models.AgentsResponseFormatMode"],
+         AgentsResponseFormat Default value is None.
         :paramtype response_format: Optional[Union[str,
-                               ~azure.ai.agents.models.AgentsApiResponseFormatMode,
-                               ~azure.ai.agents.models.AgentsApiResponseFormat,
+                               ~azure.ai.agents.models.AgentsResponseFormatMode,
+                               ~azure.ai.agents.models.AgentsResponseFormat,
                                ~azure.ai.agents.models.ResponseFormatJsonSchemaType]]
         :keyword parallel_tool_calls: If ``true`` functions will run in parallel during tool use.
          Default value is None.
@@ -281,6 +285,7 @@ class RunsOperations(RunsOperationsGenerated):
         additional_instructions: Optional[str] = None,
         additional_messages: Optional[List[_models.ThreadMessageOptions]] = None,
         tools: Optional[List[_models.ToolDefinition]] = None,
+        tool_resources: Optional[_models.ToolResources] = None,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         max_prompt_tokens: Optional[int] = None,
@@ -321,6 +326,9 @@ class RunsOperations(RunsOperationsGenerated):
         :keyword tools: The overridden list of enabled tools that the agent should use to run the
          thread. Default value is None.
         :paramtype tools: list[~azure.ai.agents.models.ToolDefinition]
+        :keyword tool_resources: The overridden enabled tool resources that the agent should use to run
+         the thread. Default value is None.
+        :paramtype tool_resources: ~azure.ai.agents.models.ToolResources
         :keyword temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8
          will make the output
          more random, while lower values like 0.2 will make it more focused and deterministic. Default
@@ -356,11 +364,11 @@ class RunsOperations(RunsOperationsGenerated):
         :paramtype tool_choice: str or str or ~azure.ai.agents.models.AgentsToolChoiceOptionMode or
          ~azure.ai.agents.models.AgentsNamedToolChoice
         :keyword response_format: Specifies the format that the model must output. Is one of the
-         following types: str, Union[str, "_models.AgentsApiResponseFormatMode"],
-         AgentsApiResponseFormat Default value is None.
+         following types: str, Union[str, "_models.AgentsResponseFormatMode"],
+         AgentsResponseFormat Default value is None.
         :paramtype response_format: Optional[Union[str,
-                               ~azure.ai.agents.models.AgentsApiResponseFormatMode,
-                               ~azure.ai.agents.models.AgentsApiResponseFormat,
+                               ~azure.ai.agents.models.AgentsResponseFormatMode,
+                               ~azure.ai.agents.models.AgentsResponseFormat,
                                ~azure.ai.agents.models.ResponseFormatJsonSchemaType]]
         :keyword parallel_tool_calls: If ``true`` functions will run in parallel during tool use.
          Default value is None.
@@ -389,6 +397,7 @@ class RunsOperations(RunsOperationsGenerated):
                 additional_instructions=additional_instructions,
                 additional_messages=additional_messages,
                 tools=tools,
+                tool_resources=tool_resources,
                 stream_parameter=False,
                 stream=False,
                 temperature=temperature,
@@ -499,11 +508,11 @@ class RunsOperations(RunsOperationsGenerated):
          ~azure.ai.agents.models.AgentsToolChoiceOptionMode or
          ~azure.ai.agents.models.AgentsNamedToolChoice
         :keyword response_format: Specifies the format that the model must output. Is one of the
-         following types: str, Union[str, "_models.AgentsApiResponseFormatMode"],
-         AgentsApiResponseFormat Default value is None.
+         following types: str, Union[str, "_models.AgentsResponseFormatMode"],
+         AgentsResponseFormat Default value is None.
         :paramtype response_format: Optional[Union[str,
-                               ~azure.ai.agents.models.AgentsApiResponseFormatMode,
-                               ~azure.ai.agents.models.AgentsApiResponseFormat,
+                               ~azure.ai.agents.models.AgentsResponseFormatMode,
+                               ~azure.ai.agents.models.AgentsResponseFormat,
                                ~azure.ai.agents.models.ResponseFormatJsonSchemaType]]
         :keyword parallel_tool_calls: If ``true`` functions will run in parallel during tool use.
          Default value is None.
@@ -582,6 +591,9 @@ class RunsOperations(RunsOperationsGenerated):
                             thread_id=thread_id, run_id=run.id, tool_outputs=tool_outputs
                         )
                         logger.debug("Tool outputs submitted to run: %s", run2.id)
+            elif isinstance(run.required_action, _models.SubmitToolApprovalAction):
+                logger.warning("Automatic MCP tool approval is not supported.")
+                await self.cancel(thread_id=thread_id, run_id=run.id)
 
             logger.debug("Current run ID: %s with status: %s", run.id, run.status)
 
@@ -600,6 +612,7 @@ class RunsOperations(RunsOperationsGenerated):
         additional_instructions: Optional[str] = None,
         additional_messages: Optional[List[_models.ThreadMessageOptions]] = None,
         tools: Optional[List[_models.ToolDefinition]] = None,
+        tool_resources: Optional[_models.ToolResources] = None,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         max_prompt_tokens: Optional[int] = None,
@@ -642,6 +655,9 @@ class RunsOperations(RunsOperationsGenerated):
         :keyword tools: The overridden list of enabled tools that the agent should use to run the
          thread. Default value is None.
         :paramtype tools: list[~azure.ai.agents.models.ToolDefinition]
+        :keyword tool_resources: The overridden enabled tool resources that the agent should use to run
+         the thread. Default value is None.
+        :paramtype tool_resources: ~azure.ai.agents.models.ToolResources
         :keyword temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8
          will make the output
          more random, while lower values like 0.2 will make it more focused and deterministic. Default
@@ -677,11 +693,11 @@ class RunsOperations(RunsOperationsGenerated):
         :paramtype tool_choice: str or str or ~azure.ai.agents.models.AgentsToolChoiceOptionMode or
          ~azure.ai.agents.models.AgentsNamedToolChoice
         :keyword response_format: Specifies the format that the model must output. Is one of the
-         following types: str, Union[str, "_models.AgentsApiResponseFormatMode"],
-         AgentsApiResponseFormat Default value is None.
+         following types: str, Union[str, "_models.AgentsResponseFormatMode"],
+         AgentsResponseFormat Default value is None.
         :paramtype response_format: Optional[Union[str,
-                               ~azure.ai.agents.models.AgentsApiResponseFormatMode,
-                               ~azure.ai.agents.models.AgentsApiResponseFormat,
+                               ~azure.ai.agents.models.AgentsResponseFormatMode,
+                               ~azure.ai.agents.models.AgentsResponseFormat,
                                ~azure.ai.agents.models.ResponseFormatJsonSchemaType]]
         :keyword parallel_tool_calls: If ``true`` functions will run in parallel during tool use.
          Default value is None.
@@ -711,6 +727,7 @@ class RunsOperations(RunsOperationsGenerated):
         additional_instructions: Optional[str] = None,
         additional_messages: Optional[List[_models.ThreadMessageOptions]] = None,
         tools: Optional[List[_models.ToolDefinition]] = None,
+        tool_resources: Optional[_models.ToolResources] = None,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         max_prompt_tokens: Optional[int] = None,
@@ -753,6 +770,9 @@ class RunsOperations(RunsOperationsGenerated):
         :keyword tools: The overridden list of enabled tools that the agent should use to run the
          thread. Default value is None.
         :paramtype tools: list[~azure.ai.agents.models.ToolDefinition]
+        :keyword tool_resources: The overridden enabled tool resources that the agent should use to run
+         the thread. Default value is None.
+        :paramtype tool_resources: ~azure.ai.agents.models.ToolResources
         :keyword temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8
          will make the output
          more random, while lower values like 0.2 will make it more focused and deterministic. Default
@@ -788,11 +808,11 @@ class RunsOperations(RunsOperationsGenerated):
         :paramtype tool_choice: str or str or ~azure.ai.agents.models.AgentsToolChoiceOptionMode or
          ~azure.ai.agents.models.AgentsNamedToolChoice
         :keyword response_format: Specifies the format that the model must output. Is one of the
-         following types: str, Union[str, "_models.AgentsApiResponseFormatMode"],
-         AgentsApiResponseFormat Default value is None.
+         following types: str, Union[str, "_models.AgentsResponseFormatMode"],
+         AgentsResponseFormat Default value is None.
         :paramtype response_format: Optional[Union[str,
-                               ~azure.ai.agents.models.AgentsApiResponseFormatMode,
-                               ~azure.ai.agents.models.AgentsApiResponseFormat,
+                               ~azure.ai.agents.models.AgentsResponseFormatMode,
+                               ~azure.ai.agents.models.AgentsResponseFormat,
                                ~azure.ai.agents.models.ResponseFormatJsonSchemaType]]
         :keyword parallel_tool_calls: If ``true`` functions will run in parallel during tool use.
          Default value is None.
@@ -891,6 +911,7 @@ class RunsOperations(RunsOperationsGenerated):
         additional_instructions: Optional[str] = None,
         additional_messages: Optional[List[_models.ThreadMessageOptions]] = None,
         tools: Optional[List[_models.ToolDefinition]] = None,
+        tool_resources: Optional[_models.ToolResources] = None,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         max_prompt_tokens: Optional[int] = None,
@@ -934,6 +955,9 @@ class RunsOperations(RunsOperationsGenerated):
         :keyword tools: The overridden list of enabled tools that the agent should use to run the
          thread. Default value is None.
         :paramtype tools: list[~azure.ai.agents.models.ToolDefinition]
+        :keyword tool_resources: The overridden enabled tool resources that the agent should use to run
+         the thread. Default value is None.
+        :paramtype tool_resources: ~azure.ai.agents.models.ToolResources
         :keyword temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8
          will make the output
          more random, while lower values like 0.2 will make it more focused and deterministic. Default
@@ -969,11 +993,11 @@ class RunsOperations(RunsOperationsGenerated):
         :paramtype tool_choice: str or str or ~azure.ai.agents.models.AgentsToolChoiceOptionMode or
          ~azure.ai.agents.models.AgentsNamedToolChoice
         :keyword response_format: Specifies the format that the model must output. Is one of the
-         following types: str, Union[str, "_models.AgentsApiResponseFormatMode"],
-         AgentsApiResponseFormat Default value is None.
+         following types: str, Union[str, "_models.AgentsResponseFormatMode"],
+         AgentsResponseFormat Default value is None.
         :paramtype response_format: Optional[Union[str,
-                               ~azure.ai.agents.models.AgentsApiResponseFormatMode,
-                               ~azure.ai.agents.models.AgentsApiResponseFormat,
+                               ~azure.ai.agents.models.AgentsResponseFormatMode,
+                               ~azure.ai.agents.models.AgentsResponseFormat,
                                ~azure.ai.agents.models.ResponseFormatJsonSchemaType]]
         :keyword parallel_tool_calls: If ``true`` functions will run in parallel during tool use.
          Default value is None.
@@ -1005,6 +1029,7 @@ class RunsOperations(RunsOperationsGenerated):
                 additional_instructions=additional_instructions,
                 additional_messages=additional_messages,
                 tools=tools,
+                tool_resources=tool_resources,
                 stream_parameter=True,
                 stream=True,
                 temperature=temperature,
@@ -2244,7 +2269,7 @@ class VectorStoreFilesOperations(VectorStoreFilesOperationsGenerated):
 
     @distributed_trace_async
     async def delete(self, vector_store_id: str, file_id: str, **kwargs: Any) -> None:
-        """Deletes a vector store file. This removes the file‐to‐store link (does not delete the file
+        """Deletes a vector store file. This removes the file-to-store link (does not delete the file
         itself).
 
         :param vector_store_id: Identifier of the vector store.
@@ -2309,6 +2334,18 @@ class MessagesOperations(MessagesOperationsGenerated):
             if text_contents:
                 return text_contents[-1]
         return None
+
+    @distributed_trace_async
+    async def delete(self, thread_id: str, message_id: str, **kwargs: Any) -> None:
+        """Deletes an existing message on an existing thread.
+
+        :param thread_id: Identifier of the thread. Required.
+        :type thread_id: str
+        :param message_id: Identifier of the message. Required.
+        :type message_id: str
+        :raises ~azure.core.exceptions.HttpResponseError:
+        """
+        await super()._delete(thread_id=thread_id, message_id=message_id, **kwargs)
 
 
 __all__: List[str] = [

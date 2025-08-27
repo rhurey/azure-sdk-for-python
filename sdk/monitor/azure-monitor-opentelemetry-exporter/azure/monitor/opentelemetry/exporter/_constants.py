@@ -9,7 +9,10 @@ from opentelemetry.semconv.metrics.http_metrics import (
     HTTP_CLIENT_REQUEST_DURATION,
     HTTP_SERVER_REQUEST_DURATION,
 )
+# pylint:disable=no-name-in-module
+from fixedint import Int32
 from azure.core import CaseInsensitiveEnumMeta
+
 
 # Environment variables
 
@@ -75,6 +78,16 @@ _APPLICATION_INSIGHTS_EVENT_MARKER_ATTRIBUTE = "APPLICATION_INSIGHTS_EVENT_MARKE
 _AZURE_MONITOR_DISTRO_VERSION_ARG = "distro_version"
 _MICROSOFT_CUSTOM_EVENT_NAME = "microsoft.custom_event.name"
 
+# ONE SETTINGS
+_ONE_SETTINGS_PYTHON_KEY = "python"
+_ONE_SETTINGS_CHANGE_VERSION_KEY = "CHANGE_VERSION"
+_ONE_SETTINGS_CNAME = "https://settings.sdk.monitor.azure.com"
+_ONE_SETTINGS_PATH = "/AzMonSDKDynamicConfiguration"
+_ONE_SETTINGS_CHANGE_PATH = "/AzMonSDKDynamicConfigurationChanges"
+_ONE_SETTINGS_CONFIG_URL = _ONE_SETTINGS_CNAME + _ONE_SETTINGS_PATH
+_ONE_SETTINGS_CHANGE_URL = _ONE_SETTINGS_CNAME + _ONE_SETTINGS_CHANGE_PATH
+_ONE_SETTINGS_DEFAULT_REFRESH_INTERVAL_SECONDS = 3600  # 60 minutes
+
 # Statsbeat
 # (OpenTelemetry metric name, Statsbeat metric name)
 _ATTACH_METRIC_NAME = ("attach", "Attach")
@@ -133,16 +146,16 @@ _REQUEST = "REQUEST"
 _TRACE = "TRACE"
 _UNKNOWN = "UNKNOWN"
 
-# Customer Facing Statsbeat
-_APPLICATIONINSIGHTS_STATSBEAT_ENABLED_PREVIEW = "APPLICATIONINSIGHTS_STATSBEAT_ENABLED_PREVIEW"
-
-_CUSTOMER_STATSBEAT_LANGUAGE = "python"
+# Customer Facing SDKStats
+_APPLICATIONINSIGHTS_SDKSTATS_ENABLED_PREVIEW = "APPLICATIONINSIGHTS_SDKSTATS_ENABLED_PREVIEW"
+_APPLICATIONINSIGHTS_SDKSTATS_EXPORT_INTERVAL = "APPLICATIONINSIGHTS_SDKSTATS_EXPORT_INTERVAL"
+_CUSTOMER_SDKSTATS_LANGUAGE = "python"
 
 class DropCode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     CLIENT_READONLY = "CLIENT_READONLY"
     CLIENT_EXCEPTION = "CLIENT_EXCEPTION"
-    CLIENT_STALE_DATA = "CLIENT_STALE_DATA"
     CLIENT_PERSISTENCE_CAPACITY = "CLIENT_PERSISTENCE_CAPACITY"
+    CLIENT_STORAGE_DISABLED = "CLIENT_STORAGE_DISABLED"
     UNKNOWN = "UNKNOWN"
 
 DropCodeType = Union[DropCode, int]
@@ -154,12 +167,12 @@ class RetryCode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
 
 RetryCodeType = Union[RetryCode, int]
 
-class CustomerStatsbeatMetricName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+class CustomerSdkStatsMetricName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     ITEM_SUCCESS_COUNT = "preview.item.success.count"
     ITEM_DROP_COUNT = "preview.item.dropped.count"
     ITEM_RETRY_COUNT = "preview.item.retry.count"
 
-class CustomerStatsbeatProperties:
+class CustomerSdkStatsProperties:
     language: str
     version: str
     compute_type: str
@@ -194,6 +207,7 @@ class _RP_Names(Enum):
 # Special constant for azure-sdk opentelemetry instrumentation
 _AZURE_SDK_OPENTELEMETRY_NAME = "azure-sdk-opentelemetry"
 _AZURE_SDK_NAMESPACE_NAME = "az.namespace"
+_AZURE_AI_SDK_NAME = "azure-ai-opentelemetry"
 
 _BASE = 2
 
@@ -253,6 +267,7 @@ _INSTRUMENTATIONS_LIST = [
     "openai_v2",
     "vertexai",
     # Instrumentations below this line have not been added to statsbeat report yet
+    _AZURE_AI_SDK_NAME
 ]
 
 _INSTRUMENTATIONS_BIT_MAP = {_INSTRUMENTATIONS_LIST[i]: _BASE**i for i in range(len(_INSTRUMENTATIONS_LIST))}
@@ -292,6 +307,9 @@ _INSTRUMENTATION_SUPPORTING_METRICS_LIST = (
 # sampleRate
 
 _SAMPLE_RATE_KEY = "_MS.sampleRate"
+_SAMPLING_HASH = 5381
+_INTEGER_MAX: int = Int32.maxval
+_INTEGER_MIN: int = Int32.minval
 
 # AAD Auth
 
